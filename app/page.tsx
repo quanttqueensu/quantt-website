@@ -1,13 +1,18 @@
 import GradientBackground from "@/components/GradientBackground";
+import Hero from "@/components/Hero";
+import Mission from "@/components/Mission";
+import ThreePillars from "@/components/ThreePillars";
+import UpcomingEvents from "@/components/UpcomingEvents";
 
 export default function Home() {
   return (
-    <GradientBackground>
-      <div className="flex min-h-screen items-center justify-center">
-        <h1 className="font-heading text-4xl font-bold text-white">
-          QUANTT Website — Coming Soon
-        </h1>
-      </div>
-    </GradientBackground>
+    <>
+      <Hero />
+      <GradientBackground>
+        <Mission />
+        <ThreePillars />
+        <UpcomingEvents />
+      </GradientBackground>
+    </>
   );
 }
