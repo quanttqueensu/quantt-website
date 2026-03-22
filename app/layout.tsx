@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Merriweather } from "next/font/google";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,6 +22,12 @@ export const metadata: Metadata = {
   description:
     "Bridging academic research and industry practice through collaboration, research, and real-world application in quantitative finance.",
   icons: { icon: "/favicon.png" },
+  openGraph: {
+    title: "QUANTT — Queen's University Algorithmic Network & Trading Team",
+    description:
+      "Bridging academic research and industry practice in quantitative finance.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +37,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${merriweather.variable} scroll-smooth`}>
-      <body className="font-body antialiased">{children}</body>
+      <body className="font-body antialiased">
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
