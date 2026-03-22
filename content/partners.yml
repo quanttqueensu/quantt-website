@@ -1,0 +1,25 @@
+current:
+  - name: "Ontario Teachers' Pension Plan"
+    logo: "/images/partners/otpp.png"
+    description: "One of the world's largest institutional investors, managing $250B+ in assets."
+
+  - name: "Picton Investments"
+    logo: "/images/partners/picton.png"
+    description: "Canadian investment management firm focused on quantitative strategies."
+
+  - name: "National Bank of Canada"
+    logo: "/images/partners/nbc.png"
+    description: "Leading Canadian financial institution with a strong quantitative division."
+
+  - name: "Connor, Clark & Lunn"
+    logo: "/images/partners/ccl.png"
+    description: "Multi-boutique asset management firm specializing in quantitative investing."
+
+past:
+  - name: "QuantConnect"
+    logo: "/images/partners/quantconnect.png"
+    description: "Open-source algorithmic trading platform."
+
+  - name: "Viewpoint Investment Partners"
+    logo: "/images/partners/viewpoint.png"
+    description: "Investment advisory firm focused on alternative strategies."
