@@ -53,7 +53,11 @@ export default function Hero() {
           <RotatingText />
         </h1>
 
-        <p className="mt-5 max-w-md text-sm leading-relaxed text-text-light md:text-base">
+        <p className="mt-3 text-sm font-medium text-blue-light">
+          Canada&apos;s Premier Quantitative Finance Club &middot; Est. 2018
+        </p>
+
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-text-light md:text-base">
           Bridging academic research and industry practice through
           collaboration, research, and real-world application.
         </p>

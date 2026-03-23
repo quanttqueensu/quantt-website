@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -37,11 +38,15 @@ export default function Navbar() {
       } ${scrolled ? "bg-navy/95 backdrop-blur-sm shadow-lg" : "bg-transparent"}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link
-          href="/"
-          className="text-[15px] font-bold tracking-[2px] text-white"
-        >
-          QUANTT
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/images/logos/quantt-text-white.png"
+            alt="QUANTT"
+            width={120}
+            height={55}
+            className="h-7 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getSiteConfig } from "@/lib/content";
 
@@ -8,12 +9,16 @@ export default function Footer() {
     <footer className="bg-navy px-6 py-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
         <div>
-          <Link
-            href="/"
-            className="text-sm font-bold tracking-[2px] text-white"
-          >
-            QUANTT
+          <Link href="/">
+            <Image
+              src="/images/logos/quantt-text-white.png"
+              alt="QUANTT"
+              width={120}
+              height={55}
+              className="h-6 w-auto"
+            />
           </Link>
+          <p className="mt-1 text-[10px] text-text-light/60">Canada&apos;s Premier Quantitative Finance Club</p>
           <p className="mt-1 text-[11px] text-text-light">
             <a
               href="mailto:quanttgroup@gmail.com"
