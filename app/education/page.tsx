@@ -34,9 +34,11 @@ export default function EducationPage() {
           </p>
         </ScrollReveal>
 
-        <div className="mt-10">
-          <Accordion items={items} />
-        </div>
+        <ScrollReveal>
+          <div className="mt-10">
+            <Accordion items={items} />
+          </div>
+        </ScrollReveal>
       </div>
     </GradientBackground>
   );

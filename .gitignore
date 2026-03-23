@@ -42,4 +42,11 @@ next-env.d.ts
 
 # project-specific
 REBUILD-PLAN.md
+BACKEND-PLAN.md
 .superpowers/
+
+# claude/ai tooling
+CLAUDE.md
+AGENTS.md
+.claude/
+docs/superpowers/

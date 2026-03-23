@@ -22,14 +22,16 @@ export default function PartnersPage() {
           <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70">Leveraging our talent-base to provide the value you need.</p>
         </ScrollReveal>
 
-        <div className="mt-12">
-          <h2 className="mb-6 text-lg font-semibold text-white">Current Partners</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {partners.current.map((partner) => (
-              <PartnerCard key={partner.name} partner={partner} />
-            ))}
+        <ScrollReveal>
+          <div className="mt-12">
+            <h2 className="mb-6 text-lg font-semibold g-heading">Current Partners</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {partners.current.map((partner) => (
+                <PartnerCard key={partner.name} partner={partner} />
+              ))}
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         <ScrollReveal>
           <div className="mt-12 rounded-lg border border-primary/30 bg-primary/10 p-6 text-center">
@@ -40,14 +42,16 @@ export default function PartnersPage() {
         </ScrollReveal>
 
         {partners.past.length > 0 && (
-          <div className="mt-12">
-            <h2 className="mb-6 text-sm font-semibold text-white/50">Past Partners</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {partners.past.map((partner) => (
-                <PartnerCard key={partner.name} partner={partner} muted />
-              ))}
+          <ScrollReveal>
+            <div className="mt-12">
+              <h2 className="mb-6 text-sm font-semibold g-heading">Past Partners</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {partners.past.map((partner) => (
+                  <PartnerCard key={partner.name} partner={partner} muted />
+                ))}
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         )}
       </div>
     </GradientBackground>

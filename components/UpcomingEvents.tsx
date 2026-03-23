@@ -10,25 +10,25 @@ export default function UpcomingEvents() {
     <ScrollReveal>
       <section className="mx-auto max-w-7xl px-6 py-20">
         <SectionLabel>
-          <span className="text-blue-mid">Coming Up</span>
+          <span className="g-muted">Coming Up</span>
         </SectionLabel>
-        <h2 className="mt-2 font-heading text-2xl font-bold text-text-dark">
+        <h2 className="mt-2 font-heading text-2xl font-bold g-heading">
           Upcoming Events
         </h2>
         <div className="mt-8 grid gap-3 md:grid-cols-3">
           {events.map((event) => (
             <div
               key={`${event.date}-${event.title}`}
-              className="rounded-lg border border-white/30 bg-white/35 p-5 backdrop-blur-sm"
+              className="rounded-lg border border-white/15 bg-white/30 p-5 backdrop-blur-sm"
             >
-              <p className="text-[11px] font-bold uppercase tracking-wider text-blue-mid">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
                 {new Date(event.date + "T00:00:00").toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                 })}
               </p>
-              <h3 className="mt-1.5 text-sm font-semibold text-text-dark">{event.title}</h3>
-              <p className="mt-1 text-xs text-text-dark-body">
+              <h3 className="mt-1.5 text-sm font-semibold g-heading">{event.title}</h3>
+              <p className="mt-1 text-xs g-body">
                 {event.location} &middot; {event.time}
               </p>
             </div>

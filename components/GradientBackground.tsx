@@ -17,7 +17,7 @@ export default function GradientBackground({
   };
 
   return (
-    <div className={`relative min-h-screen ${gradients[variant]} ${className}`}>
+    <div data-gradient className={`relative min-h-screen ${gradients[variant]} ${className}`}>
       {children}
     </div>
   );

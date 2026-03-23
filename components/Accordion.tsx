@@ -23,7 +23,7 @@ export default function Accordion({ items }: AccordionProps) {
             className={`flex w-full items-center justify-between px-5 py-4 text-left transition-colors ${
               openIndex === i
                 ? "bg-primary text-white"
-                : "bg-white/[0.05] text-white/80 hover:bg-white/[0.08]"
+                : "bg-white/[0.08] g-heading hover:bg-white/[0.12]"
             }`}
           >
             <span className="text-sm font-semibold">{item.title}</span>
@@ -42,7 +42,7 @@ export default function Accordion({ items }: AccordionProps) {
             }}
           >
             <div className="overflow-hidden">
-              <div className="px-5 py-4 text-sm leading-relaxed text-white/70">
+              <div className="px-5 py-4 text-sm leading-relaxed g-body">
                 {item.content}
               </div>
             </div>

@@ -34,6 +34,8 @@ export interface PartnersData {
 export interface TeamMember {
   name: string;
   role: string;
+  tier: "co-chair" | "director" | "project-manager" | "member";
+  department?: string;
   photo?: string;
   order: number;
   bio: string;
