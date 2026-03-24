@@ -2,7 +2,7 @@
 name: "Braydon Hunter"
 role: "Project Manager"
 tier: "project-manager"
-department: "Sentiment Analysis"
+department: "Intraday Volatility"
 order: 8
 bio: ""
 ---

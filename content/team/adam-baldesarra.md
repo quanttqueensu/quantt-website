@@ -1,8 +1,8 @@
 ---
-name: "Adam Baldessarra"
+name: "Adam Baldesarra"
 role: "Project Manager"
 tier: "project-manager"
-department: "Portfolio Optimization Engine"
+department: "Binomial Pricing"
 order: 7
 bio: ""
 ---
