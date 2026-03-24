@@ -3,8 +3,7 @@ import GradientBackground from "@/components/GradientBackground";
 import SectionLabel from "@/components/SectionLabel";
 import ScrollReveal from "@/components/ScrollReveal";
 import TeamMemberCard from "@/components/TeamMemberCard";
-import ProjectCard from "@/components/ProjectCard";
-import { getTeamMembers, getProjects } from "@/lib/content";
+import { getTeamMembers } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Who We Are — QUANTT",
@@ -28,7 +27,6 @@ const projectTeams = [
 
 export default function TeamPage() {
   const members = getTeamMembers();
-  const projects = getProjects();
 
   const leadershipByTier = leadershipTiers
     .map(({ key, label }) => ({
@@ -138,29 +136,6 @@ export default function TeamPage() {
           ))}
         </div>
 
-        <div className="my-16 h-px bg-white/15" />
-
-        {/* Projects Description */}
-        <ScrollReveal>
-          <SectionLabel>
-            <span className="text-blue-light">Our Work</span>
-          </SectionLabel>
-          <h2 className="mt-2 font-heading text-2xl font-bold g-heading">
-            Projects
-          </h2>
-        </ScrollReveal>
-
-        <ScrollReveal>
-          {projects.length > 0 ? (
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {projects.map((project) => (
-                <ProjectCard key={project.title} project={project} />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-8 text-sm g-muted">Projects coming soon.</p>
-          )}
-        </ScrollReveal>
       </div>
     </GradientBackground>
   );
