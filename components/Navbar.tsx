@@ -40,13 +40,16 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/images/logos/quantt-text-white.png"
-            alt="QUANTT"
-            width={120}
-            height={55}
-            className="h-7 w-auto"
+            src="/images/logos/quantt-icon.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-8 w-8"
             priority
           />
+          <span className="text-[15px] font-bold tracking-[2px] text-white">
+            QUANTT
+          </span>
         </Link>
 
         {/* Desktop nav */}
