@@ -34,12 +34,44 @@ export interface PartnersData {
 export interface TeamMember {
   name: string;
   role: string;
-  tier: "co-chair" | "director" | "coordinator" | "project-manager" | "member";
+  tier: string;
   department?: string;
   photo?: string;
   order: number;
   bio: string;
   linkedin?: string;
+}
+
+export interface HierarchyRole {
+  title: string;
+  short: string;
+}
+
+export interface HierarchyTier {
+  tier: string;
+  label: string;
+  roles?: HierarchyRole[];
+  teams?: string[];
+  placeholder?: string;
+}
+
+export interface LeadershipTier {
+  key: string;
+  label: string;
+}
+
+export interface TeamYearConfig {
+  year: string;
+  current: boolean;
+  structure: "tiered" | "corporate";
+  leadershipTiers?: LeadershipTier[];
+  projectTeams?: string[];
+  hierarchy?: HierarchyTier[];
+}
+
+export interface TeamYear {
+  config: TeamYearConfig;
+  members: TeamMember[];
 }
 
 export interface Project {
@@ -88,7 +120,38 @@ export function getPartners(): PartnersData {
 }
 
 export function getTeamMembers(): TeamMember[] {
+  // Legacy: try year-based first, fall back to flat
+  const teamDir = path.join(contentDir, "team");
+  const years = getTeamYears();
+  if (years.length > 0) {
+    const current = years.find((y) => y.config.current) ?? years[0];
+    return current.members;
+  }
   return readMdDir<TeamMember>("team").sort((a, b) => a.order - b.order);
+}
+
+export function getTeamYears(): TeamYear[] {
+  const teamDir = path.join(contentDir, "team");
+  if (!fs.existsSync(teamDir)) return [];
+
+  const entries = fs.readdirSync(teamDir, { withFileTypes: true });
+  const yearDirs = entries.filter(
+    (e) => e.isDirectory() && /^\d{4}-\d{4}$/.test(e.name)
+  );
+
+  const results: TeamYear[] = [];
+  for (const dir of yearDirs) {
+    const configPath = path.join(teamDir, dir.name, "config.yml");
+    if (!fs.existsSync(configPath)) continue;
+    const config = yaml.load(
+      fs.readFileSync(configPath, "utf-8")
+    ) as TeamYearConfig;
+    const members = readMdDir<TeamMember>(`team/${dir.name}`).sort(
+      (a, b) => a.order - b.order
+    );
+    results.push({ config, members });
+  }
+  return results.sort((a, b) => b.config.year.localeCompare(a.config.year));
 }
 
 export function getProjects(): Project[] {
