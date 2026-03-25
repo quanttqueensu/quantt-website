@@ -15,20 +15,22 @@ export default function PartnerCard({ partner, muted = false }: PartnerCardProps
           : "border-white/10 bg-white/[0.07]"
       }`}
     >
-      <div className="mb-3 flex h-12 items-center">
+      <div className="mb-3">
         {partner.logo ? (
-          <div className="relative h-10 w-[120px]">
-            <Image
-              src={partner.logo}
-              alt={`${partner.name} logo`}
-              fill
-              className={`object-contain object-left ${muted ? "opacity-50" : ""}`}
-              sizes="120px"
-            />
+          <div className={`inline-flex items-center justify-center rounded-md bg-white px-4 py-3 ${muted ? "opacity-40" : ""}`}>
+            <div className="relative h-10 w-[160px]">
+              <Image
+                src={partner.logo}
+                alt={`${partner.name} logo`}
+                fill
+                className="object-contain"
+                sizes="160px"
+              />
+            </div>
           </div>
         ) : (
           <div
-            className={`flex h-10 items-center rounded px-3 text-xs font-semibold ${
+            className={`inline-flex h-10 items-center rounded-md px-3 text-xs font-semibold ${
               muted ? "bg-white/[0.06] text-white/40" : "bg-white/10 text-white/50"
             }`}
           >
