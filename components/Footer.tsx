@@ -55,7 +55,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-blue-mid">
-          &copy; {config.copyright}
+          &copy; {new Date().getFullYear()} QUANTT
         </p>
       </div>
     </footer>

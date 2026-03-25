@@ -66,7 +66,7 @@ function readYaml<T>(filename: string): T {
 function readMdDir<T>(dir: string): (T & { body: string })[] {
   const dirPath = path.join(contentDir, dir);
   if (!fs.existsSync(dirPath)) return [];
-  const files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+  const files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md") && !f.startsWith("_"));
   return files.map((file) => {
     const raw = fs.readFileSync(path.join(dirPath, file), "utf-8");
     const { data, content } = matter(raw);

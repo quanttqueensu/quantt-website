@@ -18,7 +18,12 @@
   --font-body: var(--font-inter);
 }
 
-/* Dark-on-light text for sections in the lighter gradient zone */
-.g-heading { color: #0f1d35; }
-.g-body { color: #2a4060; }
-.g-muted { color: #4a5568; }
+/* General-purpose text colors that work on the gradient */
+.g-heading { color: white; }
+.g-body { color: #8a9fc4; }
+.g-muted { color: #6b7a8e; }
+
+/* Dark text override for sections on light backgrounds */
+.g-dark-heading { color: #0f1d35; }
+.g-dark-body { color: #2a4060; }
+.g-dark-muted { color: #4a5568; }

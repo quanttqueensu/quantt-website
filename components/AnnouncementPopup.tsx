@@ -6,6 +6,8 @@ export default function AnnouncementPopup() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // Auto-hide after the conference date
+    if (new Date() > new Date("2026-03-29")) return;
     const dismissed = sessionStorage.getItem("popup-dismissed");
     if (!dismissed) {
       const timer = setTimeout(() => setOpen(true), 800);
