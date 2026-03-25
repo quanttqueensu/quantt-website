@@ -35,7 +35,7 @@ export default function ThreePillars() {
         <div className="grid gap-4 md:grid-cols-3">
           {pillars.map((pillar) => (
             <GlassCard key={pillar.title} className="p-6 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-blue-grey">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-blue-accent">
                 {pillar.icon}
               </div>
               <h3 className="mb-2 text-sm font-semibold text-white">{pillar.title}</h3>

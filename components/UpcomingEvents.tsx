@@ -25,8 +25,8 @@ export default function UpcomingEvents() {
                     day: "numeric",
                   })}
                 </p>
-                <h3 className="mt-1.5 text-sm font-semibold text-text-dark">{event.title}</h3>
-                <p className="mt-1 text-xs text-text-dark-body">
+                <h3 className="mt-1.5 text-sm font-semibold text-white">{event.title}</h3>
+                <p className="mt-1 text-xs text-text-light">
                   {event.location} &middot; {event.time}
                 </p>
               </>
@@ -37,14 +37,14 @@ export default function UpcomingEvents() {
                 href={event.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block rounded-lg border border-text-dark/10 bg-white/30 p-5 backdrop-blur-sm transition-transform hover:-translate-y-0.5"
+                className="block rounded-lg border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm transition-transform hover:-translate-y-0.5"
               >
                 {Card}
               </a>
             ) : (
               <div
                 key={`${event.date}-${event.title}`}
-                className="rounded-lg border border-text-dark/10 bg-white/30 p-5 backdrop-blur-sm"
+                className="rounded-lg border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm"
               >
                 {Card}
               </div>

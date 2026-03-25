@@ -8,7 +8,8 @@
   --color-primary: #2452a1;
   --color-blue-mid: #1e3360;
   --color-blue-light: #6b8fd4;
-  --color-blue-grey: #c8d6ea;
+  --color-blue-accent: #c8d6ea;
+  --color-blue-grey: #162a4a;
   --color-text-light: #8a9fc4;
   --color-text-dark: #0f1d35;
   --color-text-dark-body: #2a4060;
@@ -23,7 +24,3 @@
 .g-body { color: #8a9fc4; }
 .g-muted { color: #6b7a8e; }
 
-/* Dark text override for sections on light backgrounds */
-.g-dark-heading { color: #0f1d35; }
-.g-dark-body { color: #2a4060; }
-.g-dark-muted { color: #4a5568; }

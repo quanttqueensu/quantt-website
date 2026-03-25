@@ -8,7 +8,7 @@ current:
     description: "Canadian investment management firm focused on quantitative strategies."
 
   - name: "National Bank of Canada"
-    logo: "/images/partners/nbc.png"
+    logo: "/images/partners/nbc.jpg"
     description: "Leading Canadian financial institution with a strong quantitative division."
 
   - name: "Connor, Clark & Lunn"
@@ -17,9 +17,9 @@ current:
 
 past:
   - name: "QuantConnect"
-    logo: "/images/partners/quantconnect.png"
+    logo: ""
     description: "Open-source algorithmic trading platform."
 
   - name: "Viewpoint Investment Partners"
-    logo: "/images/partners/viewpoint.png"
+    logo: ""
     description: "Investment advisory firm focused on alternative strategies."

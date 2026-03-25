@@ -21,7 +21,7 @@ export default function RotatingText() {
 
   return (
     <span
-      className={`inline-block bg-gradient-to-r from-blue-light to-blue-grey bg-clip-text text-transparent transition-opacity duration-500 ${
+      className={`inline-block bg-gradient-to-r from-blue-light to-blue-accent bg-clip-text text-transparent transition-opacity duration-500 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
     >

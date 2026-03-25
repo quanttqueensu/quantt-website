@@ -44,7 +44,7 @@ export default function PartnersPage() {
         {partners.past.length > 0 && (
           <ScrollReveal>
             <div className="mt-12">
-              <h2 className="mb-6 text-sm font-semibold text-text-dark">Past Partners</h2>
+              <h2 className="mb-6 text-sm font-semibold g-heading">Past Partners</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {partners.past.map((partner) => (
                   <PartnerCard key={partner.name} partner={partner} muted />

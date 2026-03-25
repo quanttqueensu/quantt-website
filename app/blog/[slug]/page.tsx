@@ -43,7 +43,7 @@ export default async function BlogPostPage({ params }: Props) {
         </p>
         <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-4xl">{post.title}</h1>
 
-        <div className="prose-sm mt-10 max-w-none prose-headings:font-heading prose-headings:text-text-dark prose-p:text-text-dark-body prose-a:text-blue-light prose-strong:text-text-dark prose-li:text-text-dark-body">
+        <div className="prose-sm prose-invert mt-10 max-w-none prose-headings:font-heading prose-headings:text-white prose-p:text-text-light prose-a:text-blue-light prose-strong:text-white prose-li:text-text-light prose-code:text-blue-light prose-blockquote:text-text-light prose-blockquote:border-white/20 prose-pre:bg-white/[0.06] prose-pre:border prose-pre:border-white/10">
           <MDXRemote source={post.content} />
         </div>
       </article>

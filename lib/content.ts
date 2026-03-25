@@ -22,7 +22,7 @@ export interface Event {
 
 export interface Partner {
   name: string;
-  logo: string;
+  logo?: string;
   description: string;
 }
 

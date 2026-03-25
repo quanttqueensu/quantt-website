@@ -8,7 +8,7 @@ export default function Mission() {
         <div className="flex flex-col gap-10 md:flex-row md:items-center">
           <div className="flex-1">
             <SectionLabel>
-              <span className="text-blue-grey">Our Mission</span>
+              <span className="text-blue-accent">Our Mission</span>
             </SectionLabel>
             <h2 className="mt-2 font-heading text-3xl font-bold text-white">
               Closing the Gap

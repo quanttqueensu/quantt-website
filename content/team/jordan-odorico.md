@@ -1,5 +1,5 @@
 ---
-name: "Ben Shram"
+name: "Jordan Odorico"
 role: "General Member"
 tier: "member"
 department: "Binomial Pricing"
