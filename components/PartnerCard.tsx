@@ -18,13 +18,13 @@ export default function PartnerCard({ partner, muted = false }: PartnerCardProps
       <div className="mb-3">
         {partner.logo ? (
           <div className={`inline-flex items-center justify-center rounded-md bg-white px-4 py-3 ${muted ? "opacity-40" : ""}`}>
-            <div className="relative h-10 w-[160px]">
+            <div className="relative h-14 w-[180px]">
               <Image
                 src={partner.logo}
                 alt={`${partner.name} logo`}
                 fill
                 className="object-contain"
-                sizes="160px"
+                sizes="180px"
               />
             </div>
           </div>
