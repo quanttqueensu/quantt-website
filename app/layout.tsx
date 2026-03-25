@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Merriweather } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AnnouncementPopup from "@/components/AnnouncementPopup";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${merriweather.variable} scroll-smooth`}>
       <body className="font-body antialiased">
         <Navbar />
+        <AnnouncementPopup />
         <main>{children}</main>
         <Footer />
       </body>
