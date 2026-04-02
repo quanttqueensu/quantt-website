@@ -15,11 +15,12 @@ current:
     logo: "/images/partners/ccl.png"
     description: "Multi-boutique asset management firm specializing in quantitative investing."
 
-past:
   - name: "QuantConnect"
-    logo: ""
+    logo: "/images/partners/quantconnect.png"
+    url: "https://www.quantconnect.com"
     description: "Open-source algorithmic trading platform."
 
+past:
   - name: "Viewpoint Investment Partners"
     logo: ""
     description: "Investment advisory firm focused on alternative strategies."

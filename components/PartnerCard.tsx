@@ -7,13 +7,13 @@ interface PartnerCardProps {
 }
 
 export default function PartnerCard({ partner, muted = false }: PartnerCardProps) {
-  return (
+  const content = (
     <div
       className={`rounded-lg border p-5 backdrop-blur-md ${
         muted
           ? "border-white/10 bg-white/[0.04]"
           : "border-white/10 bg-white/[0.07]"
-      }`}
+      } ${partner.url ? "transition-colors hover:border-white/20 hover:bg-white/[0.10]" : ""}`}
     >
       <div className="mb-3">
         {partner.logo ? (
@@ -46,4 +46,14 @@ export default function PartnerCard({ partner, muted = false }: PartnerCardProps
       </p>
     </div>
   );
+
+  if (partner.url) {
+    return (
+      <a href={partner.url} target="_blank" rel="follow" className="block">
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }
