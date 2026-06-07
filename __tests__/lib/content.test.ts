@@ -4,6 +4,7 @@ import {
   getEvents,
   getPartners,
   getTeamMembers,
+  getTeamYears,
   getProjects,
   getEducationChapters,
 } from "@/lib/content";
@@ -37,6 +38,15 @@ describe("content loading", () => {
     expect(Array.isArray(members)).toBe(true);
     if (members.length > 1) {
       expect(members[0].order).toBeLessThanOrEqual(members[1].order);
+    }
+  });
+
+  it("loads research papers keyed by project team", () => {
+    const year = getTeamYears().find((y) => y.config.year === "2025-2026");
+    expect(year).toBeDefined();
+    const papers = year!.config.researchPapers ?? {};
+    for (const team of year!.config.projectTeams ?? []) {
+      expect(papers[team]).toMatch(/^\/papers\/.+\.pdf$/);
     }
   });
 

@@ -1,5 +1,5 @@
 year: "2025-2026"
-current: true
+current: false
 structure: "tiered"
 
 leadershipTiers:
@@ -16,3 +16,10 @@ projectTeams:
   - "Intraday Volatility"
   - "Macro Regime"
   - "Pairs Trading"
+
+researchPapers:
+  "Binomial Pricing": "/papers/Binomial Pricing.pdf"
+  "Equities Hedged": "/papers/Equities Hedged.pdf"
+  "Intraday Volatility": "/papers/Intraday Volatility.pdf"
+  "Macro Regime": "/papers/Macro Regime.pdf"
+  "Pairs Trading": "/papers/Pairs Trading.pdf"

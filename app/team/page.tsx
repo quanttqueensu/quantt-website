@@ -32,7 +32,8 @@ function TieredView({ year }: { year: TeamYear }) {
     const gms = members.filter(
       (m) => m.tier === "member" && m.department === teamName
     );
-    return { name: teamName, pm, gms };
+    const paper = config.researchPapers?.[teamName];
+    return { name: teamName, pm, gms, paper };
   });
 
   return (
@@ -70,20 +71,39 @@ function TieredView({ year }: { year: TeamYear }) {
       </ScrollReveal>
 
       <div className="mt-10 space-y-8">
-        {teams.map(({ name, pm, gms }) => (
+        {teams.map(({ name, pm, gms, paper }) => (
           <ScrollReveal key={name}>
             <div className="rounded-lg border border-white/15 bg-white/[0.06] p-6 backdrop-blur-md">
               <h3 className="text-lg font-semibold g-heading">{name}</h3>
 
-              {pm && (
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-xs font-bold g-muted">
-                    {pm.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold g-heading">{pm.name}</p>
-                    <p className="text-xs text-blue-light">Project Manager</p>
-                  </div>
+              {(pm || paper) && (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                  {pm && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-xs font-bold g-muted">
+                        {pm.name.split(" ").map((n) => n[0]).join("")}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold g-heading">
+                          {pm.name}
+                        </p>
+                        <p className="text-xs text-blue-light">
+                          Project Manager
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {paper && (
+                    <a
+                      href={encodeURI(paper)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${name} research paper (opens in new tab)`}
+                      className="rounded-md bg-white/[0.07] px-3 py-2 text-xs font-semibold text-white/60 transition-colors hover:bg-white/[0.12] hover:text-white"
+                    >
+                      Research Paper ↗
+                    </a>
+                  )}
                 </div>
               )}
 
@@ -121,7 +141,9 @@ function CorporateView({ year }: { year: TeamYear }) {
 
   return (
     <>
-      {hierarchy.map((tier) => (
+      {hierarchy.map((tier) => {
+        const tierMembers = members.filter((m) => m.tier === tier.tier);
+        return (
         <ScrollReveal key={tier.tier}>
           <div className="mt-10">
             <h2 className="mb-6 text-lg font-semibold g-heading">
@@ -137,7 +159,7 @@ function CorporateView({ year }: { year: TeamYear }) {
                 }`}
               >
                 {tier.roles.map((role) => {
-                  const member = members.find(
+                  const roleMembers = members.filter(
                     (m) => m.role === role.title || m.role === role.short
                   );
                   return (
@@ -151,17 +173,24 @@ function CorporateView({ year }: { year: TeamYear }) {
                       <h3 className="mt-1 text-sm font-semibold g-heading">
                         {role.title}
                       </h3>
-                      {member ? (
-                        <div className="mt-3 flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-bold g-muted">
-                            {member.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
-                          <span className="text-sm g-heading">
-                            {member.name}
-                          </span>
+                      {roleMembers.length > 0 ? (
+                        <div className="mt-3 space-y-2">
+                          {roleMembers.map((member) => (
+                            <div
+                              key={member.name}
+                              className="flex items-center gap-2"
+                            >
+                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-bold g-muted">
+                                {member.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </div>
+                              <span className="text-sm g-heading">
+                                {member.name}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       ) : (
                         <p className="mt-3 text-xs g-muted">TBA</p>
@@ -190,14 +219,46 @@ function CorporateView({ year }: { year: TeamYear }) {
               </div>
             )}
 
-            {!tier.roles && !tier.teams && tier.placeholder && (
+            {!tier.roles && !tier.teams && tierMembers.length > 0 && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {tierMembers.map((member) => (
+                  <div
+                    key={member.name}
+                    className="rounded-lg border border-white/15 bg-white/[0.06] p-5 backdrop-blur-md"
+                  >
+                    {member.department && (
+                      <>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-light">
+                          Proposed Project
+                        </p>
+                        <h3 className="mt-1 text-sm font-semibold g-heading">
+                          {member.department}
+                        </h3>
+                      </>
+                    )}
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-bold g-muted">
+                        {member.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </div>
+                      <span className="text-sm g-heading">{member.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!tier.roles && !tier.teams && tierMembers.length === 0 && tier.placeholder && (
               <div className="rounded-lg border border-white/10 bg-white/[0.04] p-6 text-center">
                 <p className="text-sm g-muted">{tier.placeholder}</p>
               </div>
             )}
           </div>
         </ScrollReveal>
-      ))}
+        );
+      })}
     </>
   );
 }

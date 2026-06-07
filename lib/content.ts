@@ -67,6 +67,7 @@ export interface TeamYearConfig {
   structure: "tiered" | "corporate";
   leadershipTiers?: LeadershipTier[];
   projectTeams?: string[];
+  researchPapers?: Record<string, string>;
   hierarchy?: HierarchyTier[];
 }
 
