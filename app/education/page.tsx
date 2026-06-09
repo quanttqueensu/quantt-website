@@ -28,15 +28,17 @@ export default function EducationPage() {
           <h1 className="mt-2 font-heading text-3xl font-bold text-white md:text-4xl">
             Education
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
-            Our curriculum is designed to take you from fundamentals to
-            advanced quantitative finance concepts.
-          </p>
         </ScrollReveal>
 
         <ScrollReveal>
           <div className="mt-10">
-            <Accordion items={items} />
+            {items.length > 0 ? (
+              <Accordion items={items} />
+            ) : (
+              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-6 text-center">
+                <p className="text-sm text-white/50">Coming soon</p>
+              </div>
+            )}
           </div>
         </ScrollReveal>
       </div>

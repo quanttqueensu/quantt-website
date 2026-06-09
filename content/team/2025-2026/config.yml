@@ -10,6 +10,8 @@ leadershipTiers:
   - key: "coordinator"
     label: "Coordinators"
 
+winner: "Binomial Pricing"
+
 projectTeams:
   - "Binomial Pricing"
   - "Equities Hedged"

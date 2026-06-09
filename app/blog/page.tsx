@@ -26,7 +26,9 @@ export default function BlogPage() {
             {posts.map((post) => (<BlogCard key={post.slug} post={post} />))}
           </div>
         ) : (
-          <p className="mt-10 text-sm text-white/50">No posts yet — check back soon.</p>
+          <div className="mt-10 rounded-lg border border-white/10 bg-white/[0.04] p-6 text-center">
+            <p className="text-sm text-white/50">Coming soon</p>
+          </div>
         )}
       </div>
     </GradientBackground>
