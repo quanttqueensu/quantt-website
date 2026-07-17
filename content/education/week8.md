@@ -10,6 +10,5 @@ development_track:
   - "Project-specific option-pricing or fixed-income module"
   - "Black–Scholes and Greeks, or bond pricing and DV01"
   - "Basic numerical methods and sensitivity calculations"
-  - "Testing financial functions and important boundary cases
-"
+  - "Testing financial functions and important boundary cases"
 ---

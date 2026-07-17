@@ -9,7 +9,7 @@ import { getEducationChapters } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Curriculum & Education — QUANTT",
   description:
-    "Explore QUANTT's intensive 10-week curriculum covering quantitative trading, computational finance, and machine learning software engineering.",
+    "Explore QUANTT's intensive 10-week curriculum covering quantitative trading, computational finance, and software engineering for quantitative research.",
 };
 
 export default function EducationPage() {
