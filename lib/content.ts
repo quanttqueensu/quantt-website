@@ -89,6 +89,9 @@ export interface Project {
 export interface EducationChapter {
   title: string;
   chapter: number;
+  topics?: string[];
+  trading_track?: string[];
+  development_track?: string[];
   body: string;
 }
 
