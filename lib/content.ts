@@ -79,6 +79,7 @@ export interface TeamYear {
 
 export interface Project {
   title: string;
+  slug: string;
   description: string;
   tech: string[];
   status: "active" | "completed";
@@ -161,7 +162,23 @@ export function getTeamYears(): TeamYear[] {
 }
 
 export function getProjects(): Project[] {
-  return readMdDir<Project>("projects").sort((a, b) => a.order - b.order);
+  const dirPath = path.join(contentDir, "projects");
+  if (!fs.existsSync(dirPath)) return [];
+  const files = fs
+    .readdirSync(dirPath)
+    .filter((f) => f.endsWith(".md") && !f.startsWith("_"));
+
+  return files
+    .map((file) => {
+      const raw = fs.readFileSync(path.join(dirPath, file), "utf-8");
+      const { data, content } = matter(raw);
+      const project = { ...(data as Project), body: content.trim() };
+      if (!project.slug) {
+        project.slug = file.replace(/\.md$/, "");
+      }
+      return project;
+    })
+    .sort((a, b) => a.order - b.order);
 }
 
 export function getEducationChapters(): EducationChapter[] {

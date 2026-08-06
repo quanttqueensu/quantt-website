@@ -50,9 +50,20 @@ describe("content loading", () => {
     }
   });
 
-  it("loads projects sorted by order", () => {
+  it("loads projects sorted by order with slugs", () => {
     const projects = getProjects();
     expect(Array.isArray(projects)).toBe(true);
+    expect(projects.length).toBe(8);
+    for (const project of projects) {
+      expect(project).toHaveProperty("title");
+      expect(project).toHaveProperty("slug");
+      expect(project.slug).toMatch(/^[a-z0-9-]+$/);
+      expect(project).toHaveProperty("description");
+      expect(project.status).toMatch(/^(active|completed)$/);
+    }
+    if (projects.length > 1) {
+      expect(projects[0].order).toBeLessThanOrEqual(projects[1].order);
+    }
   });
 
   it("loads education chapters sorted by chapter number", () => {
