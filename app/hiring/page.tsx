@@ -11,8 +11,7 @@ export const metadata: Metadata = {
     "Join QUANTT project teams for 2026–2027. Explore open quantitative trading and research projects.",
 };
 
-const APPLY_URL =
-  "https://reflective-doll-bcf.notion.site/2026-2027-QUANTT-Hiring-Package-3242cf39c60a80d3a132ebf75f6d4adc";
+const INSTAGRAM_URL = "https://www.instagram.com/quanttqueens";
 
 export default function HiringPage() {
   const projects = getProjects();
@@ -29,16 +28,16 @@ export default function HiringPage() {
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/70">
             QUANTT is hiring analysts for 2026–2027 research and trading
-            projects. Explore each opening below, then apply through our hiring
-            package.
+            projects. Explore each opening below — application details will be
+            posted on Instagram shortly.
           </p>
           <a
-            href={APPLY_URL}
+            href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-block rounded bg-primary px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-colors hover:bg-primary/80"
           >
-            Apply Now
+            Follow on Instagram
           </a>
         </ScrollReveal>
 
@@ -82,16 +81,6 @@ export default function HiringPage() {
                   ))}
                 </div>
               )}
-
-              <a
-                href={APPLY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-blue-light transition-colors hover:text-white"
-              >
-                Apply for this project
-                <span aria-hidden>→</span>
-              </a>
             </article>
           ))}
         </div>
@@ -102,16 +91,17 @@ export default function HiringPage() {
               Ready to join?
             </h3>
             <p className="mt-2 text-sm text-white/60">
-              Review the full hiring package and submit your application.
+              Follow us on Instagram for application details as this round goes
+              live.
             </p>
             <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
-                href={APPLY_URL}
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block rounded bg-primary px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-colors hover:bg-primary/80"
               >
-                Apply Now
+                Follow on Instagram
               </a>
               <Link
                 href="/contact"
