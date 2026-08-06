@@ -77,7 +77,7 @@ export interface TeamYear {
   members: TeamMember[];
 }
 
-export interface Project {
+export interface Portfolio {
   title: string;
   slug: string;
   description: string;
@@ -161,8 +161,8 @@ export function getTeamYears(): TeamYear[] {
   return results.sort((a, b) => b.config.year.localeCompare(a.config.year));
 }
 
-export function getProjects(): Project[] {
-  const dirPath = path.join(contentDir, "projects");
+export function getPortfolios(): Portfolio[] {
+  const dirPath = path.join(contentDir, "portfolios");
   if (!fs.existsSync(dirPath)) return [];
   const files = fs
     .readdirSync(dirPath)
@@ -172,11 +172,11 @@ export function getProjects(): Project[] {
     .map((file) => {
       const raw = fs.readFileSync(path.join(dirPath, file), "utf-8");
       const { data, content } = matter(raw);
-      const project = { ...(data as Project), body: content.trim() };
-      if (!project.slug) {
-        project.slug = file.replace(/\.md$/, "");
+      const portfolio = { ...(data as Portfolio), body: content.trim() };
+      if (!portfolio.slug) {
+        portfolio.slug = file.replace(/\.md$/, "");
       }
-      return project;
+      return portfolio;
     })
     .sort((a, b) => a.order - b.order);
 }

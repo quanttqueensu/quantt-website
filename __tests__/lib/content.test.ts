@@ -5,7 +5,7 @@ import {
   getPartners,
   getTeamMembers,
   getTeamYears,
-  getProjects,
+  getPortfolios,
   getEducationChapters,
 } from "@/lib/content";
 
@@ -50,19 +50,19 @@ describe("content loading", () => {
     }
   });
 
-  it("loads projects sorted by order with slugs", () => {
-    const projects = getProjects();
-    expect(Array.isArray(projects)).toBe(true);
-    expect(projects.length).toBe(8);
-    for (const project of projects) {
-      expect(project).toHaveProperty("title");
-      expect(project).toHaveProperty("slug");
-      expect(project.slug).toMatch(/^[a-z0-9-]+$/);
-      expect(project).toHaveProperty("description");
-      expect(project.status).toMatch(/^(active|completed)$/);
+  it("loads portfolios sorted by order with slugs", () => {
+    const portfolios = getPortfolios();
+    expect(Array.isArray(portfolios)).toBe(true);
+    expect(portfolios.length).toBe(8);
+    for (const portfolio of portfolios) {
+      expect(portfolio).toHaveProperty("title");
+      expect(portfolio).toHaveProperty("slug");
+      expect(portfolio.slug).toMatch(/^[a-z0-9-]+$/);
+      expect(portfolio).toHaveProperty("description");
+      expect(portfolio.status).toMatch(/^(active|completed)$/);
     }
-    if (projects.length > 1) {
-      expect(projects[0].order).toBeLessThanOrEqual(projects[1].order);
+    if (portfolios.length > 1) {
+      expect(portfolios[0].order).toBeLessThanOrEqual(portfolios[1].order);
     }
   });
 

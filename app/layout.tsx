@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Merriweather } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import HiringProjectsPopup from "@/components/HiringProjectsPopup";
-import { getProjects } from "@/lib/content";
+import HiringPortfoliosPopup from "@/components/HiringPortfoliosPopup";
+import { getPortfolios } from "@/lib/content";
 import "./globals.css";
 
 const inter = Inter({
@@ -37,7 +37,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const projects = getProjects().map((p) => ({
+  const portfolios = getPortfolios().map((p) => ({
     title: p.title,
     slug: p.slug,
     description: p.description,
@@ -47,7 +47,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${merriweather.variable} scroll-smooth`}>
       <body className="font-body antialiased">
         <Navbar />
-        <HiringProjectsPopup projects={projects} />
+        <HiringPortfoliosPopup portfolios={portfolios} />
         <main>{children}</main>
         <Footer />
       </body>

@@ -7,7 +7,7 @@ status: active
 order: 8
 ---
 
-This project is focused on bonds and credit trading.
+This portfolio is focused on bonds and credit trading.
 
 Our system trades US Treasury and corporate bond ETFs around moments when big players like index funds and insurers are forced to buy or sell at predictable times.
 

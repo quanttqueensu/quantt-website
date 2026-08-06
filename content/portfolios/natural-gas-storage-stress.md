@@ -9,7 +9,7 @@ order: 1
 
 Systematic trading strategy for natural gas calendar spreads. The primary driver is quantifying storage stress in salt caverns.
 
-Seasonal storage stress patterns are typically already priced into the market. This project aims to identify abnormally large stress events to find an edge.
+Seasonal storage stress patterns are typically already priced into the market. This portfolio aims to identify abnormally large stress events to find an edge.
 
 Pulls data from national and institutional databases that report on storage flow and regional pricing. Trades execute through IBKR.
 

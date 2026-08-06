@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export interface HiringProjectSlide {
+export interface HiringPortfolioSlide {
   title: string;
   slug: string;
   description: string;
@@ -13,10 +13,10 @@ export interface HiringProjectSlide {
 const AUTO_MS = 5000;
 const FADE_MS = 180;
 
-export default function HiringProjectsPopup({
-  projects,
+export default function HiringPortfoliosPopup({
+  portfolios,
 }: {
-  projects: HiringProjectSlide[];
+  portfolios: HiringPortfolioSlide[];
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -42,13 +42,13 @@ export default function HiringProjectsPopup({
   }, []);
 
   useEffect(() => {
-    if (projects.length === 0 || pathname === "/hiring") return;
+    if (portfolios.length === 0 || pathname === "/hiring") return;
     const dismissed = sessionStorage.getItem("hiring-popup-dismissed");
     if (!dismissed) {
       const timer = setTimeout(() => setOpen(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [projects.length, pathname]);
+  }, [portfolios.length, pathname]);
 
   useEffect(() => {
     if (pathname === "/hiring" && open) setOpen(false);
@@ -61,9 +61,9 @@ export default function HiringProjectsPopup({
 
   const goTo = useCallback(
     (next: number) => {
-      if (projects.length === 0) return;
+      if (portfolios.length === 0) return;
       const target =
-        ((next % projects.length) + projects.length) % projects.length;
+        ((next % portfolios.length) + portfolios.length) % portfolios.length;
       indexRef.current = target;
       clearFadeTimer();
 
@@ -80,7 +80,7 @@ export default function HiringProjectsPopup({
         fadeTimer.current = null;
       }, FADE_MS);
     },
-    [projects.length]
+    [portfolios.length]
   );
 
   const navigate = useCallback(
@@ -92,10 +92,10 @@ export default function HiringProjectsPopup({
   );
 
   useEffect(() => {
-    if (!open || paused || projects.length <= 1 || reduceMotion.current) return;
+    if (!open || paused || portfolios.length <= 1 || reduceMotion.current) return;
     const timer = window.setInterval(() => navigate(1, true), AUTO_MS);
     return () => window.clearInterval(timer);
-  }, [open, paused, projects.length, navigate]);
+  }, [open, paused, portfolios.length, navigate]);
 
   useEffect(() => {
     if (!open) return;
@@ -125,9 +125,9 @@ export default function HiringProjectsPopup({
     };
   }, [open, close, navigate]);
 
-  if (!open || projects.length === 0) return null;
+  if (!open || portfolios.length === 0) return null;
 
-  const project = projects[index];
+  const portfolio = portfolios[index];
 
   return (
     <div
@@ -139,7 +139,7 @@ export default function HiringProjectsPopup({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Hiring projects"
+        aria-label="Hiring portfolios"
         className="relative w-full max-w-lg overflow-hidden rounded-xl border border-white/15 bg-navy p-8 shadow-2xl"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
@@ -164,24 +164,24 @@ export default function HiringProjectsPopup({
           Now Hiring
         </p>
         <p className="mt-1 text-xs text-white/45">
-          Explore open project teams · {index + 1} / {projects.length}
+          Explore open portfolios · {index + 1} / {portfolios.length}
         </p>
 
         <Link
-          href={`/hiring#${project.slug}`}
+          href={`/hiring#${portfolio.slug}`}
           onClick={close}
           className={`mt-5 block transition-opacity duration-200 ${
             fade ? "opacity-100" : "opacity-0"
           }`}
         >
           <h2 className="font-heading text-2xl font-bold text-white transition-colors hover:text-blue-light">
-            {project.title}
+            {portfolio.title}
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/75">
-            {project.description}
+            {portfolio.description}
           </p>
           <p className="mt-3 text-xs font-medium text-blue-light">
-            View project details →
+            View portfolio details →
           </p>
         </Link>
 
@@ -190,21 +190,21 @@ export default function HiringProjectsPopup({
             <button
               onClick={() => navigate(-1, true)}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/60 transition-colors hover:border-white/40 hover:text-white"
-              aria-label="Previous project"
+              aria-label="Previous portfolio"
             >
               ‹
             </button>
             <button
               onClick={() => navigate(1, true)}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/60 transition-colors hover:border-white/40 hover:text-white"
-              aria-label="Next project"
+              aria-label="Next portfolio"
             >
               ›
             </button>
           </div>
 
           <div className="flex items-center gap-1.5">
-            {projects.map((p, i) => (
+            {portfolios.map((p, i) => (
               <button
                 key={p.slug}
                 onClick={() => navigate(i)}
