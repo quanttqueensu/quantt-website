@@ -102,7 +102,7 @@ export function rosterFromContacts(text) {
   })).filter((p) => p.name);
   // Trading teams are labelled "<PM> Team"; co-led teams show both PMs, as written in the analysts' Team Lead field.
   const leads = [...new Set(people.map((p) => p.lead).filter(Boolean))];
-  const tradingTeam = (pm) => `Trading: ${leads.find((l) => l.includes(pm)) || pm}`;
+  const tradingTeam = (pm) => `Quantitative Trading: ${leads.find((l) => l.includes(pm)) || pm}`;
   return people.map((p) => {
     const teamLabel = p.labels.find((l) => /\sTeam$/.test(l));
     let team;

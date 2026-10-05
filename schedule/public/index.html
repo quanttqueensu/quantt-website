@@ -442,11 +442,11 @@ svg { display: block; }
   }
 
   const openTeams = new Set(store.get("qs-open-teams", []));
-  const TEAM_ORDER = t => t === "Executive" ? 0 : t.startsWith("Trading") ? 1 : t === "Other" ? 9 : 5;
+  const TEAM_ORDER = t => t === "Executive" ? 0 : t.startsWith("Quantitative Trading: ") ? 1 : t === "Other" ? 9 : 5;
   const teamOf = m => m.team || "Other";
-  // "Trading: Gabriel Soler & Benjamin Gorenc" shows as "Soler & Gorenc" under a Trading teams heading.
+  // "Quantitative Trading: Gabriel Soler & Benjamin Gorenc" shows as "Soler & Gorenc" under a Quantitative Trading heading.
   const teamLabel = t => {
-    const n = t.replace(/^Trading: /, "");
+    const n = t.replace(/^Quantitative Trading: /, "");
     return n.includes("&") ? n.split("&").map(p => p.trim().split(" ").slice(-1)[0]).join(" & ") : n;
   };
   const CARET = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>`;
@@ -456,10 +456,10 @@ svg { display: block; }
     if (!list.length) { $("mlist").innerHTML = `<li class="empty">${members.length ? `No members match "${esc(query)}"` : "No calendars yet. Use Add calendar."}</li>`; return; }
     if (!members.some(m => m.team)) { $("mlist").innerHTML = list.map(m => person(m, "")).join(""); return; }
     const teams = [...new Set(list.map(teamOf))].sort((a, b) => TEAM_ORDER(a) - TEAM_ORDER(b) || a.localeCompare(b));
-    const firstTrading = teams.find(t => t.startsWith("Trading: "));
+    const firstTrading = teams.find(t => t.startsWith("Quantitative Trading: "));
     $("mlist").innerHTML = teams.map(t => {
       const ms = list.filter(m => teamOf(m) === t), open = query || openTeams.has(t);
-      return (t === firstTrading ? `<li class="sub">Trading teams</li>` : "") + `<li class="grp${open ? " open" : ""}" data-team="${esc(t)}">
+      return (t === firstTrading ? `<li class="sub">Quantitative Trading</li>` : "") + `<li class="grp${open ? " open" : ""}" data-team="${esc(t)}">
         <button type="button" class="ib car" aria-expanded="${!!open}" aria-label="${open ? "Collapse" : "Expand"} ${esc(t)}">${CARET}</button>
         <input type="checkbox" aria-label="Show ${esc(t)}">
         <button type="button" class="nm" title="${esc(t)}">${esc(teamLabel(t))}</button><span class="cnt">${ms.length}</span></li>`
