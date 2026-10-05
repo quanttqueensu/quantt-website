@@ -108,9 +108,12 @@ export function rosterFromContacts(text) {
     lead: custom(r, "Team Lead"),
     title: iTitle >= 0 ? (r[iTitle] || "").trim() : "",
   })).filter((p) => p.name);
-  // Trading teams are labelled "<PM> Team"; co-led teams show both PMs, as written in the analysts' Team Lead field.
+  // Trading teams are labelled "<PM> Team"; only the person named in that label is the team's PM.
+  // Anyone else named in an analyst's Team Lead field (e.g. "Gabriel Soler & Benjamin Gorenc") sits on that team as an analyst.
+  const pms = new Set(people.flatMap((p) => p.labels.filter((l) => /\sTeam$/.test(l)).map((l) => l.replace(/\s+Team$/, ""))));
   const leads = [...new Set(people.map((p) => p.lead).filter(Boolean))];
-  const tradingTeam = (pm) => `Quantitative Trading: ${leads.find((l) => l.includes(pm)) || pm}`;
+  const tradingTeam = (pm) => `Quantitative Trading: ${pm}`;
+  const teamNaming = (name) => { const l = leads.find((x) => x.includes(name)); return l && [...pms].find((pm) => l.includes(pm)); };
   return people.map((p) => {
     const teamLabel = p.labels.find((l) => /\sTeam$/.test(l));
     const group = Object.keys(GROUPS).find((g) => p.labels.includes(g)) || "";
@@ -119,9 +122,10 @@ export function rosterFromContacts(text) {
     if (p.labels.includes("Chairs")) team = "Co-Chairs";
     else if (csuite) team = GROUPS[(group && group !== "Quantitative Trading" ? group : "") || LEAD_BY_TITLE[p.title.toUpperCase()]] || "Other";
     else if (teamLabel) team = tradingTeam(teamLabel.replace(/\s+Team$/, ""));
-    else if (leads.some((l) => l.includes(p.name))) team = tradingTeam(p.name);
+    else if (pms.has(p.name)) team = tradingTeam(p.name);
+    else if (teamNaming(p.name)) team = tradingTeam(teamNaming(p.name));
     else team = GROUPS[group] || "Other";
-    const lead = csuite || p.labels.includes("Portfolio Manager");
+    const lead = csuite || pms.has(p.name);
     return lead ? { name: p.name, team, lead } : { name: p.name, team };
   });
 }
