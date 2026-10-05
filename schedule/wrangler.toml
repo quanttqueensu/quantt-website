@@ -1,0 +1,7 @@
+name = "quantt-schedule"
+pages_build_output_dir = "public"
+compatibility_date = "2026-09-01"
+
+[[kv_namespaces]]
+binding = "SCHEDULE_KV"
+id = "8259ae409611497aa2e94f6fb4b2a140"

@@ -1,20 +1,21 @@
 // Members: list (names only), add, remove. Calendar links never leave the server.
-import { authorized, json, loadMembers, saveMembers, validFeedUrl, newId } from "./_lib.js";
+import { authorized, json, loadMembers, saveMembers, validFeedUrl, newId } from "../../lib/core.js";
 
 const publicView = (m) => ({ id: m.id, name: m.name });
+const denied = () => json({ error: "Wrong password" }, 401);
 
-export async function GET(request) {
-  if (!authorized(request)) return json({ error: "Wrong password" }, 401);
-  const members = await loadMembers();
+export async function onRequestGet({ request, env }) {
+  if (!authorized(request, env)) return denied();
+  const members = await loadMembers(env);
   return json({ members: members.map(publicView) });
 }
 
-export async function POST(request) {
-  if (!authorized(request)) return json({ error: "Wrong password" }, 401);
+export async function onRequestPost({ request, env }) {
+  if (!authorized(request, env)) return denied();
   let body;
   try { body = await request.json(); } catch { return json({ error: "Send a name and a calendar link." }, 400); }
   const items = Array.isArray(body?.members) ? body.members : [body];
-  const members = await loadMembers();
+  const members = await loadMembers(env);
   const added = [];
   for (const item of items) {
     const name = String(item?.name || "").trim().slice(0, 80);
@@ -28,16 +29,16 @@ export async function POST(request) {
     added.push(m);
   }
   members.sort((a, b) => a.name.localeCompare(b.name));
-  await saveMembers(members);
+  await saveMembers(env, members);
   return json({ added: added.map(publicView) }, 201);
 }
 
-export async function DELETE(request) {
-  if (!authorized(request)) return json({ error: "Wrong password" }, 401);
+export async function onRequestDelete({ request, env }) {
+  if (!authorized(request, env)) return denied();
   const id = new URL(request.url).searchParams.get("id");
-  const members = await loadMembers();
+  const members = await loadMembers(env);
   const next = members.filter((m) => m.id !== id);
   if (next.length === members.length) return json({ error: "Member not found." }, 404);
-  await saveMembers(next);
+  await saveMembers(env, next);
   return json({ removed: id });
 }

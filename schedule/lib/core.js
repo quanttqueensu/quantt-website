@@ -1,9 +1,9 @@
 // Shared helpers for the schedule API: auth, member storage, ICS parsing.
-import { get, put } from "@vercel/blob";
+// Runs as Cloudflare Pages Functions. Bindings: SCHEDULE_KV (KV namespace), SCHEDULE_PASSWORD (secret).
 
-const STORE_PATH = "schedule/members.json";
+const STORE_KEY = "members";
 const ALLOWED_HOSTS = ["mytimetable.queensu.ca", "outlook.office365.com", "outlook.live.com", "calendar.google.com"];
-const FEED_TTL_MS = 15 * 60 * 1000;
+const FEED_TTL_S = 15 * 60;
 
 export const START_MIN = 8 * 60;
 export const SLOT_MIN = 30;
@@ -16,34 +16,21 @@ export function json(data, status = 200) {
   });
 }
 
-export function authorized(request) {
-  const expected = process.env.SCHEDULE_PASSWORD;
+export function authorized(request, env) {
+  const expected = env.SCHEDULE_PASSWORD;
   if (!expected) return false;
   return request.headers.get("x-schedule-key") === expected;
 }
 
-/* ---------- member storage (private Vercel Blob) ---------- */
+/* ---------- member storage (Cloudflare KV, never sent to the browser) ---------- */
 
-export async function loadMembers() {
-  try {
-    const result = await get(STORE_PATH, { access: "private" });
-    if (!result || result.statusCode !== 200) return [];
-    const text = await new Response(result.stream).text();
-    const data = JSON.parse(text);
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
+export async function loadMembers(env) {
+  const data = await env.SCHEDULE_KV.get(STORE_KEY, "json");
+  return Array.isArray(data) ? data : [];
 }
 
-export async function saveMembers(members) {
-  await put(STORE_PATH, JSON.stringify(members), {
-    access: "private",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: "application/json",
-    cacheControlMaxAge: 60,
-  });
+export async function saveMembers(env, members) {
+  await env.SCHEDULE_KV.put(STORE_KEY, JSON.stringify(members));
 }
 
 export function validFeedUrl(raw) {
@@ -59,27 +46,17 @@ export function validFeedUrl(raw) {
 
 export const newId = () => Math.random().toString(36).slice(2, 10);
 
-/* ---------- feed fetching ---------- */
-
-const feedCache = new Map(); // url -> { at, text }
+/* ---------- feed fetching (cached at the edge for 15 minutes) ---------- */
 
 export async function fetchFeed(url, fresh = false) {
-  const hit = feedCache.get(url);
-  if (hit && !fresh && Date.now() - hit.at < FEED_TTL_MS) return hit.text;
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 10000);
-  try {
-    const res = await fetch(url, { signal: ctl.signal, headers: { accept: "text/calendar" } });
-    const text = await res.text();
-    if (!res.ok || !text.includes("BEGIN:VCALENDAR")) throw new Error("bad feed " + res.status);
-    feedCache.set(url, { at: Date.now(), text });
-    return text;
-  } catch (err) {
-    if (hit) return hit.text; // serve stale rather than nothing
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
+  const res = await fetch(url, {
+    headers: { accept: "text/calendar" },
+    signal: AbortSignal.timeout(10000),
+    cf: fresh ? { cacheTtl: 0 } : { cacheTtl: FEED_TTL_S, cacheEverything: true },
+  });
+  const text = await res.text();
+  if (!res.ok || !text.includes("BEGIN:VCALENDAR")) throw new Error("bad feed " + res.status);
+  return text;
 }
 
 /* ---------- ICS parsing (wall-clock Toronto times; day numbers = days since epoch) ---------- */
