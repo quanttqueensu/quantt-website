@@ -1,6 +1,11 @@
-name = "quantt-schedule"
-pages_build_output_dir = "public"
+name = "quantt-website-calendar"
+main = "src/worker.js"
 compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
 
 [[kv_namespaces]]
 binding = "SCHEDULE_KV"

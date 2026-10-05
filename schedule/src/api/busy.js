@@ -1,5 +1,5 @@
 // Busy grid for one week: for each member, the class (if any) in every half hour, 8 AM to 10 PM Toronto time.
-import { authorized, json, loadMembers, fetchFeed, parseICS, busyGrid, parseWeek } from "../../lib/core.js";
+import { authorized, json, loadMembers, fetchFeed, parseICS, busyGrid, parseWeek } from "../core.js";
 
 export async function onRequestGet({ request, env }) {
   if (!authorized(request, env)) return json({ error: "Wrong password" }, 401);

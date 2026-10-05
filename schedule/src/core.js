@@ -1,5 +1,5 @@
 // Shared helpers for the schedule API: auth, member storage, ICS parsing.
-// Runs as Cloudflare Pages Functions. Bindings: SCHEDULE_KV (KV namespace), SCHEDULE_PASSWORD (secret).
+// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), SCHEDULE_PASSWORD (secret).
 
 const STORE_KEY = "members";
 const ALLOWED_HOSTS = ["mytimetable.queensu.ca", "outlook.office365.com", "outlook.live.com", "calendar.google.com"];

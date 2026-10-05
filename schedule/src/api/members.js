@@ -1,5 +1,5 @@
 // Members: list (names only), add, remove. Calendar links never leave the server.
-import { authorized, json, loadMembers, saveMembers, validFeedUrl, newId } from "../../lib/core.js";
+import { authorized, json, loadMembers, saveMembers, validFeedUrl, newId } from "../core.js";
 
 const publicView = (m) => ({ id: m.id, name: m.name });
 const denied = () => json({ error: "Wrong password" }, 401);
