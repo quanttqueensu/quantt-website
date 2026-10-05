@@ -221,6 +221,10 @@ svg { display: block; }
 .progress::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: var(--blue); animation: slide 1.1s ease-in-out infinite; }
 @keyframes slide { from { left: -40%; } to { left: 100%; } }
 @media (prefers-reduced-motion: reduce) { .progress::after { animation: none; left: 0; width: 100%; } }
+#app.admin .mem li[draggable] { cursor: grab; }
+.mem li.dragging { opacity: .4; }
+.mem li.drop-before { box-shadow: inset 0 2px 0 var(--blue); }
+.mem li.drop-after { box-shadow: inset 0 -2px 0 var(--blue); }
 .mem li.lead .nm { text-decoration: underline; text-underline-offset: 3px; }
 .mem li.none .ph { width: 18px; flex: none; margin-right: 12px; }
 .mem li.none .nm { color: var(--ink2); }
@@ -350,6 +354,7 @@ svg { display: block; }
 
   let members = []; // {id, name, ok, busy}
   let pending = []; // {name, team}: on the team list but no calendar shared yet
+  let order = []; // names in the order admins dragged them into
   let focusId = null, query = "";
   const weekCache = new Map();
 
@@ -495,8 +500,7 @@ svg { display: block; }
     if (!list.length && !waiting.length) { $("mlist").innerHTML = `<li class="empty">${members.length ? `No members match "${esc(query)}"` : "No calendars yet. Use Add calendar."}</li>`; return; }
     if (!members.some(m => m.team)) { $("mlist").innerHTML = list.map(m => person(m, "")).join(""); return; }
     const isOpen = k => !!query || openTeams.has(k);
-    // Leads first, then everyone with a calendar, then people still missing one.
-    const people = [...list, ...waiting].sort((a, b) => !!b.lead - !!a.lead || !!a.none - !!b.none || a.name.localeCompare(b.name));
+    const people = sortPeople([...list, ...waiting]);
     const depts = [...new Set(people.map(m => deptOf(teamOf(m))))].sort((a, b) => deptRank(a) - deptRank(b) || a.localeCompare(b));
     let h = "";
     for (const d of depts) {
@@ -518,11 +522,21 @@ svg { display: block; }
       box.checked = on > 0 && on === ms.length; box.indeterminate = on > 0 && on < ms.length; box.disabled = !ms.length;
     });
   }
+  // Admin-set order first; then leads, everyone with a calendar, and people still missing one.
+  function sortPeople(ps) {
+    const rank = n => { const i = order.indexOf(n); return i < 0 ? Infinity : i; };
+    return ps.sort((a, b) => {
+      const ra = rank(a.name), rb = rank(b.name);
+      if (ra !== rb) return ra < rb ? -1 : 1;
+      return !!b.lead - !!a.lead || !!a.none - !!b.none || a.name.localeCompare(b.name);
+    });
+  }
   function person(m, cls) {
     if (m.lead) cls += " lead";
-    if (m.none) return `<li class="none${cls}" data-name="${esc(m.name)}" title="${esc(m.name)} hasn't shared a calendar yet">
+    const drag = admin ? ` draggable="true" data-team="${esc(teamOf(m))}"` : "";
+    if (m.none) return `<li class="none${cls}" data-name="${esc(m.name)}"${drag} title="${esc(m.name)} hasn't shared a calendar yet">
       <span class="ph" aria-hidden="true"></span><button type="button" class="nm">${esc(m.name)}</button><span class="tag">No calendar</span></li>`;
-    return `<li class="${focusId === m.id ? "focus" : ""}${m.ok ? "" : " err"}${cls}" data-id="${esc(m.id)}">
+    return `<li class="${focusId === m.id ? "focus" : ""}${m.ok ? "" : " err"}${cls}" data-id="${esc(m.id)}" data-name="${esc(m.name)}"${drag}>
       <input type="checkbox" id="m${esc(m.id)}" ${!hidden.has(m.id) ? "checked" : ""} ${m.ok ? "" : "disabled"} aria-label="Show ${esc(m.name)}">
       <button type="button" class="nm" title="${m.ok ? `Highlight ${esc(m.name)}'s classes` : "This calendar link could not be loaded"}">${esc(m.name)}</button>
       ${m.ok ? "" : `<span class="warn" title="This calendar link could not be loaded">!</span>`}
@@ -592,6 +606,36 @@ svg { display: block; }
     if (e.key !== "Escape") return;
     if (!$("dlg").hidden) closeDlg(); else if (!$("confirm").hidden) $("confirm").hidden = true; else hide();
   });
+
+  /* ---------- admin: drag names to reorder within a team ---------- */
+  let dragLi = null;
+  const clearDrop = () => $("mlist").querySelectorAll(".drop-before, .drop-after").forEach(x => x.classList.remove("drop-before", "drop-after"));
+  const dropTarget = e => {
+    const li = e.target.closest("li[data-name]");
+    return li && dragLi && li !== dragLi && li.dataset.team === dragLi.dataset.team ? li : null;
+  };
+  $("mlist").addEventListener("dragstart", e => {
+    const li = e.target.closest("li[draggable]"); if (!li || !admin) return;
+    dragLi = li; li.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", li.dataset.name);
+  });
+  $("mlist").addEventListener("dragover", e => {
+    const li = dropTarget(e); if (!li) return;
+    e.preventDefault(); clearDrop();
+    const r = li.getBoundingClientRect();
+    li.classList.add(e.clientY < r.top + r.height / 2 ? "drop-before" : "drop-after");
+  });
+  $("mlist").addEventListener("drop", async e => {
+    const li = dropTarget(e); if (!li) return;
+    e.preventDefault();
+    const after = li.classList.contains("drop-after"), moved = dragLi.dataset.name;
+    const names = sortPeople([...members, ...pending.map(p => ({ ...p, none: true }))]).map(m => m.name).filter(n => n !== moved);
+    names.splice(names.indexOf(li.dataset.name) + (after ? 1 : 0), 0, moved);
+    const before = order; order = names; roster();
+    try { await api("/api/order", { method: "POST", body: JSON.stringify({ order }) }); }
+    catch (err) { order = before; roster(); snack(err.message); }
+  });
+  $("mlist").addEventListener("dragend", () => { if (dragLi) dragLi.classList.remove("dragging"); dragLi = null; clearDrop(); });
 
   /* ---------- rail events ---------- */
   $("best").addEventListener("click", e => {
@@ -736,6 +780,7 @@ svg { display: block; }
     $("gate").hidden = true; $("app").hidden = false;
     $("app").classList.toggle("admin", admin);
     build(); paint(); loadWeek();
+    api("/api/order").then(d => { order = d.order || []; roster(); }).catch(() => {});
     const t = new Date(), mins = t.getHours() * 60 + t.getMinutes() - START * 30;
     surface.scrollTop = Math.max(0, Math.min(mins, ROWS * 30) / 30 * ROW_H - 120);
   }
