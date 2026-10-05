@@ -573,11 +573,11 @@ svg { display: block; }
   function hide() { pinned = null; pop.hidden = true; grid.querySelectorAll(".c.sel").forEach(x => x.classList.remove("sel")); }
 
   /* ---------- grid events ---------- */
-  // Hover previews only for mice; on touch screens the preview would cover the cell before the tap lands.
-  const canHover = matchMedia("(hover: hover)");
-  grid.addEventListener("mouseover", e => { const c = e.target.closest(".c"); if (c && !pinned && canHover.matches) show(+c.dataset.d, +c.dataset.r, false); });
-  grid.addEventListener("mouseleave", () => { if (!pinned) pop.hidden = true; });
-  grid.addEventListener("click", e => { const c = e.target.closest(".c"); if (c) show(+c.dataset.d, +c.dataset.r, true); });
+  grid.addEventListener("click", e => {
+    const c = e.target.closest(".c"); if (!c) return;
+    const d = +c.dataset.d, r = +c.dataset.r;
+    if (pinned && pinned.d === d && pinned.r === r) hide(); else show(d, r, true);
+  });
   grid.addEventListener("keydown", e => {
     const c = e.target.closest(".c"); if (!c) return;
     let d = +c.dataset.d, r = +c.dataset.r;
