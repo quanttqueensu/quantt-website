@@ -1,5 +1,5 @@
 // Members: list (names only), add, remove. Calendar links never leave the server.
-import { authorized, json, loadMembers, saveMembers, validFeedUrl, newId } from "../core.js";
+import { authorized, json, loadMembers, saveMembers, addMembers } from "../core.js";
 
 const publicView = (m) => ({ id: m.id, name: m.name });
 const denied = () => json({ error: "Wrong password" }, 401);
@@ -15,21 +15,8 @@ export async function onRequestPost({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ error: "Send a name and a calendar link." }, 400); }
   const items = Array.isArray(body?.members) ? body.members : [body];
-  const members = await loadMembers(env);
-  const added = [];
-  for (const item of items) {
-    const name = String(item?.name || "").trim().slice(0, 80);
-    const url = validFeedUrl(item?.url);
-    if (!name) return json({ error: "Enter a name." }, 400);
-    if (!url) return json({ error: "Use a Queen's timetable or Outlook calendar link (https://…)." }, 400);
-    const existing = members.find((m) => m.url === url);
-    if (existing) { existing.name = name; added.push(existing); continue; }
-    const m = { id: newId(), name, url, added: new Date().toISOString() };
-    members.push(m);
-    added.push(m);
-  }
-  members.sort((a, b) => a.name.localeCompare(b.name));
-  await saveMembers(env, members);
+  const { added, error } = await addMembers(env, items);
+  if (error) return json({ error }, 400);
   return json({ added: added.map(publicView) }, 201);
 }
 

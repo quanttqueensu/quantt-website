@@ -46,6 +46,26 @@ export function validFeedUrl(raw) {
 
 export const newId = () => Math.random().toString(36).slice(2, 10);
 
+// Adds or renames members by calendar link. Returns { added } or { error }.
+export async function addMembers(env, items) {
+  const members = await loadMembers(env);
+  const added = [];
+  for (const item of items) {
+    const name = String(item?.name || "").trim().slice(0, 80);
+    const url = validFeedUrl(item?.url);
+    if (!name) return { error: "Enter a name." };
+    if (!url) return { error: "Use a Queen's timetable or Outlook calendar link (https://…)." };
+    const existing = members.find((m) => m.url === url);
+    if (existing) { existing.name = name; added.push(existing); continue; }
+    const m = { id: newId(), name, url, added: new Date().toISOString() };
+    members.push(m);
+    added.push(m);
+  }
+  members.sort((a, b) => a.name.localeCompare(b.name));
+  await saveMembers(env, members);
+  return { added };
+}
+
 /* ---------- feed fetching (cached at the edge for 15 minutes) ---------- */
 
 export async function fetchFeed(url, fresh = false) {

@@ -2,6 +2,7 @@
 import * as members from "./api/members.js";
 import * as busy from "./api/busy.js";
 import * as session from "./api/session.js";
+import { handleEmail } from "./email.js";
 
 const routes = { "/api/members": members, "/api/busy": busy, "/api/session": session };
 const METHOD = { GET: "onRequestGet", POST: "onRequestPost", DELETE: "onRequestDelete" };
@@ -18,4 +19,5 @@ export default {
     if (pathname.startsWith("/api/")) return new Response("Not found", { status: 404 });
     return env.ASSETS.fetch(request);
   },
+  email: handleEmail,
 };

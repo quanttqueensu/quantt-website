@@ -18,6 +18,13 @@ This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static as
 4. Settings → Domains & Routes → add custom domain `calendar.quantt.ca`.
 5. Once this is merged, set the production branch to `main`.
 
+## Form submissions by email
+New Microsoft Forms responses can be added automatically without any Microsoft admin approval:
+1. Cloudflare → quantt.ca → Email → Email Routing: add the custom address `calendar@quantt.ca` with the action **Send to a Worker** → `quantt-calendar`.
+2. Power Automate: an automated flow on **When a new response is submitted** (the group form) → **Get response details** → **Send an email (V2)** to `calendar@quantt.ca` with the subject `<team password> | <Name> | <ICS Link>`.
+
+`src/email.js` checks the password, then adds or renames the member exactly like the Add button does. Anything else is rejected.
+
 ## Local development
 ```
 npx wrangler dev
