@@ -9,4 +9,3 @@ run_worker_first = ["/api/*"]
 
 [[kv_namespaces]]
 binding = "SCHEDULE_KV"
-id = "8259ae409611497aa2e94f6fb4b2a140"

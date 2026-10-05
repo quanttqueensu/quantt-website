@@ -14,7 +14,7 @@ This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static as
 ## Cloudflare Worker setup
 1. Workers & Pages → Create → Import a repository → `quanttqueensu/quantt-website`, **root directory `/schedule`**, deploy command `npx wrangler deploy`. The Worker name, assets and KV binding come from `wrangler.toml`.
 2. Settings → Variables and Secrets: add `SCHEDULE_PASSWORD` as a secret (the team password).
-3. If the KV namespace in `wrangler.toml` is not in your account, create one and put its id in `wrangler.toml` (binding `SCHEDULE_KV`).
+3. The `SCHEDULE_KV` namespace has no id in `wrangler.toml`, so `wrangler deploy` creates it in the Worker's account on the first deploy and reuses it after that.
 4. Settings → Domains & Routes → add custom domain `calendar.quantt.ca`.
 5. Once this is merged, set the production branch to `main`.
 
