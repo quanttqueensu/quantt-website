@@ -1,6 +1,6 @@
 # QUANTT Schedule
 
-Team availability for schedule.quantt.ca. One Mon–Sun week, 8 AM–10 PM in half hours, built from each member's class-schedule calendar link (Queen's timetable or Outlook `.ics`). Darker blue means more people are in class; click a slot to see who is free and who is busy.
+Team availability for calendar.quantt.ca. One Mon–Sun week, 8 AM–10 PM in half hours, built from each member's class-schedule calendar link (Queen's timetable or Outlook `.ics`). Darker blue means more people are in class; click a slot to see who is free and who is busy.
 
 This folder is a standalone Cloudflare Pages project and does not touch the main website.
 
@@ -15,7 +15,7 @@ This folder is a standalone Cloudflare Pages project and does not touch the main
 2. Production branch `main`, framework preset None, build command empty, **root directory `schedule`**, build output directory `public`.
 3. Settings → Variables and Secrets: add `SCHEDULE_PASSWORD` as a secret (the team password).
 4. The KV binding `SCHEDULE_KV` comes from `wrangler.toml`. If the namespace there is not in your account, create one and bind it as `SCHEDULE_KV` under Settings → Bindings.
-5. Custom domains → add `schedule.quantt.ca`.
+5. Custom domains → add `calendar.quantt.ca`.
 
 ## Local development
 ```
