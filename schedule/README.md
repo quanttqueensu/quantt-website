@@ -9,27 +9,20 @@ This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static as
 - `src/worker.js` sends `/api/*` to the handlers below and serves everything else from `public/`.
 - `src/api/busy.js` fetches every member's calendar on the server, expands the recurring classes for the requested week, and returns only names and class titles per half hour. Feeds are cached at the edge for 15 minutes; the reload button in the header bypasses the cache.
 - `src/api/members.js` lists, adds and removes members. Calendar links are stored in a Cloudflare KV namespace and are never sent to the browser or committed to this repo.
-- Every API call needs the team password (`x-schedule-key` header). The sign-in screen asks for it once per browser.
+- Every API call needs a password (`x-schedule-key` header). The team password can view; the admin password can also add calendars (by link or by uploading an `.ics` file, stored in KV) and remove them. The sign-in screen accepts either.
 
 ## Cloudflare Worker setup
 1. Workers & Pages → Create → Import a repository → `quanttqueensu/quantt-website`, **root directory `/schedule`**, deploy command `npx wrangler deploy`. The Worker name, assets and KV binding come from `wrangler.toml`.
-2. Settings → Variables and Secrets: add `SCHEDULE_PASSWORD` as a secret (the team password).
+2. Settings → Variables and Secrets: add `SCHEDULE_PASSWORD` (team password, view only) and `ADMIN_PASSWORD` (can add and remove calendars) as secrets.
 3. The `SCHEDULE_KV` namespace has no id in `wrangler.toml`, so `wrangler deploy` creates it in the Worker's account on the first deploy and reuses it after that.
 4. Settings → Domains & Routes → add custom domain `calendar.quantt.ca`.
 5. Once this is merged, set the production branch to `main`.
-
-## Form submissions by email
-New Microsoft Forms responses can be added automatically without any Microsoft admin approval:
-1. Cloudflare → quantt.ca → Email → Email Routing: add the custom address `calendar@quantt.ca` with the action **Send to a Worker** → `quantt-calendar`.
-2. Power Automate: an automated flow on **When a new response is submitted** (the group form) → **Get response details** → **Send an email (V2)** to `calendar@quantt.ca` with the subject `<team password> | <Name> | <ICS Link>`.
-
-`src/email.js` checks the password, then adds or renames the member exactly like the Add button does. Anything else is rejected.
 
 ## Local development
 ```
 npx wrangler dev
 ```
-with a `.dev.vars` file containing `SCHEDULE_PASSWORD=...`.
+with a `.dev.vars` file containing `SCHEDULE_PASSWORD=...` and `ADMIN_PASSWORD=...`.
 
 ## Limits
 - Recurring events with weekly or daily rules are expanded (including `UNTIL`, `COUNT`, `EXDATE`). Monthly and yearly rules show only their first occurrence.

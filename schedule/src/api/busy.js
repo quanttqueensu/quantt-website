@@ -1,5 +1,5 @@
 // Busy grid for one week: for each member, the class (if any) in every half hour, 8 AM to 10 PM Toronto time.
-import { authorized, json, loadMembers, fetchFeed, parseICS, busyGrid, parseWeek } from "../core.js";
+import { authorized, json, loadMembers, fetchFeed, parseICS, busyGrid, parseWeek, icsKey } from "../core.js";
 
 export async function onRequestGet({ request, env }) {
   if (!authorized(request, env)) return json({ error: "Wrong password" }, 401);
@@ -9,7 +9,9 @@ export async function onRequestGet({ request, env }) {
   const members = await loadMembers(env);
   const results = await Promise.all(members.map(async (m) => {
     try {
-      const events = parseICS(await fetchFeed(m.url, fresh));
+      const text = m.file ? await env.SCHEDULE_KV.get(icsKey(m.id)) : await fetchFeed(m.url, fresh);
+      if (!text) throw new Error("missing calendar");
+      const events = parseICS(text);
       return { id: m.id, name: m.name, ok: true, busy: busyGrid(events, monday) };
     } catch {
       return { id: m.id, name: m.name, ok: false, busy: null };

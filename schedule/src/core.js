@@ -1,5 +1,5 @@
 // Shared helpers for the schedule API: auth, member storage, ICS parsing.
-// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), SCHEDULE_PASSWORD (secret).
+// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), SCHEDULE_PASSWORD and ADMIN_PASSWORD (secrets).
 
 const STORE_KEY = "members";
 const ALLOWED_HOSTS = ["mytimetable.queensu.ca", "outlook.office365.com", "outlook.live.com", "calendar.google.com"];
@@ -16,11 +16,19 @@ export function json(data, status = 200) {
   });
 }
 
-export function authorized(request, env) {
-  const expected = env.SCHEDULE_PASSWORD;
-  if (!expected) return false;
-  return request.headers.get("x-schedule-key") === expected;
+// "admin" can add and remove calendars; "team" can only view.
+export function role(request, env) {
+  const key = request.headers.get("x-schedule-key");
+  if (!key) return null;
+  if (env.ADMIN_PASSWORD && key === env.ADMIN_PASSWORD) return "admin";
+  if (env.SCHEDULE_PASSWORD && key === env.SCHEDULE_PASSWORD) return "team";
+  return null;
 }
+
+export const authorized = (request, env) => role(request, env) !== null;
+export const isAdmin = (request, env) => role(request, env) === "admin";
+export const icsKey = (id) => `ics:${id}`;
+const MAX_ICS_BYTES = 1024 * 1024;
 
 /* ---------- member storage (Cloudflare KV, never sent to the browser) ---------- */
 
@@ -52,8 +60,17 @@ export async function addMembers(env, items) {
   const added = [];
   for (const item of items) {
     const name = String(item?.name || "").trim().slice(0, 80);
-    const url = validFeedUrl(item?.url);
     if (!name) return { error: "Enter a name." };
+    if (typeof item?.ics === "string") {
+      const text = item.ics;
+      if (text.length > MAX_ICS_BYTES || !/BEGIN:VCALENDAR/i.test(text)) return { error: "That file isn't an .ics calendar." };
+      const m = { id: newId(), name, file: true, added: new Date().toISOString() };
+      await env.SCHEDULE_KV.put(icsKey(m.id), text);
+      members.push(m);
+      added.push(m);
+      continue;
+    }
+    const url = validFeedUrl(item?.url);
     if (!url) return { error: "Use a Queen's timetable or Outlook calendar link (https://…)." };
     const existing = members.find((m) => m.url === url);
     if (existing) { existing.name = name; added.push(existing); continue; }

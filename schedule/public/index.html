@@ -110,6 +110,9 @@ svg { display: block; }
 .mem input:checked::after { content: ""; width: 5px; height: 10px; border: solid var(--on-blue); border-width: 0 2px 2px 0; transform: translate(0, -1px) rotate(45deg); }
 .mem .nm { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mem .x { visibility: hidden; width: 28px; height: 28px; }
+#app:not(.admin) #addOpen, #app:not(.admin) .mem .x { display: none; }
+.dlg .or { font-size: 12px; color: var(--ink2); text-align: center; margin: -4px 0 12px; }
+.dlg input[type=file] { height: auto; padding: 12px 14px; font-size: 14px; }
 .mem li:hover .x, .mem .x:focus-visible { visibility: visible; }
 .mem .empty { color: var(--muted); padding: 6px 16px; font-size: 13px; }
 .best li button { width: 100%; display: flex; justify-content: space-between; align-items: center; border: 0; background: none; height: 32px; padding: 0 12px 0 16px; border-radius: 0 16px 16px 0; font-size: 13px; text-align: left; }
@@ -207,8 +210,8 @@ svg { display: block; }
     <div class="logo"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="5" width="32" height="31" rx="5" fill="var(--blue)"/><rect x="7" y="13" width="26" height="20" rx="2" fill="var(--surface)"/></svg><span class="word"><b>QUANTT</b> Schedule</span></div>
     <h1>Sign in</h1>
     <p>Team availability is private to QUANTT. Enter the team password to continue.</p>
-    <label for="gatePw" class="sr" style="position:absolute;left:-9999px">Team password</label>
-    <input id="gatePw" type="password" autocomplete="current-password" placeholder="Team password">
+    <label for="gatePw" class="sr" style="position:absolute;left:-9999px">Team or admin password</label>
+    <input id="gatePw" type="password" autocomplete="current-password" placeholder="Team or admin password">
     <div class="msg" id="gateMsg" role="alert"></div>
     <div class="acts"><button class="tb fill" type="submit">Next</button></div>
   </form>
@@ -272,7 +275,9 @@ svg { display: block; }
   <form class="dlg" id="addForm" novalidate>
     <h2>Add calendar</h2>
     <div class="f"><label for="addName">Name</label><input id="addName" type="text" autocomplete="off"></div>
-    <div class="f"><label for="addUrl">Calendar link (iCal format)</label><input id="addUrl" type="url" autocomplete="off" placeholder="https://"><div class="help" id="addHelp">Your Queen's timetable or Outlook calendar link. Other members see your name and class names, not the link.</div></div>
+    <div class="f"><label for="addUrl">Calendar link (iCal format)</label><input id="addUrl" type="url" autocomplete="off" placeholder="https://"></div>
+    <div class="or">or</div>
+    <div class="f"><label for="addFile">Upload an .ics file</label><input id="addFile" type="file" accept=".ics,text/calendar"><div class="help" id="addHelp">A Queen's timetable or Outlook link, or an exported .ics file. Members see names and class names, never the link or file.</div></div>
     <div class="acts"><button class="tb" type="button" id="addCancel">Cancel</button><button class="tb fill" type="submit" id="addSubmit">Add</button></div>
   </form>
 </div>
@@ -298,6 +303,7 @@ svg { display: block; }
     del(k) { try { localStorage.removeItem(k); } catch { /* storage unavailable */ } },
   };
   let key = store.get("qs-key", "");
+  let admin = store.get("qs-admin", "") === "1";
   const hidden = new Set(store.get("qs-hidden", []));
   const saveHidden = () => store.set("qs-hidden", [...hidden]);
 
@@ -350,7 +356,7 @@ svg { display: block; }
 
   /* ---------- sign in ---------- */
   function signOut(msg) {
-    key = ""; store.del("qs-key");
+    key = ""; store.del("qs-key"); admin = false; store.del("qs-admin");
     $("gate").hidden = false; $("app").hidden = true;
     $("gateMsg").textContent = msg || "";
     $("gatePw").value = ""; $("gatePw").focus();
@@ -361,7 +367,9 @@ svg { display: block; }
     if (!pw) { $("gateMsg").textContent = "Enter the team password."; return; }
     const res = await fetch("/api/session", { method: "POST", headers: { "x-schedule-key": pw } });
     if (!res.ok) { $("gateMsg").textContent = "That password isn't right. Ask an exec for the current one."; return; }
+    const info = await res.json().catch(() => ({}));
     key = pw; store.set("qs-key", pw);
+    admin = !!info.admin; store.set("qs-admin", admin ? "1" : "");
     start();
   });
 
@@ -564,12 +572,15 @@ svg { display: block; }
   dlg.addEventListener("click", e => { if (e.target === dlg) closeDlg(); });
   $("addForm").addEventListener("submit", async e => {
     e.preventDefault();
-    const name = $("addName").value.trim(), url = $("addUrl").value.trim();
-    if (!name) { help.textContent = "Enter a name."; help.className = "help err"; return; }
-    if (!/^(https?|webcal):\/\/\S+/i.test(url)) { help.textContent = "Enter a calendar link that starts with https:// or webcal://"; help.className = "help err"; return; }
+    const name = $("addName").value.trim(), url = $("addUrl").value.trim(), file = $("addFile").files[0];
+    const err = t => { help.textContent = t; help.className = "help err"; };
+    if (!name) return err("Enter a name.");
+    if (!file && !/^(https?|webcal):\/\/\S+/i.test(url)) return err("Enter a calendar link that starts with https:// or webcal://, or upload an .ics file.");
+    if (file && file.size > 1024 * 1024) return err("That file is too large for a class schedule.");
     const btn = $("addSubmit"); btn.disabled = true;
     try {
-      await api("/api/members", { method: "POST", body: JSON.stringify({ name, url }) });
+      const body = file ? { name, ics: await file.text() } : { name, url };
+      await api("/api/members", { method: "POST", body: JSON.stringify(body) });
       closeDlg(); snack(`Added ${name}`);
       weekCache.clear(); loadWeek(true);
     } catch (err) {
@@ -585,6 +596,7 @@ svg { display: block; }
 
   function start() {
     $("gate").hidden = true; $("app").hidden = false;
+    $("app").classList.toggle("admin", admin);
     build(); paint(); loadWeek();
     const t = new Date(), mins = t.getHours() * 60 + t.getMinutes() - START * 30;
     surface.scrollTop = Math.max(0, Math.min(mins, ROWS * 30) / 30 * ROW_H - 120);
