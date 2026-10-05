@@ -1,0 +1,9 @@
+{
+  "name": "quantt-schedule",
+  "private": true,
+  "type": "module",
+  "description": "schedule.quantt.ca: team availability from class-schedule calendar links",
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
+  }
+}
