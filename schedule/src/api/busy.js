@@ -12,9 +12,9 @@ export async function onRequestGet({ request, env }) {
       const text = m.file ? await env.SCHEDULE_KV.get(icsKey(m.id)) : await fetchFeed(m.url, fresh);
       if (!text) throw new Error("missing calendar");
       const events = parseICS(text);
-      return { id: m.id, name: m.name, ok: true, busy: busyGrid(events, monday) };
+      return { id: m.id, name: m.name, team: m.team || null, ok: true, busy: busyGrid(events, monday) };
     } catch {
-      return { id: m.id, name: m.name, ok: false, busy: null };
+      return { id: m.id, name: m.name, team: m.team || null, ok: false, busy: null };
     }
   }));
   const d = new Date(monday * 86400000);

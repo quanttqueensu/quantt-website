@@ -2,8 +2,9 @@
 import * as members from "./api/members.js";
 import * as busy from "./api/busy.js";
 import * as session from "./api/session.js";
+import * as roster from "./api/roster.js";
 
-const routes = { "/api/members": members, "/api/busy": busy, "/api/session": session };
+const routes = { "/api/members": members, "/api/busy": busy, "/api/session": session, "/api/roster": roster };
 const METHOD = { GET: "onRequestGet", POST: "onRequestPost", DELETE: "onRequestDelete" };
 
 export default {

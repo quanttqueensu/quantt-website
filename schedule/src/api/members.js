@@ -1,7 +1,7 @@
 // Members: list (names only), add, remove. Calendar links never leave the server.
 import { authorized, isAdmin, json, loadMembers, saveMembers, addMembers, icsKey } from "../core.js";
 
-const publicView = (m) => ({ id: m.id, name: m.name });
+const publicView = (m) => ({ id: m.id, name: m.name, team: m.team || null });
 const denied = () => json({ error: "Wrong password" }, 401);
 const adminOnly = () => json({ error: "Only admins can change calendars." }, 403);
 

@@ -54,17 +54,103 @@ export function validFeedUrl(raw) {
 
 export const newId = () => Math.random().toString(36).slice(2, 10);
 
+/* ---------- teams, from an exported contacts CSV (Google Contacts format) ---------- */
+const ROSTER_KEY = "roster";
+const EXEC_LABELS = ["C-Suite", "Chairs"];
+const GROUP_LABELS = ["Quantitative Research", "Quantitative Development", "Operations & Marketing", "Quantitative Trading"];
+
+export const normName = (s) => String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cell = "", quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') quoted = false;
+      else cell += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((v) => v.trim()));
+}
+
+// Returns [{ name, team }] only; phone numbers, emails and student numbers are never kept.
+export function rosterFromContacts(text) {
+  const [head, ...body] = parseCSV(String(text).replace(/^\uFEFF/, ""));
+  if (!head) return [];
+  const col = (n) => head.indexOf(n);
+  const iFirst = col("First Name"), iLast = col("Last Name"), iLabels = col("Labels");
+  if (iFirst < 0 || iLast < 0 || iLabels < 0) return [];
+  const custom = (r, label) => {
+    for (let k = 1; k <= 8; k++) {
+      const li = col(`Custom Field ${k} - Label`);
+      if (li >= 0 && r[li] === label) return r[col(`Custom Field ${k} - Value`)] || "";
+    }
+    return "";
+  };
+  const people = body.map((r) => ({
+    name: `${r[iFirst] || ""} ${r[iLast] || ""}`.trim(),
+    labels: (r[iLabels] || "").split(":::").map((s) => s.trim()),
+    lead: custom(r, "Team Lead"),
+  })).filter((p) => p.name);
+  // Trading teams are labelled "<PM> Team"; co-led teams show both PMs, as written in the analysts' Team Lead field.
+  const leads = [...new Set(people.map((p) => p.lead).filter(Boolean))];
+  const tradingTeam = (pm) => `Trading: ${leads.find((l) => l.includes(pm)) || pm}`;
+  return people.map((p) => {
+    const teamLabel = p.labels.find((l) => /\sTeam$/.test(l));
+    let team;
+    if (p.labels.some((l) => EXEC_LABELS.includes(l))) team = "Executive";
+    else if (teamLabel) team = tradingTeam(teamLabel.replace(/\s+Team$/, ""));
+    else if (leads.some((l) => l.includes(p.name))) team = tradingTeam(p.name);
+    else team = GROUP_LABELS.find((g) => p.labels.includes(g)) || "Other";
+    return { name: p.name, team };
+  });
+}
+
+// Exact name first; otherwise same last name and first names sharing their first three letters (Gabe / Gabriel).
+export function findInRoster(roster, name) {
+  const n = normName(name);
+  const exact = roster.find((p) => normName(p.name) === n);
+  if (exact) return exact;
+  const [first, ...rest] = n.split(" "), last = rest.join(" ");
+  const close = roster.filter((p) => {
+    const [f, ...r] = normName(p.name).split(" ");
+    return r.join(" ") === last && f.slice(0, 3) === first.slice(0, 3);
+  });
+  return close.length === 1 ? close[0] : null;
+}
+
+export async function loadRoster(env) {
+  const data = await env.SCHEDULE_KV.get(ROSTER_KEY, "json");
+  return Array.isArray(data) ? data : [];
+}
+
+export async function saveRoster(env, roster) {
+  await env.SCHEDULE_KV.put(ROSTER_KEY, JSON.stringify(roster));
+}
+
 // Adds or renames members by calendar link. Returns { added } or { error }.
 export async function addMembers(env, items) {
   const members = await loadMembers(env);
+  const roster = await loadRoster(env);
   const added = [];
   for (const item of items) {
-    const name = String(item?.name || "").trim().slice(0, 80);
+    let name = String(item?.name || "").trim().slice(0, 80);
     if (!name) return { error: "Enter a name." };
+    const person = findInRoster(roster, name);
+    if (person) name = person.name;
+    const team = person?.team;
     if (typeof item?.ics === "string") {
       const text = item.ics;
       if (text.length > MAX_ICS_BYTES || !/BEGIN:VCALENDAR/i.test(text)) return { error: "That file isn't an .ics calendar." };
-      const m = { id: newId(), name, file: true, added: new Date().toISOString() };
+      const m = { id: newId(), name, team, file: true, added: new Date().toISOString() };
       await env.SCHEDULE_KV.put(icsKey(m.id), text);
       members.push(m);
       added.push(m);
@@ -73,8 +159,8 @@ export async function addMembers(env, items) {
     const url = validFeedUrl(item?.url);
     if (!url) return { error: "Use a Queen's timetable or Outlook calendar link (https://…)." };
     const existing = members.find((m) => m.url === url);
-    if (existing) { existing.name = name; added.push(existing); continue; }
-    const m = { id: newId(), name, url, added: new Date().toISOString() };
+    if (existing) { existing.name = name; existing.team = team; added.push(existing); continue; }
+    const m = { id: newId(), name, team, url, added: new Date().toISOString() };
     members.push(m);
     added.push(m);
   }

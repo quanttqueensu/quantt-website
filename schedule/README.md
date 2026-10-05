@@ -10,6 +10,7 @@ This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static as
 - `src/api/busy.js` fetches every member's calendar on the server, expands the recurring classes for the requested week, and returns only names and class titles per half hour. Feeds are cached at the edge for 15 minutes; the reload button in the header bypasses the cache.
 - `src/api/members.js` lists, adds and removes members. Calendar links are stored in a Cloudflare KV namespace and are never sent to the browser or committed to this repo.
 - Every API call needs a password (`x-schedule-key` header). The team password can view; the admin password can also add calendars (by link or by uploading an `.ics` file, stored in KV) and remove them. The sign-in screen accepts either.
+- Admins can import the club's contacts export (Google Contacts CSV) from the sidebar. Members are renamed to their contact name and grouped by team (Executive, each trading team, Research, Development, Operations & Marketing). Only names and teams are kept, in KV; nothing else from the file is stored.
 
 ## Cloudflare Worker setup
 1. Workers & Pages → Create → Import a repository → `quanttqueensu/quantt-website`, **root directory `/schedule`**, deploy command `npx wrangler deploy`. The Worker name, assets and KV binding come from `wrangler.toml`.

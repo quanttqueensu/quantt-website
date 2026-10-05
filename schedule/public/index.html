@@ -110,7 +110,17 @@ svg { display: block; }
 .mem input:checked::after { content: ""; width: 5px; height: 10px; border: solid var(--on-blue); border-width: 0 2px 2px 0; transform: translate(0, -1px) rotate(45deg); }
 .mem .nm { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mem .x { visibility: hidden; width: 28px; height: 28px; }
-#app:not(.admin) #addOpen, #app:not(.admin) .mem .x { display: none; }
+#app:not(.admin) #addOpen, #app:not(.admin) .mem .x, #app:not(.admin) #importBtn { display: none; }
+.mem li.grp { padding-left: 0; }
+.mem .car { width: 28px; height: 28px; flex: none; margin-right: 2px; }
+.mem .car svg { transition: transform .15s; transform: rotate(-90deg); }
+.mem li.grp.open .car svg { transform: none; }
+.mem li.grp .nm { font-weight: 500; }
+.mem .cnt { font-size: 12px; color: var(--ink2); padding: 0 8px; font-variant-numeric: tabular-nums; }
+.mem li.ind { padding-left: 42px; }
+.mem li.sub { height: 28px; padding-left: 16px; font-size: 11px; font-weight: 500; letter-spacing: .4px; text-transform: uppercase; color: var(--ink2); }
+.mem li.sub:hover { background: none; }
+.mem .imp { margin: 4px 0 0 12px; height: 32px; font-size: 13px; }
 .dlg .or { font-size: 12px; color: var(--ink2); text-align: center; margin: -4px 0 12px; }
 .dlg input[type=file] { height: auto; padding: 12px 14px; font-size: 14px; }
 .mem li:hover .x, .mem .x:focus-visible { visibility: visible; }
@@ -253,7 +263,7 @@ svg { display: block; }
 
       <section class="sec mem" id="secMem">
         <button class="sh" type="button" aria-expanded="true"><span id="memTitle">Members</span><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
-        <div class="body"><ul id="mlist"></ul></div>
+        <div class="body"><ul id="mlist"></ul><button class="tb imp" type="button" id="importBtn">Import team contacts (.csv)</button><input type="file" id="importFile" accept=".csv,text/csv" hidden></div>
       </section>
 
       <div class="legend">
@@ -431,15 +441,42 @@ svg { display: block; }
     if (pinned) show(pinned.d, pinned.r, true);
   }
 
+  const openTeams = new Set(store.get("qs-open-teams", []));
+  const TEAM_ORDER = t => t === "Executive" ? 0 : t.startsWith("Trading") ? 1 : t === "Other" ? 9 : 5;
+  const teamOf = m => m.team || "Other";
+  // "Trading: Gabriel Soler & Benjamin Gorenc" shows as "Soler & Gorenc" under a Trading teams heading.
+  const teamLabel = t => {
+    const n = t.replace(/^Trading: /, "");
+    return n.includes("&") ? n.split("&").map(p => p.trim().split(" ").slice(-1)[0]).join(" & ") : n;
+  };
+  const CARET = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>`;
   function roster() {
     const list = members.filter(m => m.name.toLowerCase().includes(query));
     $("memTitle").textContent = `Members (${act().length}/${members.length})`;
-    $("mlist").innerHTML = list.map(m => `<li class="${focusId === m.id ? "focus" : ""}${m.ok ? "" : " err"}" data-id="${esc(m.id)}">
+    if (!list.length) { $("mlist").innerHTML = `<li class="empty">${members.length ? `No members match "${esc(query)}"` : "No calendars yet. Use Add calendar."}</li>`; return; }
+    if (!members.some(m => m.team)) { $("mlist").innerHTML = list.map(m => person(m, "")).join(""); return; }
+    const teams = [...new Set(list.map(teamOf))].sort((a, b) => TEAM_ORDER(a) - TEAM_ORDER(b) || a.localeCompare(b));
+    const firstTrading = teams.find(t => t.startsWith("Trading: "));
+    $("mlist").innerHTML = teams.map(t => {
+      const ms = list.filter(m => teamOf(m) === t), open = query || openTeams.has(t);
+      return (t === firstTrading ? `<li class="sub">Trading teams</li>` : "") + `<li class="grp${open ? " open" : ""}" data-team="${esc(t)}">
+        <button type="button" class="ib car" aria-expanded="${!!open}" aria-label="${open ? "Collapse" : "Expand"} ${esc(t)}">${CARET}</button>
+        <input type="checkbox" aria-label="Show ${esc(t)}">
+        <button type="button" class="nm" title="${esc(t)}">${esc(teamLabel(t))}</button><span class="cnt">${ms.length}</span></li>`
+        + (open ? ms.map(m => person(m, " ind")).join("") : "");
+    }).join("");
+    $("mlist").querySelectorAll("li.grp").forEach(li => {
+      const ms = list.filter(m => teamOf(m) === li.dataset.team && m.ok), on = ms.filter(m => !hidden.has(m.id)).length;
+      const box = li.querySelector("input");
+      box.checked = on > 0 && on === ms.length; box.indeterminate = on > 0 && on < ms.length; box.disabled = !ms.length;
+    });
+  }
+  function person(m, cls) {
+    return `<li class="${focusId === m.id ? "focus" : ""}${m.ok ? "" : " err"}${cls}" data-id="${esc(m.id)}">
       <input type="checkbox" id="m${esc(m.id)}" ${!hidden.has(m.id) ? "checked" : ""} ${m.ok ? "" : "disabled"} aria-label="Show ${esc(m.name)}">
       <button type="button" class="nm" title="${m.ok ? `Highlight ${esc(m.name)}'s classes` : "This calendar link could not be loaded"}">${esc(m.name)}</button>
       ${m.ok ? "" : `<span class="warn" title="This calendar link could not be loaded">!</span>`}
-      <button type="button" class="ib x" aria-label="Remove ${esc(m.name)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></li>`).join("")
-      || `<li class="empty">${members.length ? `No members match "${esc(query)}"` : "No calendars yet. Use Add calendar."}</li>`;
+      <button type="button" class="ib x" aria-label="Remove ${esc(m.name)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></li>`;
   }
 
   function best() {
@@ -512,6 +549,16 @@ svg { display: block; }
   });
   let pendingRemove = null;
   $("mlist").addEventListener("click", e => {
+    const g = e.target.closest("li.grp");
+    if (g) {
+      const t = g.dataset.team;
+      if (e.target.matches("input")) {
+        const ms = members.filter(m => teamOf(m) === t && m.ok);
+        ms.forEach(m => e.target.checked ? hidden.delete(m.id) : hidden.add(m.id)); saveHidden();
+      } else if (!query) { if (openTeams.has(t)) openTeams.delete(t); else openTeams.add(t); store.set("qs-open-teams", [...openTeams]); roster(); return; }
+      else return;
+      paint(); return;
+    }
     const li = e.target.closest("li[data-id]"); if (!li) return;
     const id = li.dataset.id, m = members.find(x => x.id === id);
     if (e.target.matches("input")) { if (e.target.checked) hidden.delete(id); else hidden.add(id); saveHidden(); }
@@ -586,6 +633,18 @@ svg { display: block; }
     } catch (err) {
       if (err.message !== "unauthorized") { help.textContent = err.message; help.className = "help err"; }
     } finally { btn.disabled = false; }
+  });
+
+  $("importBtn").onclick = () => $("importFile").click();
+  $("importFile").addEventListener("change", async e => {
+    const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+    loading(true);
+    try {
+      const r = await api("/api/roster", { method: "POST", body: JSON.stringify({ csv: await file.text() }) });
+      snack(`Grouped ${r.matched} people into teams` + (r.unmatched.length ? `; not in contacts: ${r.unmatched.join(", ")}` : ""));
+      weekCache.clear(); loadWeek(true);
+    } catch (err) { if (err.message !== "unauthorized") snack(err.message); }
+    finally { loading(false); }
   });
 
   let snackT;
