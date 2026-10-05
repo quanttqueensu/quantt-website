@@ -2,7 +2,7 @@
 
 Team availability for calendar.quantt.ca. One Mon–Sun week, 8 AM–10 PM in half hours, built from each member's class-schedule calendar link (Queen's timetable or Outlook `.ics`). Darker blue means more people are in class; click a slot to see who is free and who is busy.
 
-This folder is a standalone Cloudflare Worker (`quantt-website-calendar`) with static assets and does not touch the main website.
+This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static assets and does not touch the main website.
 
 ## How it works
 - `public/index.html` is the whole front end (no build step).
