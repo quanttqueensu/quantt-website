@@ -56,8 +56,15 @@ export const newId = () => Math.random().toString(36).slice(2, 10);
 
 /* ---------- teams, from an exported contacts CSV (Google Contacts format) ---------- */
 const ROSTER_KEY = "roster";
-const EXEC_LABELS = ["C-Suite", "Chairs"];
-const GROUP_LABELS = ["Quantitative Research", "Quantitative Development", "Operations & Marketing", "Quantitative Trading"];
+// Sidebar teams. Research and Development share a header with one section each.
+const GROUPS = {
+  "Quantitative Trading": "Quantitative Trading",
+  "Quantitative Research": "Research & Development: Quantitative Research",
+  "Quantitative Development": "Research & Development: Quantitative Development",
+  "Operations & Marketing": "Operations & Marketing",
+};
+// C-Suite members sit with the group they lead; their contacts only carry a job title.
+const LEAD_BY_TITLE = { CIO: "Quantitative Trading", COO: "Quantitative Research", CTO: "Quantitative Development", CMO: "Operations & Marketing" };
 
 export const normName = (s) => String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -81,12 +88,12 @@ function parseCSV(text) {
   return rows.filter((r) => r.some((v) => v.trim()));
 }
 
-// Returns [{ name, team }] only; phone numbers, emails and student numbers are never kept.
+// Returns [{ name, team, lead }] only; phone numbers, emails and student numbers are never kept.
 export function rosterFromContacts(text) {
   const [head, ...body] = parseCSV(String(text).replace(/^\uFEFF/, ""));
   if (!head) return [];
   const col = (n) => head.indexOf(n);
-  const iFirst = col("First Name"), iLast = col("Last Name"), iLabels = col("Labels");
+  const iFirst = col("First Name"), iLast = col("Last Name"), iLabels = col("Labels"), iTitle = col("Organization Title");
   if (iFirst < 0 || iLast < 0 || iLabels < 0) return [];
   const custom = (r, label) => {
     for (let k = 1; k <= 8; k++) {
@@ -99,18 +106,23 @@ export function rosterFromContacts(text) {
     name: `${r[iFirst] || ""} ${r[iLast] || ""}`.trim(),
     labels: (r[iLabels] || "").split(":::").map((s) => s.trim()),
     lead: custom(r, "Team Lead"),
+    title: iTitle >= 0 ? (r[iTitle] || "").trim() : "",
   })).filter((p) => p.name);
   // Trading teams are labelled "<PM> Team"; co-led teams show both PMs, as written in the analysts' Team Lead field.
   const leads = [...new Set(people.map((p) => p.lead).filter(Boolean))];
   const tradingTeam = (pm) => `Quantitative Trading: ${leads.find((l) => l.includes(pm)) || pm}`;
   return people.map((p) => {
     const teamLabel = p.labels.find((l) => /\sTeam$/.test(l));
+    const group = Object.keys(GROUPS).find((g) => p.labels.includes(g)) || "";
+    const csuite = p.labels.includes("C-Suite") || p.labels.includes("Chairs");
     let team;
-    if (p.labels.some((l) => EXEC_LABELS.includes(l))) team = "Executive";
+    if (p.labels.includes("Chairs")) team = "Co-Chairs";
+    else if (csuite) team = GROUPS[(group && group !== "Quantitative Trading" ? group : "") || LEAD_BY_TITLE[p.title.toUpperCase()]] || "Other";
     else if (teamLabel) team = tradingTeam(teamLabel.replace(/\s+Team$/, ""));
     else if (leads.some((l) => l.includes(p.name))) team = tradingTeam(p.name);
-    else team = GROUP_LABELS.find((g) => p.labels.includes(g)) || "Other";
-    return { name: p.name, team };
+    else team = GROUPS[group] || "Other";
+    const lead = csuite || p.labels.includes("Portfolio Manager");
+    return lead ? { name: p.name, team, lead } : { name: p.name, team };
   });
 }
 

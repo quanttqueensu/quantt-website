@@ -64,13 +64,18 @@ svg { display: block; }
 @media (max-width: 720px) { .logo .word, .top .hide-s, .viewbtn, .avatar { display: none; } .logo { margin: 0 8px 0 0; } .title { font-size: 18px; min-width: 0; overflow: hidden; text-overflow: ellipsis; } .pill { padding: 0 14px; margin-right: 4px; } .top { padding-right: 8px; } }
 
 /* body */
-.main { display: grid; grid-template-columns: 256px minmax(0, 1fr); min-height: 0; padding-right: 16px; padding-bottom: 16px; }
+.main { --rail-w: 256px; position: relative; display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); min-height: 0; padding-right: 16px; padding-bottom: 16px; }
 .app.collapsed .main { grid-template-columns: 0 minmax(0, 1fr); padding-left: 16px; }
-.app.collapsed .rail { visibility: hidden; }
+.app.collapsed .rail, .app.collapsed .resizer { visibility: hidden; }
+.resizer { position: absolute; top: 0; bottom: 16px; left: calc(var(--rail-w) - 6px); width: 12px; cursor: col-resize; touch-action: none; z-index: 5; }
+.resizer::after { content: ""; position: absolute; top: 0; bottom: 0; left: 5px; width: 2px; border-radius: 1px; background: transparent; transition: background .15s; }
+.resizer:hover::after, .resizer.drag::after, .resizer:focus-visible::after { background: var(--blue); }
+.app.resizing { cursor: col-resize; user-select: none; }
 @media (max-width: 720px) {
   .main { grid-template-columns: minmax(0, 1fr); padding-left: 8px; padding-right: 8px; }
   .rail { position: fixed; z-index: 20; top: 64px; bottom: 0; left: 0; width: 280px; background: var(--app); box-shadow: var(--shadow); }
   .app:not(.open) .rail { display: none; }
+  .resizer { display: none; }
   .app.collapsed .main { padding-left: 8px; }
 }
 
@@ -168,7 +173,7 @@ svg { display: block; }
   .pop { position: fixed; z-index: 30; left: 8px !important; right: 8px; top: auto !important; bottom: calc(8px + env(safe-area-inset-bottom)); width: auto; max-width: none; max-height: 60dvh; overflow-y: auto; }
 }
 @media (min-width: 721px) and (max-width: 1024px) {
-  .main { grid-template-columns: 224px minmax(0, 1fr); }
+  .main { --rail-w: 224px; }
   .viewbtn { display: none; }
 }
 @supports (height: 100dvh) { .app { height: 100dvh; } }
@@ -269,7 +274,8 @@ svg { display: block; }
     <button class="avatar" type="button" id="signout" title="Sign out" aria-label="Sign out" style="border:0;cursor:pointer">Q</button>
   </header>
 
-  <div class="main">
+  <div class="main" id="main">
+    <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" title="Drag to resize. Double-click to reset."></div>
     <aside class="rail" id="rail">
       <button class="create" type="button" id="addOpen"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M20 13h-7v7h-2v-7H4v-2h7V4h2v7h7v2z" fill="var(--blue)"/></svg>Add calendar</button>
 
@@ -470,11 +476,11 @@ svg { display: block; }
   const teamOf = m => m.team || "Other";
   // Teams look like "Quantitative Trading: Hugh Hayes"; the part before ":" is the department.
   const deptOf = t => t.split(": ")[0];
-  const DEPT_ORDER = ["Executive", "Quantitative Trading", "Quantitative Research", "Quantitative Development", "Operations & Marketing"];
+  const DEPT_ORDER = ["Co-Chairs", "Executive", "Quantitative Trading", "Research & Development", "Quantitative Research", "Quantitative Development", "Operations & Marketing"];
   const deptRank = d => { const i = DEPT_ORDER.indexOf(d); return i < 0 ? (d === "Other" ? 99 : 50) : i; };
-  const short = t => t.replace(/^Quantitative /, "Quant ");
+  const short = t => t.replace(/^Quantitative /, "Quant ").replace(/^Research & Development$/, "Research & Dev");
   // "Gabriel Soler & Benjamin Gorenc" shows as "Soler & Gorenc".
-  const subLabel = t => { const n = t.split(": ").slice(1).join(": "); return n.includes("&") ? n.split("&").map(p => p.trim().split(" ").slice(-1)[0]).join(" & ") : n; };
+  const subLabel = t => { const n = t.split(": ").slice(1).join(": "); return n.includes("&") ? n.split("&").map(p => p.trim().split(" ").slice(-1)[0]).join(" & ") : short(n); };
   const inGroup = (m, key) => teamOf(m) === key || teamOf(m).startsWith(key + ": ");
   const CARET = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>`;
   const groupRow = (key, label, n, level, open) => `<li class="grp lv${level}${open ? " open" : ""}" data-team="${esc(key)}">
@@ -488,14 +494,15 @@ svg { display: block; }
     if (!list.length && !waiting.length) { $("mlist").innerHTML = `<li class="empty">${members.length ? `No members match "${esc(query)}"` : "No calendars yet. Use Add calendar."}</li>`; return; }
     if (!members.some(m => m.team)) { $("mlist").innerHTML = list.map(m => person(m, "")).join(""); return; }
     const isOpen = k => !!query || openTeams.has(k);
-    const people = [...list, ...waiting].sort((a, b) => !!a.none - !!b.none || a.name.localeCompare(b.name));
+    // Leads first, then everyone with a calendar, then people still missing one.
+    const people = [...list, ...waiting].sort((a, b) => !!b.lead - !!a.lead || !!a.none - !!b.none || a.name.localeCompare(b.name));
     const depts = [...new Set(people.map(m => deptOf(teamOf(m))))].sort((a, b) => deptRank(a) - deptRank(b) || a.localeCompare(b));
     let h = "";
     for (const d of depts) {
       const ms = people.filter(m => inGroup(m, d));
       h += groupRow(d, short(d), ms.length, 0, isOpen(d));
       if (!isOpen(d)) continue;
-      const subs = [...new Set(ms.map(teamOf).filter(t => t !== d))].sort((a, b) => subLabel(a).localeCompare(subLabel(b)));
+      const subs = [...new Set(ms.map(teamOf).filter(t => t !== d))].sort((a, b) => deptRank(a.split(": ")[1]) - deptRank(b.split(": ")[1]) || subLabel(a).localeCompare(subLabel(b)));
       h += ms.filter(m => teamOf(m) === d).map(m => person(m, " ind1")).join("");
       for (const t of subs) {
         const sm = ms.filter(m => teamOf(m) === t);
@@ -698,6 +705,29 @@ svg { display: block; }
   addEventListener("resize", placeNow);
   // On phones the sidebar is a drawer; tapping the calendar closes it.
   surface.addEventListener("pointerdown", () => { if (matchMedia("(max-width: 720px)").matches) $("app").classList.remove("open"); });
+
+  /* ---------- sidebar width ---------- */
+  const RAIL_MIN = 200, RAIL_MAX = 480;
+  const setRail = w => {
+    if (w == null) { $("main").style.removeProperty("--rail-w"); store.del("qs-rail-w"); return; }
+    w = Math.round(Math.min(RAIL_MAX, Math.max(RAIL_MIN, w)));
+    $("main").style.setProperty("--rail-w", w + "px"); store.set("qs-rail-w", w);
+  };
+  if (store.get("qs-rail-w", null)) setRail(store.get("qs-rail-w", null));
+  const resizer = $("resizer");
+  resizer.addEventListener("pointerdown", e => {
+    e.preventDefault(); resizer.setPointerCapture(e.pointerId);
+    const left = $("main").getBoundingClientRect().left;
+    resizer.classList.add("drag"); $("app").classList.add("resizing");
+    const move = ev => setRail(ev.clientX - left);
+    const up = () => { resizer.classList.remove("drag"); $("app").classList.remove("resizing"); resizer.removeEventListener("pointermove", move); resizer.removeEventListener("pointerup", up); resizer.removeEventListener("pointercancel", up); };
+    resizer.addEventListener("pointermove", move); resizer.addEventListener("pointerup", up); resizer.addEventListener("pointercancel", up);
+  });
+  resizer.addEventListener("dblclick", () => setRail(null));
+  resizer.addEventListener("keydown", e => {
+    const k = { ArrowLeft: -16, ArrowRight: 16 }[e.key]; if (!k) return;
+    e.preventDefault(); setRail($("rail").getBoundingClientRect().width + k);
+  });
   setInterval(placeNow, 60000);
 
   function start() {
