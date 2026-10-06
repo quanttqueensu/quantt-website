@@ -124,7 +124,10 @@ export function rosterFromContacts(text) {
     else if (teamLabel) team = tradingTeam(teamLabel.replace(/\s+Team$/, ""));
     else if (pms.has(p.name)) team = tradingTeam(p.name);
     else if (teamNaming(p.name)) team = tradingTeam(teamNaming(p.name));
-    else team = GROUPS[group] || "Other";
+    else if (group === "Operations & Marketing" && /\b(operations|marketing)\b/i.test(p.title)) {
+      // Operations & Marketing splits into a section each, read from the job title ("Marketing Analyst").
+      team = `Operations & Marketing: ${/marketing/i.test(p.title) ? "Marketing" : "Operations"}`;
+    } else team = GROUPS[group] || "Other";
     const lead = csuite || pms.has(p.name);
     return lead ? { name: p.name, team, lead } : { name: p.name, team };
   });

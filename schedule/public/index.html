@@ -226,7 +226,7 @@ svg { display: block; }
 .mem li.dragging { opacity: .4; }
 .mem li.drop-before { box-shadow: inset 0 2px 0 var(--blue); }
 .mem li.drop-after { box-shadow: inset 0 -2px 0 var(--blue); }
-.mem li.lead .nm { text-decoration: underline; text-underline-offset: 3px; }
+.mem li.lead .nm { text-decoration: underline; text-underline-offset: 2px; padding: 3px 0 5px; }
 .mem li.none .ph { width: 18px; flex: none; margin-right: 12px; }
 .mem li.none .nm { color: var(--ink2); }
 #app:not(.admin) .mem li.none .nm { cursor: default; }
@@ -487,9 +487,9 @@ svg { display: block; }
   const teamOf = m => m.team || "Other";
   // Teams look like "Quantitative Trading: Hugh Hayes"; the part before ":" is the department.
   const deptOf = t => t.split(": ")[0];
-  const DEPT_ORDER = ["Co-Chairs", "Executive", "Quantitative Trading", "Research & Development", "Quantitative Research", "Quantitative Development", "Operations & Marketing"];
+  const DEPT_ORDER = ["Co-Chairs", "Executive", "Quantitative Trading", "Research & Development", "Quantitative Research", "Quantitative Development", "Operations & Marketing", "Operations", "Marketing"];
   const deptRank = d => { const i = DEPT_ORDER.indexOf(d); return i < 0 ? (d === "Other" ? 99 : 50) : i; };
-  const short = t => t.replace(/^Quantitative /, "Quant ").replace(/^Research & Development$/, "Research & Dev");
+  const short = t => t.replace(/^Quantitative /, "Quant ");
   // "Gabriel Soler & Benjamin Gorenc" shows as "Soler & Gorenc".
   const subLabel = t => { const n = t.split(": ").slice(1).join(": "); return n.includes("&") ? n.split("&").map(p => p.trim().split(" ").slice(-1)[0]).join(" & ") : short(n); };
   const inGroup = (m, key) => teamOf(m) === key || teamOf(m).startsWith(key + ": ");
