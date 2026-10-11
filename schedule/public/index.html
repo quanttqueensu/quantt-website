@@ -246,6 +246,12 @@ svg { display: block; }
 .dlg p { color: var(--ink2); margin: 0 0 8px; line-height: 1.5; }
 
 /* events */
+/* the sidebar scrolls; its items keep their size instead of squashing when the event list makes it taller */
+.rail > * { flex-shrink: 0; }
+:root { --dlg: var(--surface); }
+:root[data-theme="dark"] { --dlg: #1e1f20; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --dlg: #1e1f20; } }
+.dlg { background: var(--dlg); }
 #confirm { z-index: 35; } /* confirmations open on top of the event dialog */
 #app:not(.mgr) #createBtn, #app:not(.mgr) .mgr-only { display: none !important; }
 .cmenu { position: absolute; z-index: 25; background: var(--surface); border-radius: 4px; box-shadow: var(--shadow); padding: 8px 0; min-width: 180px; }
@@ -319,6 +325,12 @@ svg { display: block; }
 .note { font-size: 13px; color: var(--ink2); line-height: 1.5; margin: 0 0 12px; }
 .note.warn { color: var(--ink); background: var(--blue-tint); border-radius: 8px; padding: 8px 12px; }
 .pop .mk { margin: 4px 0 0 52px; }
+.dlg .sh3 { font-size: 14px; font-weight: 500; margin: 18px 0 10px; color: var(--ink); }
+.dlg select { width: 100%; height: 44px; border: 1px solid var(--muted); border-radius: 4px; padding: 0 10px; background: var(--surface); font: inherit; color: inherit; }
+.dlg .chk input[type=radio] { width: 18px; height: 18px; }
+.testrow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.testrow input { flex: 1; min-width: 0; height: 44px; }
+#remDlg .dlg { max-width: 500px; }
 </style>
 </head>
 <body>
@@ -351,6 +363,7 @@ svg { display: block; }
     <span class="sp"></span>
     <button class="ib hide-s" type="button" aria-label="Search" id="searchBtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
     <button class="ib hide-s" type="button" id="refresh" aria-label="Reload calendars" title="Reload calendars"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+    <button class="ib hide-s mgr-only" type="button" id="settingsBtn" aria-label="Email reminder settings" title="Email reminder settings"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg></button>
     <button class="viewbtn" type="button" id="viewBtn" title="Switch between the full week and the work week">Week</button>
     <button class="avatar" type="button" id="signout" title="Sign out" aria-label="Sign out" style="border:0;cursor:pointer">Q</button>
   </header>
@@ -369,7 +382,7 @@ svg { display: block; }
 
       <section class="sec evs" id="secEv">
         <button class="sh" type="button" aria-expanded="true">Upcoming events<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
-        <div class="body"><ul id="evList"></ul><button class="tb imp mgr-only" type="button" id="remOpen">Reminder emails</button></div>
+        <div class="body"><ul id="evList"></ul><button class="tb imp mgr-only" type="button" id="remOpen">Email reminder settings</button></div>
       </section>
 
       <section class="sec best" id="secBest">
@@ -441,7 +454,7 @@ svg { display: block; }
 </div>
 <div class="scrim" id="remDlg" hidden>
   <form class="dlg" id="remForm" novalidate>
-    <h2>Reminder emails</h2>
+    <h2>Email reminder settings</h2>
     <div id="remBody"><p>Loading…</p></div>
     <div class="help" id="remHelp"></div>
     <div class="acts"><button class="tb" type="button" id="remCancel">Cancel</button><button class="tb fill" type="submit" id="remSave">Save</button></div>
@@ -560,6 +573,8 @@ svg { display: block; }
     document.title = `QUANTT Schedule · Week of ${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()}`;
     placeNow();
     mini();
+    // Show this week's events (cached or none) until loadEvents brings fresh ones; never the previous week's.
+    weekEvents = evCache.get(iso(weekStart)) || [];
     placeEvents();
   }
 
@@ -1181,25 +1196,50 @@ svg { display: block; }
 
   /* reminder settings */
   const HOURS_LABEL = h => h >= 24 && h % 24 === 0 ? (h === 168 ? "1 week before" : h === 24 ? "1 day before" : `${h / 24} days before`) : `${h} hour${h === 1 ? "" : "s"} before`;
-  $("remOpen").onclick = async () => {
+  const NUDGE_LABEL = { 0: "Off", 1: "Every day", 2: "Every 2 days", 3: "Every 3 days", 7: "Every week" };
+  const hourTxt = h => `${((h + 11) % 12) + 1}:00 ${h < 12 ? "AM" : "PM"}`;
+  async function openSettings() {
     $("remDlg").hidden = false; $("remHelp").textContent = ""; $("remBody").innerHTML = "<p>Loading…</p>";
     try {
-      const d = await api("/api/reminders");
+      const d = await api("/api/reminders"), st = d.settings;
       $("remBody").innerHTML = `
         ${d.ready ? "" : `<p class="note warn">Email sending isn't connected yet, so nothing goes out until an admin adds the email key. Your choices here are saved.</p>`}
-        <label class="chk"><input type="checkbox" id="remOn" ${d.settings.enabled ? "checked" : ""}><span>Send reminder emails for upcoming events</span></label>
-        <p class="note">Send a reminder:</p>
-        <div class="grid2">${d.choices.map(h => `<label class="chk"><input type="checkbox" name="remH" value="${h}" ${d.settings.hours.includes(h) ? "checked" : ""}><span>${HOURS_LABEL(h)}</span></label>`).join("")}</div>
-        <p class="note">Reminders go to everyone on the team list who hasn't been excused or said they can't go. Each event can turn reminders off in its settings. ${d.withEmail} ${d.withEmail === 1 ? "person has" : "people have"} an email address on file.${d.missing.length ? ` No email for ${d.missing.map(esc).join(", ")}.` : ""}</p>`;
+        <label class="chk"><input type="checkbox" id="remOn" ${st.enabled ? "checked" : ""}><span>Send reminder emails for upcoming events</span><small>Each event can also turn its reminders off in Edit event.</small></label>
+        <h3 class="sh3">Remind everyone</h3>
+        <div class="grid2">${d.choices.map(h => `<label class="chk"><input type="checkbox" name="remH" value="${h}" ${st.hours.includes(h) ? "checked" : ""}><span>${HOURS_LABEL(h)}</span></label>`).join("")}</div>
+        <h3 class="sh3">Who gets reminders</h3>
+        <label class="chk"><input type="radio" name="remAud" value="all" ${st.audience !== "pending" ? "checked" : ""}><span>Everyone who hasn't been excused</span><small>Includes people already going.</small></label>
+        <label class="chk"><input type="radio" name="remAud" value="pending" ${st.audience === "pending" ? "checked" : ""}><span>Only people who haven't responded</span></label>
+        <h3 class="sh3">Ask for a response</h3>
+        <div class="grid2">
+          <div class="f"><label for="remNudge">Email people who haven't responded</label><select id="remNudge">${d.nudgeChoices.map(n => `<option value="${n}" ${+st.nudgeDays === n ? "selected" : ""}>${NUDGE_LABEL[n] || `Every ${n} days`}</option>`).join("")}</select></div>
+          <div class="f"><label for="remHour">At</label><select id="remHour">${d.sendHours.map(h => `<option value="${h}" ${+st.nudgeHour === h ? "selected" : ""}>${hourTxt(h)}</option>`).join("")}</select></div>
+        </div>
+        <p class="note">Repeats until they respond or the day of the event.</p>
+        <h3 class="sh3">Send a test</h3>
+        <div class="testrow"><input id="remTest" type="email" placeholder="you@queensu.ca" autocomplete="email" aria-label="Email for a test"><button type="button" class="tb" id="remTestBtn" ${d.ready ? "" : "disabled"}>Send test</button></div>
+        <p class="note">${d.withEmail} ${d.withEmail === 1 ? "person has" : "people have"} an email address on file.${d.missing.length ? ` No email for ${d.missing.map(esc).join(", ")}. An admin can add them by re-importing the contacts file.` : ""}</p>`;
     } catch (err) { if (err.message !== "unauthorized") $("remBody").innerHTML = `<p>${esc(err.message)}</p>`; }
-  };
+  }
+  $("remOpen").onclick = openSettings;
+  $("settingsBtn").onclick = openSettings;
+  $("remBody").addEventListener("click", async e => {
+    if (e.target.id !== "remTestBtn") return;
+    const to = $("remTest").value.trim(), b = e.target;
+    if (!to) { $("remTest").focus(); return; }
+    b.disabled = true;
+    try { await api("/api/reminders", { method: "POST", body: JSON.stringify({ test: to }) }); snack(`Test email sent to ${to}`); }
+    catch (err) { if (err.message !== "unauthorized") { $("remHelp").textContent = err.message; $("remHelp").className = "help err"; } }
+    finally { b.disabled = false; }
+  });
   $("remCancel").onclick = () => { $("remDlg").hidden = true; };
   $("remDlg").addEventListener("click", e => { if (e.target === $("remDlg")) $("remDlg").hidden = true; });
   $("remForm").addEventListener("submit", async e => {
     e.preventDefault();
     if (!$("remOn")) return;
     const hours = [...document.querySelectorAll("input[name=remH]:checked")].map(x => +x.value);
-    try { await api("/api/reminders", { method: "POST", body: JSON.stringify({ enabled: $("remOn").checked, hours }) }); $("remDlg").hidden = true; snack("Reminder schedule saved"); }
+    const body = { enabled: $("remOn").checked, hours, audience: (document.querySelector("input[name=remAud]:checked") || {}).value, nudgeDays: +$("remNudge").value, nudgeHour: +$("remHour").value };
+    try { await api("/api/reminders", { method: "POST", body: JSON.stringify(body) }); $("remDlg").hidden = true; snack("Email settings saved"); }
     catch (err) { if (err.message !== "unauthorized") { $("remHelp").textContent = err.message; $("remHelp").className = "help err"; } }
   });
 

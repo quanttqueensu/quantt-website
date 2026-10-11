@@ -111,7 +111,10 @@ export async function deleteEvent(env, id) {
 
 /* ---------- reminder settings ---------- */
 export const REMINDER_CHOICES = [168, 72, 48, 24, 12, 4, 2, 1]; // hours before the event
-const DEFAULT_REMINDERS = { enabled: true, hours: [72, 24, 2] };
+export const NUDGE_CHOICES = [0, 1, 2, 3, 7]; // days between "please respond" emails; 0 = off
+export const SEND_HOURS = [7, 8, 9, 10, 12, 15, 17, 18, 20]; // hour of day for "please respond" emails
+// audience: "all" = everyone not excused; "pending" = only people who haven't responded yet.
+const DEFAULT_REMINDERS = { enabled: true, hours: [72, 24, 2], audience: "all", nudgeDays: 0, nudgeHour: 9 };
 
 export async function loadReminderSettings(env) {
   const DB = await db(env);
@@ -121,7 +124,13 @@ export async function loadReminderSettings(env) {
 
 export async function saveReminderSettings(env, body) {
   const hours = [...new Set((Array.isArray(body?.hours) ? body.hours : []).map(Number).filter((h) => REMINDER_CHOICES.includes(h)))].sort((a, b) => b - a);
-  const value = { enabled: !!body?.enabled, hours };
+  const value = {
+    enabled: !!body?.enabled,
+    hours,
+    audience: body?.audience === "pending" ? "pending" : "all",
+    nudgeDays: NUDGE_CHOICES.includes(+body?.nudgeDays) ? +body.nudgeDays : 0,
+    nudgeHour: SEND_HOURS.includes(+body?.nudgeHour) ? +body.nudgeHour : 9,
+  };
   const DB = await db(env);
   await DB.prepare("INSERT INTO settings (key, value) VALUES ('reminders', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value").bind(JSON.stringify(value)).run();
   return value;
@@ -132,11 +141,13 @@ export const emailReady = (env) => !!env.RESEND_API_KEY;
 const appUrl = (env) => (env.APP_URL || "https://calendar.quantt.ca").replace(/\/$/, "");
 
 // Everyone with an email on file, minus people who are excused or said they can't come.
-export async function recipients(env, ev) {
+// audience "pending" keeps only people who haven't responded at all.
+export async function recipients(env, ev, audience = "all") {
   const [all, emails] = await Promise.all([people(env), loadEmails(env)]);
   const byNorm = new Map(Object.entries(emails).map(([n, e]) => [normName(n), e]));
   const out = new Set(ev.responses.filter((r) => r.status === "no" || (r.status === "exempt" && r.review !== "denied")).map((r) => normName(r.name)));
-  return all.filter((p) => !out.has(normName(p.name)) && byNorm.has(normName(p.name))).map((p) => ({ name: p.name, email: byNorm.get(normName(p.name)), response: ev.responses.find((r) => normName(r.name) === normName(p.name)) }));
+  const answered = new Set(ev.responses.map((r) => normName(r.name)));
+  return all.filter((p) => !out.has(normName(p.name)) && byNorm.has(normName(p.name)) && (audience !== "pending" || !answered.has(normName(p.name)))).map((p) => ({ name: p.name, email: byNorm.get(normName(p.name)), response: ev.responses.find((r) => normName(r.name) === normName(p.name)) }));
 }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -155,12 +166,13 @@ function leadText(ev) {
 }
 const escHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-function message(env, ev, person) {
+function message(env, ev, person, nudge) {
   const link = `${appUrl(env)}/#event=${encodeURIComponent(ev.id)}`;
   const first = person.name.split(" ")[0];
   const going = person.response?.status === "going";
-  const subject = `Reminder: ${ev.title} ${leadText(ev)}`;
+  const subject = nudge ? `Please respond: ${ev.title} ${leadText(ev)}` : `Reminder: ${ev.title} ${leadText(ev)}`;
   const ask = going ? "You're marked as going."
+    : nudge ? `You haven't responded yet. ${ev.mandatory ? "Attendance is required, so if you can't make it, open the event and request an exemption with a reason." : "Let us know if you're coming."}`
     : ev.mandatory ? "Attendance is required. If you can't make it, open the event and request an exemption with a reason."
     : "Let us know if you're coming.";
   const lines = [`Hi ${first},`, "", `${ev.title}`, whenText(ev), ev.location ? `Location: ${ev.location}` : "", ev.description ? `\n${ev.description}` : "", "", ask, link, "", "QUANTT Operations & Marketing"].filter((l, i, a) => l !== "" || a[i - 1] !== "");
@@ -176,17 +188,29 @@ ${ev.description ? `<p style="white-space:pre-line">${escHtml(ev.description)}</
   return { from: env.EMAIL_FROM || "QUANTT <events@quantt.ca>", to: [person.email], subject, text: lines.join("\n"), html, ...(env.EMAIL_REPLY_TO ? { reply_to: env.EMAIL_REPLY_TO } : {}) };
 }
 
-export async function sendReminder(env, ev) {
-  if (!emailReady(env)) throw new Error("Reminder emails aren't set up yet (RESEND_API_KEY is missing).");
-  const list = await recipients(env, ev);
-  for (let i = 0; i < list.length; i += 100) {
+async function sendBatch(env, msgs) {
+  for (let i = 0; i < msgs.length; i += 100) {
     const res = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
-      body: JSON.stringify(list.slice(i, i + 100).map((p) => message(env, ev, p))),
+      body: JSON.stringify(msgs.slice(i, i + 100)),
     });
     if (!res.ok) throw new Error(`The email service refused the reminder (${res.status}): ${(await res.text()).slice(0, 200)}`);
   }
+}
+
+// A sample reminder to one address, so Ops can check how the emails look.
+export async function sendTest(env, to) {
+  if (!emailReady(env)) throw new Error("Reminder emails aren't set up yet (RESEND_API_KEY is missing).");
+  const t = wallMinutes(nowWall()) + 2 * 1440, d = new Date(Math.floor(t / 1440) * 86400000).toISOString().slice(0, 10);
+  const ev = { id: "test", title: "Sample event", start: `${d}T18:00`, end: `${d}T19:00`, location: "Goodes Hall", description: "This is a test of QUANTT reminder emails.", mandatory: true, responses: [] };
+  await sendBatch(env, [message(env, ev, { name: "there", email: to })]);
+}
+
+export async function sendReminder(env, ev, { audience = "all", nudge = false } = {}) {
+  if (!emailReady(env)) throw new Error("Reminder emails aren't set up yet (RESEND_API_KEY is missing).");
+  const list = await recipients(env, ev, nudge ? "pending" : audience);
+  await sendBatch(env, list.map((p) => message(env, ev, p, nudge)));
   return list.length;
 }
 
@@ -194,10 +218,11 @@ export async function sendReminder(env, ev) {
 export async function runReminders(env) {
   if (!env.DB || !emailReady(env)) return [];
   const settings = await loadReminderSettings(env);
-  if (!settings.enabled || !settings.hours.length) return [];
+  if (!settings.enabled) return [];
   const now = nowWall(), nowMin = wallMinutes(now);
-  const maxH = Math.max(...settings.hours);
-  const horizon = new Date((Math.floor(nowMin / 1440) + Math.ceil(maxH / 24) + 2) * 86400000).toISOString().slice(0, 10);
+  const maxH = Math.max(0, ...settings.hours);
+  const days = Math.max(Math.ceil(maxH / 24) + 2, settings.nudgeDays ? 60 : 0);
+  const horizon = new Date((Math.floor(nowMin / 1440) + days) * 86400000).toISOString().slice(0, 10);
   const events = (await listEvents(env, { from: now.slice(0, 10), to: horizon })).filter((e) => e.reminders && wallMinutes(e.start) > nowMin);
   const done = [];
   const DB = await db(env);
@@ -205,13 +230,34 @@ export async function runReminders(env) {
     const startMin = wallMinutes(ev.start);
     const sent = new Set(ev.remindersSent.map((r) => r.hours));
     const due = settings.hours.filter((h) => startMin - h * 60 <= nowMin && !sent.has(h));
-    if (!due.length) continue;
+    if (!due.length) {
+      const nudged = await nudge(env, DB, ev, settings, nowMin);
+      if (nudged) done.push(nudged);
+      continue;
+    }
     const h = Math.min(...due);
     let n = 0;
-    try { n = await sendReminder(env, ev); } catch (e) { console.log("reminder failed", ev.id, e.message); continue; }
+    try { n = await sendReminder(env, ev, { audience: settings.audience }); } catch (e) { console.log("reminder failed", ev.id, e.message); continue; }
     const at = new Date().toISOString();
     await DB.batch(due.map((x) => DB.prepare("INSERT OR IGNORE INTO reminders_sent (event_id, hours, sent_at, recipients) VALUES (?, ?, ?, ?)").bind(ev.id, x, at, x === h ? n : 0)));
     done.push({ id: ev.id, hours: h, recipients: n });
   }
   return done;
+}
+
+// "Please respond" emails to people who haven't answered, every nudgeDays days at nudgeHour, counted from the event's creation.
+// Stored in reminders_sent with hours = -(day number), one row per day sent. Skipped on the event's own day and within 20 hours of another reminder.
+async function nudge(env, DB, ev, settings, nowMin) {
+  if (!settings.nudgeDays) return null;
+  const today = Math.floor(nowMin / 1440);
+  if (nowMin % 1440 < settings.nudgeHour * 60 || Math.floor(wallMinutes(ev.start) / 1440) <= today) return null;
+  const nudges = ev.remindersSent.filter((r) => r.hours < 0).map((r) => -r.hours);
+  const created = Math.floor(Date.parse(ev.created_at) / 86400000);
+  const last = nudges.length ? Math.max(...nudges) : created;
+  if (today - last < settings.nudgeDays) return null;
+  if (ev.remindersSent.some((r) => r.hours >= 0 && Date.now() - Date.parse(r.sent_at) < 20 * 3600 * 1000)) return null;
+  let n = 0;
+  try { n = await sendReminder(env, ev, { nudge: true }); } catch (e) { console.log("nudge failed", ev.id, e.message); return null; }
+  await DB.prepare("INSERT OR IGNORE INTO reminders_sent (event_id, hours, sent_at, recipients) VALUES (?, ?, ?, ?)").bind(ev.id, -today, new Date().toISOString(), n).run();
+  return { id: ev.id, nudge: true, recipients: n };
 }
