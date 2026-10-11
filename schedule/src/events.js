@@ -15,7 +15,7 @@ const SCHEMA = [
 ];
 
 // Columns added after the first release. ALTER fails harmlessly once the column exists.
-const MIGRATIONS = ["ALTER TABLE events ADD COLUMN reminder_cfg TEXT"];
+const MIGRATIONS = ["ALTER TABLE events ADD COLUMN reminder_cfg TEXT", "ALTER TABLE events ADD COLUMN invite TEXT"];
 
 let ready = null;
 export function db(env) {
@@ -62,6 +62,7 @@ export function cleanEvent(body) {
     reminders: body?.reminders === false ? 0 : 1,
     // No reminderCfg means "use the saved defaults" (read when the cron runs).
     reminder_cfg: body?.reminderCfg ? JSON.stringify(cleanReminderCfg(body.reminderCfg)) : null,
+    invite: cleanInvite(body?.invite),
   };
   if (!e.title) return { error: "Give the event a title." };
   if (!validWall(e.start) || !validWall(e.end)) return { error: "Pick a date, start time and end time." };
@@ -69,10 +70,24 @@ export function cleanEvent(body) {
   return { event: e };
 }
 
-function rowToEvent({ reminder_cfg, ...r }) {
-  let cfg = null;
+// Who an event is for: null means everyone; otherwise teams and/or named people.
+// A team like "Quantitative Trading" also covers its sub-teams ("Quantitative Trading: <PM>").
+function cleanInvite(b) {
+  const list = (v, n) => [...new Set((Array.isArray(v) ? v : []).map((x) => clip(x, 80)).filter(Boolean))].slice(0, n);
+  const teams = list(b?.teams, 40), names = list(b?.people, 300);
+  return teams.length || names.length ? JSON.stringify({ teams, people: names }) : null;
+}
+export function isInvited(ev, person) {
+  if (!ev.invite) return true;
+  const team = person?.team || "";
+  return ev.invite.people.some((n) => normName(n) === normName(person?.name)) || ev.invite.teams.some((t) => team === t || team.startsWith(t + ": "));
+}
+
+export function rowToEvent({ reminder_cfg, invite, ...r }) {
+  let cfg = null, inv = null;
   try { cfg = reminder_cfg ? cleanReminderCfg(JSON.parse(reminder_cfg)) : null; } catch { /* fall back to defaults */ }
-  return { ...r, mandatory: !!r.mandatory, reminders: !!r.reminders, reminderCfg: cfg };
+  try { inv = invite ? JSON.parse(invite) : null; } catch { /* everyone */ }
+  return { ...r, mandatory: !!r.mandatory, reminders: !!r.reminders, reminderCfg: cfg, invite: inv };
 }
 
 export async function listEvents(env, { from, to, id }) {
@@ -96,14 +111,14 @@ export async function saveEvent(env, id, e) {
   const at = new Date().toISOString();
   if (!id) {
     id = newId();
-    await DB.prepare(`INSERT INTO events (id, title, start, end, location, description, mandatory, reminders, reminder_cfg, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(id, e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, at, at).run();
+    await DB.prepare(`INSERT INTO events (id, title, start, end, location, description, mandatory, reminders, reminder_cfg, invite, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(id, e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, e.invite, at, at).run();
     return id;
   }
   const old = await DB.prepare("SELECT start FROM events WHERE id = ?").bind(id).first();
   if (!old) return null;
-  const stmts = [DB.prepare(`UPDATE events SET title = ?, start = ?, end = ?, location = ?, description = ?, mandatory = ?, reminders = ?, reminder_cfg = ?, updated_at = ? WHERE id = ?`)
-    .bind(e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, at, id)];
+  const stmts = [DB.prepare(`UPDATE events SET title = ?, start = ?, end = ?, location = ?, description = ?, mandatory = ?, reminders = ?, reminder_cfg = ?, invite = ?, updated_at = ? WHERE id = ?`)
+    .bind(e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, e.invite, at, id)];
   // A moved event gets its reminders again, counted from the new time.
   if (old.start !== e.start) stmts.push(DB.prepare("DELETE FROM reminders_sent WHERE event_id = ?").bind(id));
   await DB.batch(stmts);
@@ -171,7 +186,7 @@ export async function recipients(env, ev, audience = "all") {
   const byNorm = new Map(Object.entries(emails).map(([n, e]) => [normName(n), e]));
   const out = new Set(ev.responses.filter((r) => r.status === "no" || (r.status === "exempt" && r.review !== "denied")).map((r) => normName(r.name)));
   const answered = new Set(ev.responses.map((r) => normName(r.name)));
-  return all.filter((p) => !out.has(normName(p.name)) && byNorm.has(normName(p.name)) && (audience !== "pending" || !answered.has(normName(p.name)))).map((p) => ({ name: p.name, email: byNorm.get(normName(p.name)), response: ev.responses.find((r) => normName(r.name) === normName(p.name)) }));
+  return all.filter((p) => isInvited(ev, p) && !out.has(normName(p.name)) && byNorm.has(normName(p.name)) && (audience !== "pending" || !answered.has(normName(p.name)))).map((p) => ({ name: p.name, email: byNorm.get(normName(p.name)), response: ev.responses.find((r) => normName(r.name) === normName(p.name)) }));
 }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

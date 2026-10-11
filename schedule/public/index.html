@@ -335,6 +335,14 @@ svg { display: block; }
 .dlg .rems { border-top: 1px solid var(--line); margin: 4px 0 12px; padding-top: 12px; }
 .dlg .remh { font-weight: 500; margin-bottom: 8px; }
 .rrow { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
+.inv { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 48px; border: 1px solid var(--muted); border-radius: 4px; padding: 6px 8px; background: var(--surface); }
+.inv:focus-within { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.dlg .inv input { flex: 1; min-width: 160px; border: 0; height: 34px; padding: 0 4px; box-shadow: none; outline: none; background: transparent; }
+#invChips { display: contents; }
+.ichip { display: inline-flex; align-items: center; gap: 2px; height: 30px; padding: 0 4px 0 12px; border-radius: 15px; background: var(--blue-tint); font-size: 13px; color: var(--ink); }
+.ichip button { border: 0; background: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: var(--ink2); cursor: pointer; padding: 0; }
+.ichip button:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.invsub { font-size: 12px; color: var(--ink2); margin-top: 4px; }
 .remsub { font-size: 12px; color: var(--ink2); margin: -4px 0 10px; }
 .rrow > svg { color: var(--ink2); flex: none; }
 .rrow .t { color: var(--ink2); font-size: 14px; }
@@ -462,6 +470,9 @@ svg { display: block; }
     <div class="f"><label for="evLoc">Location</label><input id="evLoc" type="text" maxlength="160" autocomplete="off" placeholder="Room, building or link"></div>
     <div class="f"><label for="evDesc">Description</label><textarea id="evDesc" rows="3" maxlength="4000"></textarea></div>
     <label class="chk"><input type="checkbox" id="evMand" checked><span>Attendance required</span><small>Anyone who can't come has to request an exemption with a reason.</small></label>
+    <div class="f"><label for="invIn">Invite</label>
+      <div class="inv" id="invBox"><span id="invChips"></span><input id="invIn" type="text" list="invOpts" autocomplete="off" placeholder="Everyone. Add teams or people to narrow it"></div>
+      <datalist id="invOpts"></datalist><div class="invsub" id="invSub"></div></div>
     <div class="rems">
       <div class="remh">Email reminders</div>
       <div class="remsub">Nobody who is excused or said they can't come gets these.</div>
@@ -965,6 +976,9 @@ svg { display: block; }
     return `${dayName(da)}, ${MONTHS[da.getMonth()]} ${da.getDate()} ⋅ ${clockTxt(a.min)} – ${end}`;
   }
   const myResp = e => (me && e.responses.find(r => r.name === me)) || null;
+  // Events can be limited to some teams or people; e.invited is the name list (null = everyone).
+  const forMe = e => !me || !e.invited || e.invited.includes(me);
+  const inviteText = inv => [...inv.teams.map(short), ...inv.people].join(", ");
   const REVIEW = { pending: "Exemption pending", approved: "Excused", denied: "Exemption denied" };
   const respText = r => !r ? "" : r.status === "going" ? "Going" : r.status === "no" ? "Not going" : REVIEW[r.review] || "Exemption requested";
 
@@ -1016,7 +1030,7 @@ svg { display: block; }
     layer.innerHTML = segs.map(x => {
       const cell = cells[x.d][0], w = (cell.offsetWidth - 8) / x.n;
       const top = cell.offsetTop + (x.s - START * 30) / 30 * ROW_H + 1, h = Math.max(20, (x.en - x.s) / 30 * ROW_H - 2);
-      const r = myResp(x.e), cls = !me || !r ? " tent" : r.status === "going" || r.review === "denied" ? "" : " out";
+      const r = myResp(x.e), cls = !forMe(x.e) ? " out" : !me || !r ? " tent" : r.status === "going" || r.review === "denied" ? "" : " out";
       const label = `${x.e.title}, ${evWhen(x.e)}${r ? ", " + respText(r) : ""}`;
       return `<button type="button" class="ev${cls}" data-ev="${esc(x.e.id)}" aria-label="${esc(label)}" style="top:${top}px;left:${cell.offsetLeft + 1 + x.c * w}px;width:${Math.max(18, w - 2)}px;height:${h}px"><b>${esc(x.e.title)}</b>${h >= 34 ? `<span>${clockTxt(wall(x.e.start).min)} – ${clockTxt(wall(x.e.end).min)}${x.e.location ? ", " + esc(x.e.location) : ""}</span>` : ""}</button>`;
     }).join("");
@@ -1028,7 +1042,7 @@ svg { display: block; }
     $("evList").innerHTML = list.map(e => {
       const a = parseDay(e.start.slice(0, 10)), r = myResp(e);
       const pend = mgr() ? e.responses.filter(x => x.status === "exempt" && x.review === "pending").length : 0;
-      const st = !me ? "" : !r ? `<span class="st need">Respond</span>` : `<span class="st">${respText(r)}</span>`;
+      const st = !me ? "" : !forMe(e) ? `<span class="st">Not invited</span>` : !r ? `<span class="st need">Respond</span>` : `<span class="st">${respText(r)}</span>`;
       return `<li><button type="button" data-ev="${esc(e.id)}"><span class="dt"><small>${DAYS[(a.getDay() + 6) % 7].toUpperCase()}</small>${a.getDate()}</span>
         <span class="info"><span class="t">${esc(e.title)}</span><small>${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()}, ${clockTxt(wall(e.start).min)}${pend ? ` · ${pend} to review` : ""}</small></span>${st}</button></li>`;
     }).join("") || `<li class="empty">No upcoming events</li>`;
@@ -1064,7 +1078,7 @@ svg { display: block; }
 
   function renderView() {
     const e = viewing; if (!e) return;
-    const r = myResp(e), done = ended(e), people = peopleList.map(p => p.name);
+    const r = myResp(e), done = ended(e), people = e.invited || peopleList.map(p => p.name);
     const going = e.responses.filter(x => x.status === "going");
     const outs = e.responses.filter(x => x.status !== "going");
     const answered = new Set(e.responses.map(x => x.name));
@@ -1072,7 +1086,11 @@ svg { display: block; }
     const pend = outs.filter(x => x.review === "pending").length;
     const cantLabel = e.mandatory ? "Request exemption" : "Can't go";
     let mine;
-    if (!me) {
+    if (me && !forMe(e)) {
+      mine = `<div class="lab">Your response</div>
+        <div>Responding as <b>${esc(me)}</b> · <button type="button" class="linkb" id="meChange">Not you?</button></div>
+        <div class="mine-st">This event is only for ${esc(inviteText(e.invite))}, so you don't need to respond.</div>`;
+    } else if (!me) {
       mine = `<div class="lab">Who are you?</div><select id="meSel" aria-label="Your name"><option value="">Choose your name</option>${people.map(n => `<option>${esc(n)}</option>`).join("")}</select>`;
     } else {
       mine = `<div class="lab">Your response</div>
@@ -1098,6 +1116,7 @@ svg { display: block; }
       </div>
       <div class="evrow"><span class="sq"></span><div><h2>${esc(e.title)}</h2><div class="sub">${evWhen(e)}</div>
         <span class="tag${e.mandatory ? "" : " plain"}">${e.mandatory ? "Attendance required" : "Optional"}</span></div></div>
+      ${e.invite ? `<div class="evrow">${ICON_PEOPLE}<div>For ${esc(inviteText(e.invite))} <span class="sub">(${people.length} ${people.length === 1 ? "person" : "people"})</span></div></div>` : ""}
       ${e.location ? `<div class="evrow">${ICON_PIN}<div>${esc(e.location)}</div></div>` : ""}
       ${e.description ? `<div class="evrow">${ICON_TEXT}<div class="desc">${esc(e.description)}</div></div>` : ""}
       <div class="stack">
@@ -1160,7 +1179,7 @@ svg { display: block; }
       catch (err) { t.disabled = false; if (err.message !== "unauthorized") snack(err.message); }
       return;
     }
-    if (t.id === "sendNow") return askConfirm("Send a reminder now?", `Everyone who hasn't been excused from ${ev.title} gets a reminder email now.`, "Send", async () => {
+    if (t.id === "sendNow") return askConfirm("Send a reminder now?", `Everyone ${ev.invite ? "invited to" : "who hasn't been excused from"} ${ev.title} ${ev.invite ? "who hasn't been excused " : ""}gets a reminder email now.`, "Send", async () => {
       try { const d = await api("/api/reminders", { method: "POST", body: JSON.stringify({ sendNow: ev.id }) }); snack(`Reminder sent to ${d.sent} ${d.sent === 1 ? "person" : "people"}`); await afterChange(ev.id); }
       catch (err) { if (err.message !== "unauthorized") snack(err.message); }
     });
@@ -1187,6 +1206,8 @@ svg { display: block; }
     $("evDesc").value = ev ? ev.description : "";
     $("evMand").checked = ev ? ev.mandatory : true;
     $("remDefault").checked = false;
+    invSel = ev && ev.invite ? [...ev.invite.teams.map(t => ({ team: t })), ...ev.invite.people.map(n => ({ name: n }))] : [];
+    $("invIn").value = ""; drawInvite();
     remCfg = JSON.parse(JSON.stringify(ev ? (ev.reminders ? ev.reminderCfg || remDefaults : { reminders: [], followUp: null }) : remDefaults));
     drawRems();
     $("evEdit").hidden = false; $("evTitle").focus();
@@ -1202,6 +1223,7 @@ svg { display: block; }
     if (en <= st) return err("The event has to end after it starts.");
     const body = { title, start: `${date}T${st}`, end: `${date}T${en}`, location: $("evLoc").value, description: $("evDesc").value, mandatory: $("evMand").checked };
     const cfg = readRems(); if (cfg.error) return err(cfg.error);
+    body.invite = { teams: invSel.filter(x => x.team).map(x => x.team), people: invSel.filter(x => x.name).map(x => x.name) };
     Object.assign(body, { reminders: cfg.reminders.length > 0 || !!cfg.followUp, reminderCfg: cfg, saveDefault: $("remDefault").checked });
     $("evSave").disabled = true;
     try {
@@ -1214,6 +1236,35 @@ svg { display: block; }
     } catch (x) { if (x.message !== "unauthorized") err(x.message); }
     finally { $("evSave").disabled = false; }
   });
+
+  /* invite list in the event form: empty means everyone; teams include their sub-teams */
+  let invSel = [], invOpts = new Map();
+  const TEAM_TAG = " · team";
+  const invTeamMatch = (t, p) => (p.team || "Other") === t || (p.team || "").startsWith(t + ": ");
+  function drawInvite() {
+    invOpts = new Map();
+    const teams = [...new Set(peopleList.flatMap(p => { const t = p.team || "Other"; return t.includes(": ") ? [deptOf(t), t] : [t]; }))]
+      .sort((a, b) => deptRank(deptOf(a)) - deptRank(deptOf(b)) || a.localeCompare(b));
+    for (const t of teams) if (!invSel.some(x => x.team === t)) invOpts.set(short(t) + TEAM_TAG, { team: t });
+    for (const p of peopleList) if (!invSel.some(x => x.name === p.name)) invOpts.set(p.name, { name: p.name });
+    $("invOpts").innerHTML = [...invOpts.keys()].map(k => `<option value="${esc(k)}">`).join("");
+    $("invChips").innerHTML = invSel.map((x, i) => `<span class="ichip">${esc(x.team ? short(x.team) : x.name)}<button type="button" data-i="${i}" aria-label="Remove ${esc(x.team ? short(x.team) : x.name)}">${ICON_RM}</button></span>`).join("");
+    const n = peopleList.filter(p => invSel.some(x => x.name ? x.name === p.name : invTeamMatch(x.team, p))).length;
+    $("invSub").textContent = invSel.length ? `${n} ${n === 1 ? "person" : "people"} invited. Only they can respond and get reminders.` : `Everyone (${peopleList.length} people) is invited.`;
+    $("invIn").placeholder = invSel.length ? "Add more" : "Everyone. Add teams or people to narrow it";
+  }
+  function invPick() {
+    const v = $("invIn").value.trim(), hit = invOpts.get(v) || [...invOpts].find(([k]) => k.toLowerCase() === v.toLowerCase())?.[1];
+    if (!hit) return false;
+    invSel.push(hit); $("invIn").value = ""; drawInvite(); return true;
+  }
+  $("invIn").addEventListener("input", invPick);
+  $("invIn").addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); if (!invPick() && $("invIn").value.trim()) snack("Pick a team or person from the list."); }
+    if (e.key === "Backspace" && !$("invIn").value && invSel.length) { invSel.pop(); drawInvite(); }
+  });
+  $("invChips").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (!b) return; invSel.splice(+b.dataset.i, 1); drawInvite(); });
+  $("invBox").addEventListener("click", e => { if (e.target === $("invBox")) $("invIn").focus(); });
 
   /* reminder rows in the event form, like Google Calendar notifications */
   let remDefaults = { reminders: [{ minutes: 4320, audience: "all" }, { minutes: 1440, audience: "all" }, { minutes: 120, audience: "all" }], followUp: null };
