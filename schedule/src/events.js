@@ -14,10 +14,15 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
 ];
 
+// Columns added after the first release. ALTER fails harmlessly once the column exists.
+const MIGRATIONS = ["ALTER TABLE events ADD COLUMN reminder_cfg TEXT"];
+
 let ready = null;
 export function db(env) {
   if (!env.DB) throw new Error("The events database isn't connected yet.");
-  ready ||= env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s))).catch((e) => { ready = null; throw e; });
+  ready ||= env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)))
+    .then(async () => { for (const m of MIGRATIONS) await env.DB.prepare(m).run().catch(() => {}); })
+    .catch((e) => { ready = null; throw e; });
   return ready.then(() => env.DB);
 }
 
@@ -55,6 +60,8 @@ export function cleanEvent(body) {
     description: clip(body?.description, 4000),
     mandatory: body?.mandatory === false ? 0 : 1,
     reminders: body?.reminders === false ? 0 : 1,
+    // No reminderCfg means "use the saved defaults" (read when the cron runs).
+    reminder_cfg: body?.reminderCfg ? JSON.stringify(cleanReminderCfg(body.reminderCfg)) : null,
   };
   if (!e.title) return { error: "Give the event a title." };
   if (!validWall(e.start) || !validWall(e.end)) return { error: "Pick a date, start time and end time." };
@@ -62,7 +69,11 @@ export function cleanEvent(body) {
   return { event: e };
 }
 
-const rowToEvent = (r) => ({ ...r, mandatory: !!r.mandatory, reminders: !!r.reminders });
+function rowToEvent({ reminder_cfg, ...r }) {
+  let cfg = null;
+  try { cfg = reminder_cfg ? cleanReminderCfg(JSON.parse(reminder_cfg)) : null; } catch { /* fall back to defaults */ }
+  return { ...r, mandatory: !!r.mandatory, reminders: !!r.reminders, reminderCfg: cfg };
+}
 
 export async function listEvents(env, { from, to, id }) {
   const DB = await db(env);
@@ -85,14 +96,14 @@ export async function saveEvent(env, id, e) {
   const at = new Date().toISOString();
   if (!id) {
     id = newId();
-    await DB.prepare(`INSERT INTO events (id, title, start, end, location, description, mandatory, reminders, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(id, e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, at, at).run();
+    await DB.prepare(`INSERT INTO events (id, title, start, end, location, description, mandatory, reminders, reminder_cfg, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(id, e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, at, at).run();
     return id;
   }
   const old = await DB.prepare("SELECT start FROM events WHERE id = ?").bind(id).first();
   if (!old) return null;
-  const stmts = [DB.prepare(`UPDATE events SET title = ?, start = ?, end = ?, location = ?, description = ?, mandatory = ?, reminders = ?, updated_at = ? WHERE id = ?`)
-    .bind(e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, at, id)];
+  const stmts = [DB.prepare(`UPDATE events SET title = ?, start = ?, end = ?, location = ?, description = ?, mandatory = ?, reminders = ?, reminder_cfg = ?, updated_at = ? WHERE id = ?`)
+    .bind(e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, at, id)];
   // A moved event gets its reminders again, counted from the new time.
   if (old.start !== e.start) stmts.push(DB.prepare("DELETE FROM reminders_sent WHERE event_id = ?").bind(id));
   await DB.batch(stmts);
@@ -110,27 +121,40 @@ export async function deleteEvent(env, id) {
 }
 
 /* ---------- reminder settings ---------- */
-export const REMINDER_CHOICES = [168, 72, 48, 24, 12, 4, 2, 1]; // hours before the event
-export const NUDGE_CHOICES = [0, 1, 2, 3, 7]; // days between "please respond" emails; 0 = off
-export const SEND_HOURS = [7, 8, 9, 10, 12, 15, 17, 18, 20]; // hour of day for "please respond" emails
-// audience: "all" = everyone not excused; "pending" = only people who haven't responded yet.
-const DEFAULT_REMINDERS = { enabled: true, hours: [72, 24, 2], audience: "all", nudgeDays: 0, nudgeHour: 9 };
+// Each event has its own list of reminders, like Google Calendar notifications:
+//   reminders: [{ minutes: 1440, audience: "all" | "pending" }]   "Email 1 day before, to everyone not excused / only non-responders"
+//   followUp:  { days: 2, time: "09:00" } | null                  "Every 2 days at 9 AM, email people who haven't responded"
+// The saved "reminders" setting is only the default for new events.
+const MAX_MINUTES = 4 * 7 * 1440;
+const DEFAULT_REMINDERS = { reminders: [{ minutes: 3 * 1440, audience: "all" }, { minutes: 1440, audience: "all" }, { minutes: 120, audience: "all" }], followUp: null };
+export function cleanReminderCfg(b) {
+  // Older saves used { hours: [...], audience, nudgeDays, nudgeHour }.
+  const raw = Array.isArray(b?.reminders) ? b.reminders
+    : Array.isArray(b?.hours) ? b.hours.map((h) => ({ minutes: h * 60, audience: b.audience }))
+    : DEFAULT_REMINDERS.reminders;
+  const byMin = new Map();
+  for (const r of raw.slice(0, 20)) {
+    const m = Math.round(+r?.minutes);
+    if (!Number.isFinite(m) || m < 0 || m > MAX_MINUTES) continue;
+    const aud = r?.audience === "pending" ? "pending" : "all";
+    // Two reminders at the same time: the wider audience wins.
+    byMin.set(m, byMin.get(m) === "all" ? "all" : aud);
+  }
+  const reminders = [...byMin].sort((x, y) => y[0] - x[0]).map(([minutes, audience]) => ({ minutes, audience }));
+  let f = b?.followUp ?? (b?.nudgeDays ? { days: b.nudgeDays, time: `${String(b.nudgeHour ?? 9).padStart(2, "0")}:00` } : null);
+  const days = Math.round(+f?.days), time = /^([01]\d|2[0-3]):[0-5]\d$/.test(f?.time || "") ? f.time : "09:00";
+  const followUp = f && days >= 1 && days <= 30 ? { days, time } : null;
+  return { reminders, followUp };
+}
 
 export async function loadReminderSettings(env) {
   const DB = await db(env);
   const row = await DB.prepare("SELECT value FROM settings WHERE key = 'reminders'").first();
-  try { return row ? { ...DEFAULT_REMINDERS, ...JSON.parse(row.value) } : DEFAULT_REMINDERS; } catch { return DEFAULT_REMINDERS; }
+  try { return row ? cleanReminderCfg(JSON.parse(row.value)) : DEFAULT_REMINDERS; } catch { return DEFAULT_REMINDERS; }
 }
 
 export async function saveReminderSettings(env, body) {
-  const hours = [...new Set((Array.isArray(body?.hours) ? body.hours : []).map(Number).filter((h) => REMINDER_CHOICES.includes(h)))].sort((a, b) => b - a);
-  const value = {
-    enabled: !!body?.enabled,
-    hours,
-    audience: body?.audience === "pending" ? "pending" : "all",
-    nudgeDays: NUDGE_CHOICES.includes(+body?.nudgeDays) ? +body.nudgeDays : 0,
-    nudgeHour: SEND_HOURS.includes(+body?.nudgeHour) ? +body.nudgeHour : 9,
-  };
+  const value = cleanReminderCfg(body);
   const DB = await db(env);
   await DB.prepare("INSERT INTO settings (key, value) VALUES ('reminders', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value").bind(JSON.stringify(value)).run();
   return value;
@@ -217,47 +241,49 @@ export async function sendReminder(env, ev, { audience = "all", nudge = false } 
 // Cron: for each upcoming event, send the closest reminder that is due and not sent yet; earlier missed ones are skipped.
 export async function runReminders(env) {
   if (!env.DB || !emailReady(env)) return [];
-  const settings = await loadReminderSettings(env);
-  if (!settings.enabled) return [];
+  const defaults = await loadReminderSettings(env);
   const now = nowWall(), nowMin = wallMinutes(now);
-  const maxH = Math.max(0, ...settings.hours);
-  const days = Math.max(Math.ceil(maxH / 24) + 2, settings.nudgeDays ? 60 : 0);
+  // Look far enough ahead for the longest reminder (1 week) and for "please respond" emails.
+  const days = 60;
   const horizon = new Date((Math.floor(nowMin / 1440) + days) * 86400000).toISOString().slice(0, 10);
   const events = (await listEvents(env, { from: now.slice(0, 10), to: horizon })).filter((e) => e.reminders && wallMinutes(e.start) > nowMin);
   const done = [];
   const DB = await db(env);
+  // reminders_sent.hours holds the reminder's minutes before the event (0 = "send now", negative = a follow-up's day).
   for (const ev of events) {
+    const cfg = ev.reminderCfg || defaults;
     const startMin = wallMinutes(ev.start);
     const sent = new Set(ev.remindersSent.map((r) => r.hours));
-    const due = settings.hours.filter((h) => startMin - h * 60 <= nowMin && !sent.has(h));
+    const due = cfg.reminders.filter((r) => r.minutes > 0 && startMin - r.minutes <= nowMin && !sent.has(r.minutes));
     if (!due.length) {
-      const nudged = await nudge(env, DB, ev, settings, nowMin);
+      const nudged = await followUp(env, DB, ev, cfg, nowMin);
       if (nudged) done.push(nudged);
       continue;
     }
-    const h = Math.min(...due);
+    const r = due.reduce((a, b) => (b.minutes < a.minutes ? b : a));
     let n = 0;
-    try { n = await sendReminder(env, ev, { audience: settings.audience }); } catch (e) { console.log("reminder failed", ev.id, e.message); continue; }
+    try { n = await sendReminder(env, ev, { audience: r.audience }); } catch (e) { console.log("reminder failed", ev.id, e.message); continue; }
     const at = new Date().toISOString();
-    await DB.batch(due.map((x) => DB.prepare("INSERT OR IGNORE INTO reminders_sent (event_id, hours, sent_at, recipients) VALUES (?, ?, ?, ?)").bind(ev.id, x, at, x === h ? n : 0)));
-    done.push({ id: ev.id, hours: h, recipients: n });
+    await DB.batch(due.map((x) => DB.prepare("INSERT OR IGNORE INTO reminders_sent (event_id, hours, sent_at, recipients) VALUES (?, ?, ?, ?)").bind(ev.id, x.minutes, at, x === r ? n : 0)));
+    done.push({ id: ev.id, minutes: r.minutes, recipients: n });
   }
   return done;
 }
 
-// "Please respond" emails to people who haven't answered, every nudgeDays days at nudgeHour, counted from the event's creation.
-// Stored in reminders_sent with hours = -(day number), one row per day sent. Skipped on the event's own day and within 20 hours of another reminder.
-async function nudge(env, DB, ev, settings, nowMin) {
-  if (!settings.nudgeDays) return null;
-  const today = Math.floor(nowMin / 1440);
-  if (nowMin % 1440 < settings.nudgeHour * 60 || Math.floor(wallMinutes(ev.start) / 1440) <= today) return null;
+// Follow-up emails to people who haven't answered, every followUp.days days at followUp.time, counted from the event's creation.
+// Stored in reminders_sent with hours = -(day number). Skipped on the event's own day and within 20 hours of another reminder.
+async function followUp(env, DB, ev, cfg, nowMin) {
+  const f = cfg.followUp;
+  if (!f) return null;
+  const today = Math.floor(nowMin / 1440), at = +f.time.slice(0, 2) * 60 + +f.time.slice(3);
+  if (nowMin % 1440 < at || Math.floor(wallMinutes(ev.start) / 1440) <= today) return null;
   const nudges = ev.remindersSent.filter((r) => r.hours < 0).map((r) => -r.hours);
   const created = Math.floor(Date.parse(ev.created_at) / 86400000);
   const last = nudges.length ? Math.max(...nudges) : created;
-  if (today - last < settings.nudgeDays) return null;
+  if (today - last < f.days) return null;
   if (ev.remindersSent.some((r) => r.hours >= 0 && Date.now() - Date.parse(r.sent_at) < 20 * 3600 * 1000)) return null;
   let n = 0;
-  try { n = await sendReminder(env, ev, { nudge: true }); } catch (e) { console.log("nudge failed", ev.id, e.message); return null; }
+  try { n = await sendReminder(env, ev, { nudge: true }); } catch (e) { console.log("follow-up failed", ev.id, e.message); return null; }
   await DB.prepare("INSERT OR IGNORE INTO reminders_sent (event_id, hours, sent_at, recipients) VALUES (?, ?, ?, ?)").bind(ev.id, -today, new Date().toISOString(), n).run();
-  return { id: ev.id, nudge: true, recipients: n };
+  return { id: ev.id, followUp: true, recipients: n };
 }

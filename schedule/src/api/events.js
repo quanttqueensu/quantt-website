@@ -1,7 +1,7 @@
 // Events: everyone signed in can list them; the Ops & Marketing and admin logins can create, edit and delete.
 // Exemption reasons are only included for those two logins.
 import { authorized, canManageEvents, json } from "../core.js";
-import { listEvents, cleanEvent, saveEvent, deleteEvent, people } from "../events.js";
+import { listEvents, cleanEvent, saveEvent, deleteEvent, people, saveReminderSettings } from "../events.js";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const denied = () => json({ error: "Wrong password" }, 401);
@@ -35,6 +35,8 @@ async function save(request, env, id) {
   try {
     const saved = await saveEvent(env, id, event);
     if (!saved) return json({ error: "That event no longer exists." }, 404);
+    // "Use as default for new events" in the event form.
+    if (body?.saveDefault && body?.reminderCfg) await saveReminderSettings(env, body.reminderCfg);
     return json({ id: saved }, id ? 200 : 201);
   } catch (e) { return fail(e); }
 }
