@@ -1,5 +1,5 @@
 // Shared helpers for the schedule API: auth, member storage, ICS parsing.
-// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), SCHEDULE_PASSWORD and ADMIN_PASSWORD (secrets).
+// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), DB (D1, events), SCHEDULE_PASSWORD, OPS_PASSWORD and ADMIN_PASSWORD (secrets).
 
 const STORE_KEY = "members";
 const ALLOWED_HOSTS = ["mytimetable.queensu.ca", "outlook.office365.com", "outlook.live.com", "calendar.google.com"];
@@ -16,17 +16,19 @@ export function json(data, status = 200) {
   });
 }
 
-// "admin" can add and remove calendars; "team" can only view.
+// "admin" can do everything; "ops" (Ops & Marketing) can also manage events and reminder emails; "team" can view and respond to events.
 export function role(request, env) {
   const key = request.headers.get("x-schedule-key");
   if (!key) return null;
   if (env.ADMIN_PASSWORD && key === env.ADMIN_PASSWORD) return "admin";
+  if (env.OPS_PASSWORD && key === env.OPS_PASSWORD) return "ops";
   if (env.SCHEDULE_PASSWORD && key === env.SCHEDULE_PASSWORD) return "team";
   return null;
 }
 
 export const authorized = (request, env) => role(request, env) !== null;
 export const isAdmin = (request, env) => role(request, env) === "admin";
+export const canManageEvents = (request, env) => ["admin", "ops"].includes(role(request, env));
 export const icsKey = (id) => `ics:${id}`;
 const MAX_ICS_BYTES = 1024 * 1024;
 
@@ -133,6 +135,29 @@ export function rosterFromContacts(text) {
   });
 }
 
+// Reminder emails only: { name: address }, preferring a queensu.ca address. Kept in KV, never sent to the browser.
+const EMAILS_KEY = "emails";
+export function emailsFromContacts(text) {
+  const [head, ...body] = parseCSV(String(text).replace(/^\uFEFF/, ""));
+  if (!head) return {};
+  const col = (n) => head.indexOf(n);
+  const iFirst = col("First Name"), iLast = col("Last Name");
+  const out = {};
+  for (const r of body) {
+    const name = `${r[iFirst] || ""} ${r[iLast] || ""}`.trim();
+    const all = [1, 2, 3].flatMap((k) => (r[col(`E-mail ${k} - Value`)] || "").split(":::")).map((v) => v.trim()).filter((v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+    const pick = all.find((v) => /@queensu\.ca$/i.test(v)) || all[0];
+    if (name && pick) out[name] = pick;
+  }
+  return out;
+}
+export async function loadEmails(env) {
+  return (await env.SCHEDULE_KV.get(EMAILS_KEY, "json")) || {};
+}
+export async function saveEmails(env, emails) {
+  await env.SCHEDULE_KV.put(EMAILS_KEY, JSON.stringify(emails));
+}
+
 // Exact name first; otherwise same last name and first names sharing their first three letters (Gabe / Gabriel).
 export function findInRoster(roster, name) {
   const n = normName(name);
@@ -212,7 +237,7 @@ const torontoFmt = new Intl.DateTimeFormat("en-CA", {
   year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
 });
 
-function toToronto(date) {
+export function toToronto(date) {
   const p = Object.fromEntries(torontoFmt.formatToParts(date).map((x) => [x.type, x.value]));
   return { day: dayNum(+p.year, +p.month, +p.day), min: +p.hour * 60 + +p.minute };
 }

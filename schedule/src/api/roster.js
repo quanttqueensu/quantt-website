@@ -1,5 +1,6 @@
 // Team roster: an admin uploads the contacts CSV; members are renamed to their contact name and grouped by team.
-import { authorized, isAdmin, json, loadMembers, saveMembers, rosterFromContacts, saveRoster, findInRoster } from "../core.js";
+// Email addresses from the file are stored separately for reminder emails and never returned.
+import { authorized, isAdmin, json, loadMembers, saveMembers, rosterFromContacts, saveRoster, findInRoster, emailsFromContacts, saveEmails } from "../core.js";
 
 export async function onRequestPost({ request, env }) {
   if (!authorized(request, env)) return json({ error: "Wrong password" }, 401);
@@ -8,6 +9,8 @@ export async function onRequestPost({ request, env }) {
   const roster = rosterFromContacts(body?.csv || "");
   if (!roster.length) return json({ error: "That file doesn't look like a contacts export." }, 400);
   await saveRoster(env, roster);
+  // Email addresses are kept server-side for event reminders only.
+  await saveEmails(env, emailsFromContacts(body.csv));
   const members = await loadMembers(env);
   const unmatched = [];
   for (const m of members) {
