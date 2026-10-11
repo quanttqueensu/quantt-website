@@ -317,9 +317,10 @@ svg { display: block; }
 .badge.no { background: transparent; border: 1px solid var(--muted); }
 .stack { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 0 52px; }
 @media (max-width: 720px) { .stack { padding: 0 8px 0 12px; } .evrow { grid-template-columns: 40px minmax(0, 1fr); padding-right: 8px; } }
-.f3 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+/* Date/start/end fit on one line when there's room and wrap on their own when there isn't. */
+.f3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 136px), 1fr)); gap: 0 8px; }
 .f3 input { min-width: 0; }
-@media (max-width: 480px) { .f3 { grid-template-columns: 1fr 1fr; } .f3 > :first-child { grid-column: 1 / -1; } }
+
 .dlg .chk { display: grid; grid-template-columns: 18px 1fr; gap: 2px 12px; align-items: start; font-size: 14px; color: var(--ink); margin: 0 0 14px; cursor: pointer; }
 .dlg .chk input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--blue); padding: 0; }
 .dlg .chk small { grid-column: 2; color: var(--ink2); font-size: 12px; }
@@ -334,10 +335,16 @@ svg { display: block; }
 .testrow input { flex: 1; min-width: 0; height: 44px; }
 .dlg .rems { border-top: 1px solid var(--line); margin: 4px 0 12px; padding-top: 12px; }
 .dlg .remh { font-weight: 500; margin-bottom: 8px; }
-.rrow { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
+/* A reminder row: icon, then its parts in whole chunks that wrap to a second line when the dialog is narrow, then the remove button. */
+.rrow { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.rrow > svg { margin-top: 11px; }
+.rrow .rbody { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rrow .grp { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 100%; }
+.rrow .grp > input, .rrow .grp > select { flex: none; }
+.rrow .t { white-space: nowrap; }
 .inv { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 48px; border: 1px solid var(--muted); border-radius: 4px; padding: 6px 8px; background: var(--surface); }
 .inv:focus-within { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
-.dlg .inv input { flex: 1; min-width: 160px; border: 0; height: 34px; padding: 0 4px; box-shadow: none; outline: none; background: transparent; }
+.dlg .inv input { flex: 1 1 140px; min-width: 0; border: 0; height: 34px; padding: 0 4px; box-shadow: none; outline: none; background: transparent; }
 #invChips { display: contents; }
 .ichip { display: inline-flex; align-items: center; gap: 2px; height: 30px; padding: 0 4px 0 12px; border-radius: 15px; background: var(--blue-tint); font-size: 13px; color: var(--ink); }
 .ichip button { border: 0; background: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: var(--ink2); cursor: pointer; padding: 0; }
@@ -348,13 +355,27 @@ svg { display: block; }
 .rrow .t { color: var(--ink2); font-size: 14px; }
 .dlg .rrow input { width: 58px; height: 40px; padding: 0 8px; font-size: 14px; }
 .dlg .rrow input[type=time] { width: 112px; }
-@media (max-width: 480px) { .rrow { flex-wrap: wrap; } .rrow .aud, .rrow.fu .t:last-of-type { margin-left: 26px; } }
+
 .dlg .rrow select { width: auto; height: 40px; padding: 0 6px; font-size: 14px; }
-.rrow .ib { width: 36px; height: 36px; margin-left: auto; }
+.rrow .ib { width: 36px; height: 36px; margin-top: 2px; flex: none; }
 .remadd { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px -8px; }
 .remlist { margin: 0 0 6px; padding: 0; list-style: none; }
 .remlist li { padding: 2px 0; }
-#evEdit .dlg { max-width: 520px; }
+/* Event form: title and buttons stay put, the middle scrolls. Full screen on phones. */
+#evEdit .dlg { max-width: 560px; max-height: calc(100dvh - 32px); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+#evEdit h2 { margin: 0; padding: 24px 24px 12px; flex: none; }
+#evEdit .dbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 24px 8px; }
+#evEdit .dfoot { flex: none; padding: 8px 24px 20px; border-top: 1px solid var(--line); }
+#evEdit .dfoot .help:empty { display: none; }
+#evEdit .dfoot .acts { margin-top: 8px; }
+.dlg input[type=date], .dlg input[type=time] { min-width: 0; display: block; }
+@media (max-width: 600px) {
+  #evEdit { padding: 0; }
+  #evEdit .dlg { max-width: none; width: 100%; height: 100dvh; max-height: none; border-radius: 0; }
+  #evEdit h2 { padding: calc(16px + env(safe-area-inset-top)) 16px 8px; }
+  #evEdit .dbody { padding: 4px 16px 8px; }
+  #evEdit .dfoot { padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); }
+}
 </style>
 </head>
 <body>
@@ -461,6 +482,7 @@ svg { display: block; }
 <div class="scrim" id="evEdit" hidden>
   <form class="dlg" id="evForm" novalidate>
     <h2 id="evEditTitle">New event</h2>
+    <div class="dbody">
     <div class="f"><label for="evTitle">Title</label><input id="evTitle" type="text" maxlength="120" autocomplete="off"></div>
     <div class="f3">
       <div class="f"><label for="evDate">Date</label><input id="evDate" type="date"></div>
@@ -481,8 +503,9 @@ svg { display: block; }
       <div class="remadd"><button type="button" class="tb" id="remAdd">Add reminder</button><button type="button" class="tb" id="fuAdd">Add follow-up</button></div>
       <label class="chk"><input type="checkbox" id="remDefault"><span>Use these reminders for new events</span></label>
     </div>
-    <div class="help" id="evHelp"></div>
-    <div class="acts"><button class="tb" type="button" id="evCancel">Cancel</button><button class="tb fill" type="submit" id="evSave">Save</button></div>
+    </div>
+    <div class="dfoot"><div class="help" id="evHelp"></div>
+    <div class="acts"><button class="tb" type="button" id="evCancel">Cancel</button><button class="tb fill" type="submit" id="evSave">Save</button></div></div>
   </form>
 </div>
 <div class="snack" id="snack" hidden></div>
@@ -1273,16 +1296,16 @@ svg { display: block; }
   const splitMin = m => { for (const [u, k] of UNITS) if (m && m % k === 0) return [m / k, u]; return [m, "minutes"]; };
   const ICON_RM = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
   function drawRems() {
-    $("remRows").innerHTML = remCfg.reminders.map((r, i) => { const [n, u] = splitMin(r.minutes); return `<div class="rrow" data-i="${i}">${ICON_MAIL}
+    $("remRows").innerHTML = remCfg.reminders.map((r, i) => { const [n, u] = splitMin(r.minutes); return `<div class="rrow" data-i="${i}">${ICON_MAIL}<div class="rbody"><span class="grp">
       <input type="number" min="0" max="999" class="amt" value="${n}" aria-label="How long before">
       <select class="unit" aria-label="Unit">${UNITS.map(([x]) => `<option ${x === u ? "selected" : ""}>${x}</option>`).join("")}</select>
-      <span class="t">before, to</span>
-      <select class="aud" aria-label="Who gets it"><option value="all" ${r.audience !== "pending" ? "selected" : ""}>everyone</option><option value="pending" ${r.audience === "pending" ? "selected" : ""}>non-responders</option></select>
+      <span class="t">before,</span></span><span class="grp"><span class="t">to</span>
+      <select class="aud" aria-label="Who gets it"><option value="all" ${r.audience !== "pending" ? "selected" : ""}>everyone</option><option value="pending" ${r.audience === "pending" ? "selected" : ""}>non-responders</option></select></span></div>
       <button type="button" class="ib rm" aria-label="Remove reminder">${ICON_RM}</button></div>`; }).join("");
     const f = remCfg.followUp;
-    $("fuRow").innerHTML = f ? `<div class="rrow fu">${ICON_MAIL}<span class="t">Every</span>
-      <input type="number" min="1" max="30" class="fdays" value="${f.days}" aria-label="Days between follow-ups"><span class="t fdl">day${f.days === 1 ? "" : "s"} at</span>
-      <input type="time" class="ftime" value="${f.time}" aria-label="Time"><span class="t">to non-responders</span>
+    $("fuRow").innerHTML = f ? `<div class="rrow fu">${ICON_MAIL}<div class="rbody"><span class="grp"><span class="t">Every</span>
+      <input type="number" min="1" max="30" class="fdays" value="${f.days}" aria-label="Days between follow-ups"><span class="t fdl">day${f.days === 1 ? "" : "s"} at</span></span>
+      <span class="grp"><input type="time" class="ftime" value="${f.time}" aria-label="Time"><span class="t">to non-responders</span></span></div>
       <button type="button" class="ib rmfu" aria-label="Remove follow-up">${ICON_RM}</button></div>` : "";
     $("fuAdd").hidden = !!f;
   }
