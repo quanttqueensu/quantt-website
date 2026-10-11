@@ -244,6 +244,81 @@ svg { display: block; }
 .gate .msg { min-height: 20px; font-size: 13px; color: var(--blue); margin: 8px 0 16px; }
 .gate .acts { display: flex; justify-content: flex-end; }
 .dlg p { color: var(--ink2); margin: 0 0 8px; line-height: 1.5; }
+
+/* events */
+#confirm { z-index: 35; } /* confirmations open on top of the event dialog */
+#app:not(.mgr) #createBtn, #app:not(.mgr) .mgr-only { display: none !important; }
+.cmenu { position: absolute; z-index: 25; background: var(--surface); border-radius: 4px; box-shadow: var(--shadow); padding: 8px 0; min-width: 180px; }
+.cmenu button { display: flex; align-items: center; gap: 16px; width: 100%; border: 0; background: none; height: 40px; padding: 0 16px; text-align: left; font-size: 14px; }
+.cmenu button:hover { background: var(--hover); }
+.cmenu svg { color: var(--ink2); }
+.evs li button { width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: none; min-height: 44px; padding: 4px 8px 4px 12px; border-radius: 0 22px 22px 0; text-align: left; }
+.evs li button:hover { background: var(--hover); }
+.evs .dt { width: 32px; flex: none; text-align: center; font-size: 18px; line-height: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.evs .dt small { display: block; font-size: 9px; line-height: 12px; font-weight: 500; color: var(--ink2); letter-spacing: .5px; }
+.evs .info { flex: 1; min-width: 0; }
+.evs .info .t { display: block; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evs .info small { display: block; font-size: 12px; color: var(--ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evs .st { font-size: 11px; color: var(--ink2); white-space: nowrap; flex: none; }
+.evs .st.need { color: var(--blue); font-weight: 500; }
+.evs .empty { color: var(--muted); padding: 6px 16px; font-size: 13px; }
+.evs .imp { margin: 4px 0 0 12px; height: 32px; font-size: 13px; }
+#evLayer { position: absolute; top: 0; left: 0; }
+.ev { position: absolute; z-index: 2; border: 1px solid var(--surface); border-radius: 6px; padding: 2px 6px; background: var(--blue); color: var(--on-blue); text-align: left; overflow: hidden; font-size: 12px; line-height: 15px; box-shadow: 0 1px 2px rgba(0,0,0,.25); display: flex; flex-direction: column; }
+.ev b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .9; }
+.ev.tent { background: var(--surface); color: var(--blue); border: 1px solid var(--blue); }
+.ev.out { background: var(--surface); color: var(--ink2); border: 1px dashed var(--muted); }
+.ev.out b { text-decoration: line-through; }
+.ev:hover { box-shadow: var(--shadow); z-index: 3; }
+.dlg.wide { max-width: 560px; padding: 8px 8px 20px; border-radius: 16px; }
+.evh { display: flex; justify-content: flex-end; gap: 2px; }
+.evh .ib { width: 40px; height: 40px; }
+.evrow { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: start; padding: 0 20px 0 0; margin-bottom: 14px; }
+.evrow > svg, .evrow > .sq { justify-self: center; color: var(--ink2); margin-top: 2px; }
+.evrow > .sq { width: 14px; height: 14px; border-radius: 4px; background: var(--blue); margin-top: 8px; }
+.evrow h2 { font-size: 22px; line-height: 28px; margin: 0; word-wrap: break-word; }
+.evrow .sub { color: var(--ink2); margin-top: 2px; }
+.evrow .desc { white-space: pre-line; line-height: 1.45; word-wrap: break-word; }
+.tag { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 12px; background: var(--blue-tint); color: var(--ink); margin-top: 6px; }
+.tag.plain { background: var(--hover); color: var(--ink2); }
+.box { background: var(--app); border-radius: 12px; padding: 12px 14px; }
+.box .lab { font-weight: 500; margin-bottom: 8px; }
+.box select { width: 100%; height: 40px; border: 1px solid var(--muted); border-radius: 4px; background: var(--surface); padding: 0 10px; font: inherit; color: inherit; }
+.rsvp { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip { height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+.chip:hover { background: var(--hover); }
+.chip.on { background: var(--blue-tint); border-color: var(--blue-tint); color: var(--ink); }
+.chip.on::before { content: "✓"; }
+.linkb { border: 0; background: none; padding: 0; color: var(--blue); font-weight: 500; }
+.box textarea, .dlg textarea { width: 100%; border: 1px solid var(--muted); border-radius: 4px; padding: 10px 14px; background: var(--surface); font: inherit; font-size: 15px; resize: vertical; color: inherit; }
+.box textarea:focus, .dlg textarea:focus { outline: none; border: 2px solid var(--blue); padding: 9px 13px; }
+.mine-st { margin-top: 6px; color: var(--ink2); }
+.mine-st b { color: var(--ink); font-weight: 500; }
+.att .sum { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--ink2); margin-bottom: 8px; }
+.att .sum b { color: var(--ink); font-weight: 500; }
+.att h3 { font-size: 13px; font-weight: 500; margin: 12px 0 4px; color: var(--ink2); }
+.att .names { line-height: 1.6; }
+.att details summary { cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink2); margin-top: 12px; }
+.req { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.req:first-of-type { border-top: 0; }
+.req .who { font-weight: 500; }
+.req .why { grid-column: 1 / -1; color: var(--ink2); white-space: pre-line; word-wrap: break-word; }
+.req .acts2 { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 4px; }
+.req .acts2 .chip { height: 32px; padding: 0 12px; }
+.badge { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 10px; background: var(--hover); color: var(--ink2); align-self: start; }
+.badge.ok { background: var(--blue-tint); color: var(--ink); }
+.badge.no { background: transparent; border: 1px solid var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 0 52px; }
+@media (max-width: 720px) { .stack { padding: 0 8px 0 12px; } .evrow { grid-template-columns: 40px minmax(0, 1fr); padding-right: 8px; } }
+.f3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; }
+.dlg .chk { display: grid; grid-template-columns: 18px 1fr; gap: 2px 12px; align-items: start; font-size: 14px; color: var(--ink); margin: 0 0 14px; cursor: pointer; }
+.dlg .chk input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--blue); padding: 0; }
+.dlg .chk small { grid-column: 2; color: var(--ink2); font-size: 12px; }
+.dlg .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.note { font-size: 13px; color: var(--ink2); line-height: 1.5; margin: 0 0 12px; }
+.note.warn { color: var(--ink); background: var(--blue-tint); border-radius: 8px; padding: 8px 12px; }
+.pop .mk { margin: 4px 0 0 52px; }
 </style>
 </head>
 <body>
@@ -254,9 +329,9 @@ svg { display: block; }
   <form id="gateForm" novalidate>
     <div class="logo"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="5" width="32" height="31" rx="5" fill="var(--blue)"/><rect x="7" y="13" width="26" height="20" rx="2" fill="var(--surface)"/></svg><span class="word"><b>QUANTT</b> Schedule</span></div>
     <h1>Sign in</h1>
-    <p>Team availability is private to QUANTT. Enter the team password to continue.</p>
-    <label for="gatePw" class="sr" style="position:absolute;left:-9999px">Team or admin password</label>
-    <input id="gatePw" type="password" autocomplete="current-password" placeholder="Team or admin password">
+    <p>The QUANTT calendar is private. Enter your team or Ops &amp; Marketing password to continue.</p>
+    <label for="gatePw" class="sr" style="position:absolute;left:-9999px">Password</label>
+    <input id="gatePw" type="password" autocomplete="current-password" placeholder="Password">
     <div class="msg" id="gateMsg" role="alert"></div>
     <div class="acts"><button class="tb fill" type="submit">Next</button></div>
   </form>
@@ -283,7 +358,7 @@ svg { display: block; }
   <div class="main" id="main">
     <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" title="Drag to resize. Double-click to reset."></div>
     <aside class="rail" id="rail">
-      <button class="create" type="button" id="addOpen"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M20 13h-7v7h-2v-7H4v-2h7V4h2v7h7v2z" fill="var(--blue)"/></svg>Add calendar</button>
+      <button class="create" type="button" id="createBtn" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M20 13h-7v7h-2v-7H4v-2h7V4h2v7h7v2z" fill="var(--blue)"/></svg><span id="createLabel">Create</span></button>
 
       <div class="mini">
         <div class="mh"><span id="miniTitle"></span><span style="display:flex"><button class="ib" type="button" id="mPrev" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><button class="ib" type="button" id="mNext" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button></span></div>
@@ -291,6 +366,11 @@ svg { display: block; }
       </div>
 
       <label class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><input id="q" type="text" placeholder="Search for people" autocomplete="off"></label>
+
+      <section class="sec evs" id="secEv">
+        <button class="sh" type="button" aria-expanded="true">Upcoming events<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
+        <div class="body"><ul id="evList"></ul><button class="tb imp mgr-only" type="button" id="remOpen">Reminder emails</button></div>
+      </section>
 
       <section class="sec best" id="secBest">
         <button class="sh" type="button" aria-expanded="true">Best times this week<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
@@ -311,6 +391,7 @@ svg { display: block; }
 
     <main class="surface" id="surface">
       <div class="grid" id="grid"></div>
+      <div id="evLayer"></div>
       <div class="now" id="now" hidden></div>
       <div class="pop" id="pop" hidden></div>
     </main>
@@ -334,6 +415,38 @@ svg { display: block; }
     <div class="acts"><button class="tb" type="button" id="confirmCancel">Cancel</button><button class="tb fill" type="button" id="confirmOk">Remove</button></div>
   </div>
 </div>
+<div class="cmenu" id="createMenu" role="menu" hidden>
+  <button type="button" role="menuitem" id="menuEvent"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>Event</button>
+  <button type="button" role="menuitem" id="addOpen"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Member calendar</button>
+</div>
+<div class="scrim" id="evView" hidden>
+  <div class="dlg wide" role="dialog" aria-modal="true" aria-label="Event" id="evViewBody"></div>
+</div>
+<div class="scrim" id="evEdit" hidden>
+  <form class="dlg" id="evForm" novalidate>
+    <h2 id="evEditTitle">New event</h2>
+    <div class="f"><label for="evTitle">Title</label><input id="evTitle" type="text" maxlength="120" autocomplete="off"></div>
+    <div class="f3">
+      <div class="f"><label for="evDate">Date</label><input id="evDate" type="date"></div>
+      <div class="f"><label for="evStart">Start</label><input id="evStart" type="time" step="900"></div>
+      <div class="f"><label for="evEnd">End</label><input id="evEnd" type="time" step="900"></div>
+    </div>
+    <div class="f"><label for="evLoc">Location</label><input id="evLoc" type="text" maxlength="160" autocomplete="off" placeholder="Room, building or link"></div>
+    <div class="f"><label for="evDesc">Description</label><textarea id="evDesc" rows="3" maxlength="4000"></textarea></div>
+    <label class="chk"><input type="checkbox" id="evMand" checked><span>Attendance required</span><small>Anyone who can't come has to request an exemption with a reason.</small></label>
+    <label class="chk"><input type="checkbox" id="evRem" checked><span>Send reminder emails</span><small>On the schedule set under Reminder emails.</small></label>
+    <div class="help" id="evHelp"></div>
+    <div class="acts"><button class="tb" type="button" id="evCancel">Cancel</button><button class="tb fill" type="submit" id="evSave">Save</button></div>
+  </form>
+</div>
+<div class="scrim" id="remDlg" hidden>
+  <form class="dlg" id="remForm" novalidate>
+    <h2>Reminder emails</h2>
+    <div id="remBody"><p>Loading…</p></div>
+    <div class="help" id="remHelp"></div>
+    <div class="acts"><button class="tb" type="button" id="remCancel">Cancel</button><button class="tb fill" type="submit" id="remSave">Save</button></div>
+  </form>
+</div>
 <div class="snack" id="snack" hidden></div>
 
 <script>
@@ -350,6 +463,9 @@ svg { display: block; }
   };
   let key = store.get("qs-key", "");
   let admin = store.get("qs-admin", "") === "1";
+  // team: view and respond; ops (Ops & Marketing): also manage events and reminders; admin: everything.
+  let role = store.get("qs-role", admin ? "admin" : "team");
+  const mgr = () => role === "admin" || role === "ops";
   const hidden = new Set(store.get("qs-hidden", []));
   const saveHidden = () => store.set("qs-hidden", [...hidden]);
 
@@ -404,7 +520,8 @@ svg { display: block; }
 
   /* ---------- sign in ---------- */
   function signOut(msg) {
-    key = ""; store.del("qs-key"); admin = false; store.del("qs-admin");
+    key = ""; store.del("qs-key"); admin = false; store.del("qs-admin"); role = "team"; store.del("qs-role");
+    ["evView", "evEdit", "remDlg", "dlg", "confirm"].forEach(id => $(id).hidden = true);
     $("gate").hidden = false; $("app").hidden = true;
     $("gateMsg").textContent = msg || "";
     $("gatePw").value = ""; $("gatePw").focus();
@@ -412,12 +529,12 @@ svg { display: block; }
   $("gateForm").addEventListener("submit", async e => {
     e.preventDefault();
     const pw = $("gatePw").value.trim();
-    if (!pw) { $("gateMsg").textContent = "Enter the team password."; return; }
+    if (!pw) { $("gateMsg").textContent = "Enter your password."; return; }
     const res = await fetch("/api/session", { method: "POST", headers: { "x-schedule-key": pw } });
     if (!res.ok) { $("gateMsg").textContent = "That password isn't right. Ask an exec for the current one."; return; }
     const info = await res.json().catch(() => ({}));
     key = pw; store.set("qs-key", pw);
-    admin = !!info.admin; store.set("qs-admin", admin ? "1" : "");
+    setRole(info.role || (info.admin ? "admin" : "team"));
     start();
   });
 
@@ -443,6 +560,7 @@ svg { display: block; }
     document.title = `QUANTT Schedule · Week of ${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()}`;
     placeNow();
     mini();
+    placeEvents();
   }
 
   function placeNow() {
@@ -579,7 +697,8 @@ svg { display: block; }
       <div class="row">${ICON_PEOPLE}<div><div class="lab">Available<small>${free.length} ${free.length === 1 ? "person" : "people"}</small></div>
       <ul>${free.map(m => `<li><span class="av">${esc(initials(m.name))}</span><span class="who">${esc(m.name)}</span></li>`).join("") || `<li><span class="who" style="color:var(--ink2)">No one</span></li>`}</ul></div></div>
       ${busy.length ? `<div class="row">${ICON_CLASS}<div><div class="lab">In class<small>${busy.length} ${busy.length === 1 ? "person" : "people"}</small></div>
-      <ul>${busy.map(m => `<li><span class="av busy">${esc(initials(m.name))}</span><span class="who">${esc(m.name)}<small>${esc(m.busy[d][r])}</small></span></li>`).join("")}</ul></div></div>` : ""}`;
+      <ul>${busy.map(m => `<li><span class="av busy">${esc(initials(m.name))}</span><span class="who">${esc(m.name)}<small>${esc(m.busy[d][r])}</small></span></li>`).join("")}</ul></div></div>` : ""}
+      ${mgr() ? `<button class="tb mk" type="button" id="popEvent">Create an event at this time</button>` : ""}`;
     pop.hidden = false;
     const cr = c.getBoundingClientRect(), sr = surface.getBoundingClientRect(), w = pop.offsetWidth;
     let left = cr.right - sr.left + surface.scrollLeft + 8;
@@ -606,10 +725,19 @@ svg { display: block; }
     d = Math.min(nDays - 1, Math.max(0, d + k[0])); r = Math.min(ROWS - 1, Math.max(0, r + k[1]));
     c.tabIndex = -1; cells[d][r].tabIndex = 0; cells[d][r].focus(); show(d, r, true);
   });
-  pop.addEventListener("click", e => { if (e.target.closest("#popClose")) hide(); });
+  pop.addEventListener("click", e => {
+    if (e.target.closest("#popClose")) hide();
+    if (e.target.closest("#popEvent") && pinned) { const { d, r } = pinned; hide(); openEditor(null, { date: iso(dayDate(d)), start: (START + r) * 30 }); }
+  });
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
-    if (!$("dlg").hidden) closeDlg(); else if (!$("confirm").hidden) $("confirm").hidden = true; else hide();
+    if (!$("createMenu").hidden) $("createMenu").hidden = true;
+    else if (!$("confirm").hidden) { $("confirm").hidden = true; confirmAction = null; }
+    else if (!$("dlg").hidden) closeDlg();
+    else if (!$("evEdit").hidden) $("evEdit").hidden = true;
+    else if (!$("remDlg").hidden) $("remDlg").hidden = true;
+    else if (!$("evView").hidden) closeView();
+    else hide();
   });
 
   /* ---------- admin: drag names to reorder within a team ---------- */
@@ -665,13 +793,19 @@ svg { display: block; }
     const li = e.target.closest("li[data-id]"); if (!li) return;
     const id = li.dataset.id, m = members.find(x => x.id === id);
     if (e.target.matches("input")) { if (e.target.checked) hidden.delete(id); else hidden.add(id); saveHidden(); }
-    else if (e.target.closest(".x")) { pendingRemove = m; $("confirmText").textContent = `${m.name}'s calendar will be removed for everyone.`; $("confirm").hidden = false; $("confirmOk").focus(); return; }
+    else if (e.target.closest(".x")) { pendingRemove = m; askConfirm("Remove calendar?", `${m.name}'s calendar will be removed for everyone.`, "Remove", null); return; }
     else if (e.target.closest(".nm")) { if (!m.ok) return; focusId = focusId === id ? null : id; }
     else return;
     paint();
   });
-  $("confirmCancel").onclick = () => { $("confirm").hidden = true; pendingRemove = null; };
+  let confirmAction = null;
+  function askConfirm(title, text, ok, action) {
+    $("confirmTitle").textContent = title; $("confirmText").textContent = text; $("confirmOk").textContent = ok;
+    confirmAction = action; $("confirm").hidden = false; $("confirmOk").focus();
+  }
+  $("confirmCancel").onclick = () => { $("confirm").hidden = true; pendingRemove = null; confirmAction = null; };
   $("confirmOk").onclick = async () => {
+    if (confirmAction) { const f = confirmAction; confirmAction = null; $("confirm").hidden = true; return f(); }
     const m = pendingRemove; $("confirm").hidden = true; pendingRemove = null;
     if (!m) return;
     loading(true);
@@ -691,23 +825,23 @@ svg { display: block; }
   }));
   $("miniBody").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    weekStart = mondayOf(new Date(+b.dataset.t)); hide(); build(); paint(); loadWeek();
+    weekStart = mondayOf(new Date(+b.dataset.t)); hide(); build(); paint(); loadWeek(); loadEvents();
   });
   $("mPrev").onclick = () => { miniMonth.setMonth(miniMonth.getMonth() - 1); mini(); };
   $("mNext").onclick = () => { miniMonth.setMonth(miniMonth.getMonth() + 1); mini(); };
   $("menu").onclick = () => {
     const app = $("app");
     if (matchMedia("(max-width: 720px)").matches) app.classList.toggle("open"); else app.classList.toggle("collapsed");
-    requestAnimationFrame(placeNow);
+    requestAnimationFrame(() => { placeNow(); placeEvents(); });
   };
-  $("refresh").onclick = () => { weekCache.clear(); loadWeek(true); };
+  $("refresh").onclick = () => { weekCache.clear(); loadWeek(true); refreshEvents(); };
   $("signout").onclick = () => signOut("");
 
   /* ---------- week nav ---------- */
   const go = n => {
     if (n === 0) weekStart = mondayOf(todayMid); else weekStart.setDate(weekStart.getDate() + 7 * n);
     miniMonth = new Date(weekStart.getFullYear(), weekStart.getMonth(), 1);
-    hide(); build(); paint(); loadWeek();
+    hide(); build(); paint(); loadWeek(); loadEvents();
   };
   $("prev").onclick = () => go(-1);
   $("next").onclick = () => go(1);
@@ -716,8 +850,8 @@ svg { display: block; }
   /* ---------- add dialog ---------- */
   const dlg = $("dlg"), help = $("addHelp"), HELP = help.textContent;
   const openDlg = () => { dlg.hidden = false; help.textContent = HELP; help.className = "help"; $("addName").focus(); };
-  const closeDlg = () => { dlg.hidden = true; $("addForm").reset(); $("addOpen").focus(); };
-  $("addOpen").onclick = openDlg;
+  const closeDlg = () => { dlg.hidden = true; $("addForm").reset(); $("createBtn").focus(); };
+  $("addOpen").onclick = () => { $("createMenu").hidden = true; openDlg(); };
   $("addCancel").onclick = closeDlg;
   dlg.addEventListener("click", e => { if (e.target === dlg) closeDlg(); });
   $("addForm").addEventListener("submit", async e => {
@@ -753,7 +887,7 @@ svg { display: block; }
   let snackT;
   function snack(t) { const s = $("snack"); s.textContent = t; s.hidden = false; clearTimeout(snackT); snackT = setTimeout(() => s.hidden = true, 4000); }
 
-  addEventListener("resize", placeNow);
+  addEventListener("resize", () => { placeNow(); placeEvents(); });
   // On phones the sidebar is a drawer; tapping the calendar closes it.
   surface.addEventListener("pointerdown", () => { if (matchMedia("(max-width: 720px)").matches) $("app").classList.remove("open"); });
 
@@ -775,7 +909,7 @@ svg { display: block; }
     e.preventDefault(); resizer.setPointerCapture(e.pointerId);
     const left = $("main").getBoundingClientRect().left;
     resizer.classList.add("drag"); $("app").classList.add("resizing");
-    const move = ev => setRail(ev.clientX - left);
+    const move = ev => { setRail(ev.clientX - left); placeEvents(); };
     const up = () => { resizer.classList.remove("drag"); $("app").classList.remove("resizing"); resizer.removeEventListener("pointermove", move); resizer.removeEventListener("pointerup", up); resizer.removeEventListener("pointercancel", up); };
     resizer.addEventListener("pointermove", move); resizer.addEventListener("pointerup", up); resizer.addEventListener("pointercancel", up);
   });
@@ -786,11 +920,316 @@ svg { display: block; }
   });
   setInterval(placeNow, 60000);
 
+  /* ---------- events and attendance ---------- */
+  let me = store.get("qs-me", "");
+  let weekEvents = [], upcoming = [], peopleList = [];
+  const evCache = new Map();
+  const wall = s => ({ date: s.slice(0, 10), min: +s.slice(11, 13) * 60 + +s.slice(14, 16) });
+  const parseDay = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  const clockTxt = min => { const h = Math.floor(min / 60) % 24, m = min % 60; return ((h + 11) % 12 + 1) + (m ? ":" + String(m).padStart(2, "0") : "") + (h < 12 ? "am" : "pm"); };
+  const hhmm = min => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+  const nowStr = () => { const n = new Date(); return `${iso(n)}T${hhmm(n.getHours() * 60 + n.getMinutes())}`; };
+  const ended = e => e.end <= nowStr();
+  const dayName = d => DAYS_L[(d.getDay() + 6) % 7];
+  function evWhen(e) {
+    const a = wall(e.start), b = wall(e.end), da = parseDay(a.date), db = parseDay(b.date);
+    const end = a.date === b.date ? clockTxt(b.min) : `${MONTHS[db.getMonth()].slice(0, 3)} ${db.getDate()}, ${clockTxt(b.min)}`;
+    return `${dayName(da)}, ${MONTHS[da.getMonth()]} ${da.getDate()} ⋅ ${clockTxt(a.min)} – ${end}`;
+  }
+  const myResp = e => (me && e.responses.find(r => r.name === me)) || null;
+  const REVIEW = { pending: "Exemption pending", approved: "Excused", denied: "Exemption denied" };
+  const respText = r => !r ? "" : r.status === "going" ? "Going" : r.status === "no" ? "Not going" : REVIEW[r.review] || "Exemption requested";
+
+  async function loadEvents(force) {
+    const wk = iso(weekStart);
+    if (!force && evCache.has(wk)) { weekEvents = evCache.get(wk); placeEvents(); return; }
+    const end = new Date(weekStart); end.setDate(end.getDate() + 6);
+    try {
+      const data = await api(`/api/events?from=${wk}&to=${iso(end)}`);
+      evCache.set(wk, data.events); if (data.people) peopleList = data.people;
+      if (iso(weekStart) === wk) { weekEvents = data.events; placeEvents(); }
+    } catch (e) { if (e.message !== "unauthorized") snack(e.message); }
+  }
+  async function loadUpcoming() {
+    const end = new Date(todayMid); end.setDate(end.getDate() + 120);
+    try {
+      const data = await api(`/api/events?from=${iso(todayMid)}&to=${iso(end)}`);
+      upcoming = data.events; if (data.people) peopleList = data.people;
+      upcomingList();
+    } catch (e) { if (e.message !== "unauthorized") snack(e.message); }
+  }
+  function refreshEvents() { evCache.clear(); return Promise.all([loadEvents(true), loadUpcoming()]); }
+
+  // Event blocks on the week grid; overlapping events share the column side by side.
+  function placeEvents() {
+    const layer = $("evLayer"); if (!cells || !layer) return;
+    const segs = [];
+    for (const e of weekEvents) {
+      const a = wall(e.start), b = wall(e.end);
+      for (let d = 0; d < nDays; d++) {
+        const ds = iso(dayDate(d));
+        if (a.date > ds || b.date < ds) continue;
+        let s = a.date === ds ? a.min : 0, en = b.date === ds ? b.min : 1440;
+        if (en <= s) continue;
+        s = Math.min(Math.max(s, START * 30), (START + ROWS) * 30 - 30); en = Math.max(Math.min(en, (START + ROWS) * 30), s + 30);
+        segs.push({ e, d, s, en });
+      }
+    }
+    for (let d = 0; d < nDays; d++) {
+      let cluster = [], cols = [], maxEnd = -1;
+      const flush = () => { cluster.forEach(x => x.n = cols.length); cluster = []; cols = []; };
+      for (const x of segs.filter(x => x.d === d).sort((p, q) => p.s - q.s || q.en - p.en)) {
+        if (x.s >= maxEnd) { flush(); maxEnd = -1; }
+        let c = cols.findIndex(t => t <= x.s); if (c < 0) { c = cols.length; cols.push(0); }
+        cols[c] = x.en; x.c = c; cluster.push(x); maxEnd = Math.max(maxEnd, x.en);
+      }
+      flush();
+    }
+    layer.innerHTML = segs.map(x => {
+      const cell = cells[x.d][0], w = (cell.offsetWidth - 8) / x.n;
+      const top = cell.offsetTop + (x.s - START * 30) / 30 * ROW_H + 1, h = Math.max(20, (x.en - x.s) / 30 * ROW_H - 2);
+      const r = myResp(x.e), cls = !me || !r ? " tent" : r.status === "going" || r.review === "denied" ? "" : " out";
+      const label = `${x.e.title}, ${evWhen(x.e)}${r ? ", " + respText(r) : ""}`;
+      return `<button type="button" class="ev${cls}" data-ev="${esc(x.e.id)}" aria-label="${esc(label)}" style="top:${top}px;left:${cell.offsetLeft + 1 + x.c * w}px;width:${Math.max(18, w - 2)}px;height:${h}px"><b>${esc(x.e.title)}</b>${h >= 34 ? `<span>${clockTxt(wall(x.e.start).min)} – ${clockTxt(wall(x.e.end).min)}${x.e.location ? ", " + esc(x.e.location) : ""}</span>` : ""}</button>`;
+    }).join("");
+  }
+  $("evLayer").addEventListener("click", e => { const b = e.target.closest(".ev"); if (b) { hide(); openEvent(b.dataset.ev); } });
+
+  function upcomingList() {
+    const list = upcoming.filter(e => !ended(e)).slice(0, 8);
+    $("evList").innerHTML = list.map(e => {
+      const a = parseDay(e.start.slice(0, 10)), r = myResp(e);
+      const pend = mgr() ? e.responses.filter(x => x.status === "exempt" && x.review === "pending").length : 0;
+      const st = !me ? "" : !r ? `<span class="st need">Respond</span>` : `<span class="st">${respText(r)}</span>`;
+      return `<li><button type="button" data-ev="${esc(e.id)}"><span class="dt"><small>${DAYS[(a.getDay() + 6) % 7].toUpperCase()}</small>${a.getDate()}</span>
+        <span class="info"><span class="t">${esc(e.title)}</span><small>${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()}, ${clockTxt(wall(e.start).min)}${pend ? ` · ${pend} to review` : ""}</small></span>${st}</button></li>`;
+    }).join("") || `<li class="empty">No upcoming events</li>`;
+  }
+  $("evList").addEventListener("click", e => { const b = e.target.closest("button[data-ev]"); if (b) openEvent(b.dataset.ev); });
+
+  let viewing = null, exemptOpen = false;
+  async function openEvent(id, fresh) {
+    let e = !fresh && [...weekEvents, ...upcoming].find(x => x.id === id);
+    if (!e) {
+      try { const d = await api(`/api/events?id=${encodeURIComponent(id)}`); e = d.events[0]; if (d.people) peopleList = d.people; }
+      catch (err) { if (err.message !== "unauthorized") snack(err.message); return; }
+    }
+    if (!e) { snack("That event has been removed."); return; }
+    const wk = mondayOf(parseDay(e.start.slice(0, 10)));
+    if (!same(wk, weekStart)) {
+      weekStart = wk; miniMonth = new Date(wk.getFullYear(), wk.getMonth(), 1);
+      if (nDays === 5 && (parseDay(e.start.slice(0, 10)).getDay() + 6) % 7 > 4) { nDays = 7; store.set("qs-days", 7); }
+      hide(); build(); paint(); loadWeek(); loadEvents();
+    }
+    viewing = e; exemptOpen = false; renderView();
+    $("evView").hidden = false;
+  }
+  function closeView() { $("evView").hidden = true; viewing = null; }
+  $("evView").addEventListener("click", e => { if (e.target === $("evView")) closeView(); });
+
+  const ICON_PIN = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>`;
+  const ICON_TEXT = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z"/></svg>`;
+  const ICON_CHECK = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`;
+  const ICON_MAIL = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>`;
+  const ICON_EDIT = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+  const ICON_DEL = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+  function renderView() {
+    const e = viewing; if (!e) return;
+    const r = myResp(e), done = ended(e), people = peopleList.map(p => p.name);
+    const going = e.responses.filter(x => x.status === "going");
+    const outs = e.responses.filter(x => x.status !== "going");
+    const answered = new Set(e.responses.map(x => x.name));
+    const none = people.filter(n => !answered.has(n));
+    const pend = outs.filter(x => x.review === "pending").length;
+    const cantLabel = e.mandatory ? "Request exemption" : "Can't go";
+    let mine;
+    if (!me) {
+      mine = `<div class="lab">Who are you?</div><select id="meSel" aria-label="Your name"><option value="">Choose your name</option>${people.map(n => `<option>${esc(n)}</option>`).join("")}</select>`;
+    } else {
+      mine = `<div class="lab">Your response</div>
+        <div>Responding as <b>${esc(me)}</b> · <button type="button" class="linkb" id="meChange">Not you?</button></div>
+        ${r ? `<div class="mine-st">${r.status === "going" ? "You're <b>going</b>." : r.status === "no" ? "You said you <b>can't go</b>." : `Your exemption request is <b>${{ pending: "waiting for review", approved: "approved", denied: "denied" }[r.review] || "pending"}</b>.${r.review === "denied" ? " You're expected to attend." : ""}`}</div>` : e.mandatory && !done ? `<div class="mine-st">Attendance is required. If you can't make it, request an exemption with a reason.</div>` : ""}
+        ${done ? `<div class="mine-st">This event has ended.</div>` : `<div class="rsvp">
+          <button type="button" class="chip${r && r.status === "going" ? " on" : ""}" data-rsvp="going">Going</button>
+          <button type="button" class="chip${r && r.status !== "going" ? " on" : ""}" data-rsvp="cant">${r && r.status === "exempt" ? "Exemption requested" : cantLabel}</button>
+        </div>
+        ${exemptOpen ? `<div style="margin-top:10px"><label for="reason" style="display:block;font-size:12px;color:var(--ink2);margin-bottom:4px">${e.mandatory ? "Reason for missing this event (seen only by Ops & Marketing and admins)" : "Reason (optional)"}</label>
+          <textarea id="reason" rows="3" maxlength="1000"></textarea>
+          <div class="rsvp"><button type="button" class="tb" id="reasonCancel">Cancel</button><button type="button" class="tb fill" id="reasonSend">${e.mandatory ? "Submit request" : "Save"}</button></div></div>` : ""}`}`;
+    }
+    const reqRows = outs.map(x => `<div class="req"><span class="who">${esc(x.name)}</span>
+        <span class="badge${x.review === "approved" ? " ok" : x.review === "denied" ? " no" : ""}">${x.status === "no" ? "Can't go" : { pending: "Pending", approved: "Approved", denied: "Denied" }[x.review] || "Pending"}</span>
+        ${mgr() && x.reason ? `<span class="why">${esc(x.reason)}</span>` : ""}
+        ${mgr() && x.status === "exempt" ? `<span class="acts2">${x.review !== "approved" ? `<button type="button" class="chip" data-review="approved" data-name="${esc(x.name)}">Approve</button>` : ""}${x.review !== "denied" ? `<button type="button" class="chip" data-review="denied" data-name="${esc(x.name)}">Deny</button>` : ""}</span>` : ""}</div>`).join("");
+    const sent = (e.remindersSent || []).slice(-1)[0];
+    $("evViewBody").innerHTML = `
+      <div class="evh">
+        ${mgr() ? `<button class="ib" type="button" id="evEditBtn" aria-label="Edit event" title="Edit event">${ICON_EDIT}</button><button class="ib" type="button" id="evDelBtn" aria-label="Delete event" title="Delete event">${ICON_DEL}</button>` : ""}
+        <button class="ib" type="button" id="evClose" aria-label="Close">${ICON_X}</button>
+      </div>
+      <div class="evrow"><span class="sq"></span><div><h2>${esc(e.title)}</h2><div class="sub">${evWhen(e)}</div>
+        <span class="tag${e.mandatory ? "" : " plain"}">${e.mandatory ? "Attendance required" : "Optional"}</span></div></div>
+      ${e.location ? `<div class="evrow">${ICON_PIN}<div>${esc(e.location)}</div></div>` : ""}
+      ${e.description ? `<div class="evrow">${ICON_TEXT}<div class="desc">${esc(e.description)}</div></div>` : ""}
+      <div class="stack">
+        <div class="box">${mine}</div>
+        <div class="att">
+          <div class="sum"><span><b>${going.length}</b> going</span><span><b>${outs.length}</b> ${e.mandatory ? "exemption" + (outs.length === 1 ? "" : "s") : "can't go"}${mgr() && pend ? ` (${pend} to review)` : ""}</span><span><b>${none.length}</b> no response</span></div>
+          ${going.length ? `<h3>Going</h3><div class="names">${going.map(x => esc(x.name)).join(", ")}</div>` : ""}
+          ${outs.length ? `<h3>${e.mandatory ? "Exemption requests" : "Can't go"}</h3>${reqRows}` : ""}
+          ${none.length ? `<details><summary>No response (${none.length})</summary><div class="names">${none.map(esc).join(", ")}</div></details>` : ""}
+        </div>
+        ${mgr() ? `<div class="box"><div class="lab">Reminder emails</div>
+          <div class="mine-st" style="margin-top:0">${e.reminders ? "On for this event." : "Off for this event."}${sent ? ` Last sent ${new Date(sent.sent_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} to ${sent.recipients} ${sent.recipients === 1 ? "person" : "people"}.` : ""}</div>
+          ${done ? "" : `<div class="rsvp"><button type="button" class="chip" id="sendNow">${ICON_MAIL}Send a reminder now</button></div>`}</div>` : ""}
+      </div>`;
+    if (exemptOpen) $("reason").focus();
+  }
+
+  $("evViewBody").addEventListener("change", e => {
+    if (e.target.id === "meSel" && e.target.value) { me = e.target.value; store.set("qs-me", me); setRole(role); renderView(); placeEvents(); upcomingList(); }
+  });
+  $("evViewBody").addEventListener("click", async e => {
+    const t = e.target.closest("button"); if (!t || !viewing) return;
+    const ev = viewing;
+    if (t.id === "evClose") return closeView();
+    if (t.id === "meChange") { me = ""; store.del("qs-me"); setRole(role); renderView(); placeEvents(); upcomingList(); return; }
+    if (t.id === "evEditBtn") { closeView(); return openEditor(ev); }
+    if (t.id === "evDelBtn") return askConfirm("Delete event?", `${ev.title} and everyone's responses will be deleted.`, "Delete", async () => {
+      try { await api(`/api/events?id=${encodeURIComponent(ev.id)}`, { method: "DELETE" }); closeView(); snack(`Deleted ${ev.title}`); refreshEvents(); }
+      catch (err) { if (err.message !== "unauthorized") snack(err.message); }
+    });
+    if (t.id === "reasonCancel") { exemptOpen = false; return renderView(); }
+    if (t.dataset.rsvp === "cant" && !exemptOpen) { exemptOpen = true; return renderView(); }
+    if (t.dataset.rsvp === "going" || t.id === "reasonSend") {
+      const body = { eventId: ev.id, name: me, status: t.dataset.rsvp === "going" ? "going" : "cant", reason: t.id === "reasonSend" ? $("reason").value : "" };
+      if (body.status === "cant" && ev.mandatory && body.reason.trim().length < 3) { snack("Give a reason for the exemption request."); $("reason").focus(); return; }
+      t.disabled = true;
+      try {
+        await api("/api/attendance", { method: "POST", body: JSON.stringify(body) });
+        snack(body.status === "going" ? "You're going" : ev.mandatory ? "Exemption request sent" : "Response saved");
+        await afterChange(ev.id);
+      } catch (err) { t.disabled = false; if (err.message !== "unauthorized") snack(err.message); }
+      return;
+    }
+    if (t.dataset.review) {
+      t.disabled = true;
+      try { await api("/api/review", { method: "POST", body: JSON.stringify({ eventId: ev.id, name: t.dataset.name, review: t.dataset.review }) }); await afterChange(ev.id); }
+      catch (err) { t.disabled = false; if (err.message !== "unauthorized") snack(err.message); }
+      return;
+    }
+    if (t.id === "sendNow") return askConfirm("Send a reminder now?", `Everyone who hasn't been excused from ${ev.title} gets a reminder email now.`, "Send", async () => {
+      try { const d = await api("/api/reminders", { method: "POST", body: JSON.stringify({ sendNow: ev.id }) }); snack(`Reminder sent to ${d.sent} ${d.sent === 1 ? "person" : "people"}`); await afterChange(ev.id); }
+      catch (err) { if (err.message !== "unauthorized") snack(err.message); }
+    });
+  });
+  async function afterChange(id) {
+    await refreshEvents();
+    const e = [...weekEvents, ...upcoming].find(x => x.id === id);
+    if (e && viewing && viewing.id === id) { viewing = e; exemptOpen = false; renderView(); }
+  }
+
+  /* event editor (Ops & Marketing and admins) */
+  let editing = null;
+  function openEditor(ev, preset) {
+    editing = ev;
+    $("evEditTitle").textContent = ev ? "Edit event" : "New event";
+    $("evHelp").textContent = ""; $("evHelp").className = "help";
+    const a = ev ? wall(ev.start) : null, b = ev ? wall(ev.end) : null;
+    const start = ev ? a.min : preset ? preset.start : 18 * 60;
+    $("evTitle").value = ev ? ev.title : "";
+    $("evDate").value = ev ? a.date : preset ? preset.date : iso(same(weekStart, mondayOf(todayMid)) ? todayMid : weekStart);
+    $("evStart").value = hhmm(start);
+    $("evEnd").value = hhmm(ev ? b.min : Math.min(start + 60, 23 * 60 + 45));
+    $("evLoc").value = ev ? ev.location : "";
+    $("evDesc").value = ev ? ev.description : "";
+    $("evMand").checked = ev ? ev.mandatory : true;
+    $("evRem").checked = ev ? ev.reminders : true;
+    $("evEdit").hidden = false; $("evTitle").focus();
+  }
+  $("evCancel").onclick = () => { $("evEdit").hidden = true; };
+  $("evEdit").addEventListener("click", e => { if (e.target === $("evEdit")) $("evEdit").hidden = true; });
+  $("evForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = t => { $("evHelp").textContent = t; $("evHelp").className = "help err"; };
+    const title = $("evTitle").value.trim(), date = $("evDate").value, st = $("evStart").value, en = $("evEnd").value;
+    if (!title) return err("Give the event a title.");
+    if (!date || !st || !en) return err("Pick a date, start time and end time.");
+    if (en <= st) return err("The event has to end after it starts.");
+    const body = { title, start: `${date}T${st}`, end: `${date}T${en}`, location: $("evLoc").value, description: $("evDesc").value, mandatory: $("evMand").checked, reminders: $("evRem").checked };
+    $("evSave").disabled = true;
+    try {
+      const was = editing;
+      const d = await api(was ? `/api/events?id=${encodeURIComponent(was.id)}` : "/api/events", { method: was ? "PUT" : "POST", body: JSON.stringify(body) });
+      $("evEdit").hidden = true; snack(was ? "Event updated" : `Created ${title}`);
+      await refreshEvents();
+      openEvent(d.id || was.id, true);
+    } catch (x) { if (x.message !== "unauthorized") err(x.message); }
+    finally { $("evSave").disabled = false; }
+  });
+
+  /* create button: admins choose event or member calendar; Ops & Marketing go straight to a new event */
+  $("createBtn").addEventListener("click", e => {
+    if (!admin) return openEditor(null);
+    const m = $("createMenu"), r = $("createBtn").getBoundingClientRect();
+    m.style.left = r.left + "px"; m.style.top = r.bottom + 4 + "px"; m.hidden = !m.hidden;
+    e.stopPropagation();
+  });
+  $("menuEvent").onclick = () => { $("createMenu").hidden = true; openEditor(null); };
+  document.addEventListener("click", e => { if (!e.target.closest("#createMenu")) $("createMenu").hidden = true; });
+
+  /* reminder settings */
+  const HOURS_LABEL = h => h >= 24 && h % 24 === 0 ? (h === 168 ? "1 week before" : h === 24 ? "1 day before" : `${h / 24} days before`) : `${h} hour${h === 1 ? "" : "s"} before`;
+  $("remOpen").onclick = async () => {
+    $("remDlg").hidden = false; $("remHelp").textContent = ""; $("remBody").innerHTML = "<p>Loading…</p>";
+    try {
+      const d = await api("/api/reminders");
+      $("remBody").innerHTML = `
+        ${d.ready ? "" : `<p class="note warn">Email sending isn't connected yet, so nothing goes out until an admin adds the email key. Your choices here are saved.</p>`}
+        <label class="chk"><input type="checkbox" id="remOn" ${d.settings.enabled ? "checked" : ""}><span>Send reminder emails for upcoming events</span></label>
+        <p class="note">Send a reminder:</p>
+        <div class="grid2">${d.choices.map(h => `<label class="chk"><input type="checkbox" name="remH" value="${h}" ${d.settings.hours.includes(h) ? "checked" : ""}><span>${HOURS_LABEL(h)}</span></label>`).join("")}</div>
+        <p class="note">Reminders go to everyone on the team list who hasn't been excused or said they can't go. Each event can turn reminders off in its settings. ${d.withEmail} ${d.withEmail === 1 ? "person has" : "people have"} an email address on file.${d.missing.length ? ` No email for ${d.missing.map(esc).join(", ")}.` : ""}</p>`;
+    } catch (err) { if (err.message !== "unauthorized") $("remBody").innerHTML = `<p>${esc(err.message)}</p>`; }
+  };
+  $("remCancel").onclick = () => { $("remDlg").hidden = true; };
+  $("remDlg").addEventListener("click", e => { if (e.target === $("remDlg")) $("remDlg").hidden = true; });
+  $("remForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!$("remOn")) return;
+    const hours = [...document.querySelectorAll("input[name=remH]:checked")].map(x => +x.value);
+    try { await api("/api/reminders", { method: "POST", body: JSON.stringify({ enabled: $("remOn").checked, hours }) }); $("remDlg").hidden = true; snack("Reminder schedule saved"); }
+    catch (err) { if (err.message !== "unauthorized") { $("remHelp").textContent = err.message; $("remHelp").className = "help err"; } }
+  });
+
+  // Links in reminder emails open the event: calendar.quantt.ca/#event=<id>
+  function openFromHash() {
+    const m = /^#event=([\w-]+)$/.exec(location.hash);
+    if (!m) return;
+    history.replaceState(null, "", location.pathname + location.search);
+    openEvent(m[1], true);
+  }
+  addEventListener("hashchange", () => { if (key) openFromHash(); });
+
+  function setRole(r) {
+    role = r; admin = r === "admin";
+    store.set("qs-role", r); store.set("qs-admin", admin ? "1" : "");
+    $("app").classList.toggle("admin", admin); $("app").classList.toggle("mgr", mgr());
+    $("createLabel").textContent = admin ? "Create" : "New event";
+    const who = { admin: "Admin", ops: "Ops & Marketing", team: "Team" }[r];
+    $("signout").title = `${me ? me + " · " : ""}${who} login. Click to sign out.`;
+    $("signout").textContent = me ? initials(me) : "Q";
+  }
+
   function start() {
     $("gate").hidden = true; $("app").hidden = false;
-    $("app").classList.toggle("admin", admin);
-    build(); paint(); loadWeek();
+    setRole(role);
+    build(); paint(); loadWeek(); loadEvents(); loadUpcoming();
+    // Re-check which login this password is, in case it changed since the last visit.
+    api("/api/session", { method: "POST" }).then(d => { if (d.role && d.role !== role) { setRole(d.role); refreshEvents(); } }).catch(() => {});
     api("/api/order").then(d => { order = d.order || []; roster(); }).catch(() => {});
+    openFromHash();
     const t = new Date(), mins = t.getHours() * 60 + t.getMinutes() - START * 30;
     surface.scrollTop = Math.max(0, Math.min(mins, ROWS * 30) / 30 * ROW_H - 120);
   }

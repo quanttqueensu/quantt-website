@@ -1,6 +1,6 @@
 # QUANTT Schedule
 
-Team availability for calendar.quantt.ca. One Mon–Sun week, 8 AM–10 PM in half hours, built from each member's class-schedule calendar link (Queen's timetable or Outlook `.ics`). Darker blue means more people are in class; click a slot to see who is free and who is busy.
+Team availability and events for calendar.quantt.ca. One Mon–Sun week, 8 AM–10 PM in half hours, built from each member's class-schedule calendar link (Queen's timetable or Outlook `.ics`). Darker blue means more people are in class; click a slot to see who is free and who is busy.
 
 This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static assets and does not touch the main website.
 
@@ -11,20 +11,24 @@ This folder is a standalone Cloudflare Worker (`quantt-calendar`) with static as
 - `src/api/members.js` lists, adds and removes members. Calendar links are stored in a Cloudflare KV namespace and are never sent to the browser or committed to this repo.
 - Every API call needs a password (`x-schedule-key` header). The team password can view; the admin password can also add calendars (by link or by uploading an `.ics` file, stored in KV) and remove them. The sign-in screen accepts either.
 - Admins can import the club's contacts export (Google Contacts CSV) from the sidebar. Members are renamed to their contact name and grouped by team: Co-Chairs, Quant Trading (the CIO, then each PM's team), Research & Dev (Quant Research under the COO, Quant Development under the CTO) and Operations & Marketing (Operations and Marketing sections, from job titles, under the CMO). Leads are listed first and underlined, and people without a calendar yet show greyed out. Admins can drag names to reorder them within a team; the order (names only) is saved in KV for everyone.
+- **Events and attendance.** The Ops & Marketing login (and admin) can create, edit and delete events (title, date, start and end time, location, description) from the New event button or by clicking a time slot. Events show on the week grid and under Upcoming events for everyone. Anyone signed in picks their name once and marks themselves going; for events marked "Attendance required", missing one takes an exemption request with a reason, which Ops & Marketing or an admin approves or denies. Only those two logins see the reasons. Events and responses are stored in the D1 database `DB` (`src/events.js`, `src/api/events.js`, `attendance.js`, `review.js`).
+- **Reminder emails.** A cron trigger runs every 15 minutes and emails everyone on the team list who hasn't been excused, at the times chosen under Reminder emails (for example 3 days, 1 day and 2 hours before). Each event can turn reminders off, and Ops & Marketing can send one immediately from the event. Addresses come from the contacts CSV import, are kept in KV and are never sent to the browser. Emails go out through [Resend](https://resend.com) (`src/api/reminders.js`).
+- Logins: the team password views the calendar and responds to events; the Ops & Marketing password can also manage events, exemptions and reminders; the admin password can do everything, including calendars, contacts import and ordering.
 - The Week button in the top bar switches between the full week and a Monday to Friday work week; each browser remembers the choice. Slot details open when you click a cell. Only names, teams and lead flags are kept, in KV; nothing else from the file is stored.
 
 ## Cloudflare Worker setup
 1. Workers & Pages → Create → Import a repository → `quanttqueensu/quantt-website`, **root directory `/schedule`**, deploy command `npx wrangler deploy`. The Worker name, assets and KV binding come from `wrangler.toml`.
-2. Settings → Variables and Secrets: add `SCHEDULE_PASSWORD` (team password, view only) and `ADMIN_PASSWORD` (can add and remove calendars) as secrets.
-3. The `SCHEDULE_KV` namespace has no id in `wrangler.toml`, so `wrangler deploy` creates it in the Worker's account on the first deploy and reuses it after that.
-4. Settings → Domains & Routes → add custom domain `calendar.quantt.ca`.
-5. Once this is merged, set the production branch to `main`.
+2. Settings → Variables and Secrets: add `SCHEDULE_PASSWORD` (team password), `OPS_PASSWORD` (Ops & Marketing: events and reminders) and `ADMIN_PASSWORD` (everything) as secrets.
+3. The `SCHEDULE_KV` namespace and the `DB` D1 database have no ids in `wrangler.toml`, so `wrangler deploy` creates them in the Worker's account on the first deploy and reuses them after that. The tables are created on first use.
+4. Reminder emails: create a Resend account, verify the `quantt.ca` domain there (it adds DNS records in Cloudflare), and add the API key as the secret `RESEND_API_KEY`. Optional plain-text variables: `EMAIL_FROM` (default `QUANTT <events@quantt.ca>`), `EMAIL_REPLY_TO`, and `APP_URL` (default `https://calendar.quantt.ca`). Without the key everything else works and no emails are sent. After deploying, an admin re-imports the contacts CSV once so the email addresses are stored.
+5. Settings → Domains & Routes → add custom domain `calendar.quantt.ca`.
+6. Once this is merged, set the production branch to `main`.
 
 ## Local development
 ```
 npx wrangler dev
 ```
-with a `.dev.vars` file containing `SCHEDULE_PASSWORD=...` and `ADMIN_PASSWORD=...`.
+with a `.dev.vars` file containing `SCHEDULE_PASSWORD=...`, `OPS_PASSWORD=...` and `ADMIN_PASSWORD=...` (and `RESEND_API_KEY=...` to try emails). `npx wrangler dev --test-scheduled` lets you trigger the reminder cron at `/__scheduled`.
 
 ## Limits
 - Recurring events with weekly or daily rules are expanded (including `UNTIL`, `COUNT`, `EXDATE`). Monthly and yearly rules show only their first occurrence.
