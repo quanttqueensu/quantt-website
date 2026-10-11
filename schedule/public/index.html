@@ -317,8 +317,10 @@ svg { display: block; }
 .badge.no { background: transparent; border: 1px solid var(--muted); }
 .stack { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 0 52px; }
 @media (max-width: 720px) { .stack { padding: 0 8px 0 12px; } .evrow { grid-template-columns: 40px minmax(0, 1fr); padding-right: 8px; } }
-/* Date/start/end fit on one line when there's room and wrap on their own when there isn't. */
-.f3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 136px), 1fr)); gap: 0 8px; }
+/* Date, start and end share a line when the form is wide; when it's narrow the date gets its own line and start/end split the next. */
+.f3 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr); gap: 0 8px; }
+.f3 > * { min-width: 0; }
+@container evform (max-width: 440px) { .f3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .f3 > :first-child { grid-column: 1 / -1; } }
 .f3 input { min-width: 0; }
 
 .dlg .chk { display: grid; grid-template-columns: 18px 1fr; gap: 2px 12px; align-items: start; font-size: 14px; color: var(--ink); margin: 0 0 14px; cursor: pointer; }
@@ -364,17 +366,22 @@ svg { display: block; }
 /* Event form: title and buttons stay put, the middle scrolls. Full screen on phones. */
 #evEdit .dlg { max-width: 560px; max-height: calc(100dvh - 32px); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
 #evEdit h2 { margin: 0; padding: 24px 24px 12px; flex: none; }
-#evEdit .dbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 24px 8px; }
+#evEdit .dbody { container: evform / inline-size; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 24px 8px; }
 #evEdit .dfoot { flex: none; padding: 8px 24px 20px; border-top: 1px solid var(--line); }
 #evEdit .dfoot .help:empty { display: none; }
 #evEdit .dfoot .acts { margin-top: 8px; }
-.dlg input[type=date], .dlg input[type=time] { min-width: 0; display: block; }
+/* iPhone/iPad draw date and time fields as native widgets that ignore the field's width and top-align the text; flatten them so they size like text boxes (tapping still opens the native picker). */
+.dlg input[type=date], .dlg input[type=time] { -webkit-appearance: none; appearance: none; min-width: 0; max-width: 100%; display: block; line-height: 46px; text-align: left; }
+.dlg input::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.dlg input[type=date]::-webkit-calendar-picker-indicator, .dlg input[type=time]::-webkit-calendar-picker-indicator { margin-left: auto; }
 @media (max-width: 600px) {
   #evEdit { padding: 0; }
   #evEdit .dlg { max-width: none; width: 100%; height: 100dvh; max-height: none; border-radius: 0; }
   #evEdit h2 { padding: calc(16px + env(safe-area-inset-top)) 16px 8px; }
   #evEdit .dbody { padding: 4px 16px 8px; }
   #evEdit .dfoot { padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); }
+  /* iPhones zoom in on fields under 16px. */
+  #evEdit input, #evEdit select, #evEdit textarea { font-size: 16px; }
 }
 </style>
 </head>
