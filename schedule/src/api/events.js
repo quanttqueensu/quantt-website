@@ -1,7 +1,7 @@
 // Events: everyone signed in can list them; the Ops & Marketing and admin logins can create, edit and delete.
 // Exemption reasons are only included for those two logins.
 import { authorized, canManageEvents, json } from "../core.js";
-import { listEvents, cleanEvent, saveEvent, deleteEvent, people, saveReminderSettings } from "../events.js";
+import { listEvents, cleanEvent, saveEvent, deleteEvent, people, isInvited, saveReminderSettings } from "../events.js";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const denied = () => json({ error: "Wrong password" }, 401);
@@ -18,11 +18,13 @@ export async function onRequestGet({ request, env }) {
     const manage = canManageEvents(request, env);
     // "to" is inclusive: everything starting before the next day.
     const next = to && new Date(Date.parse(to + "T00:00:00Z") + 86400000).toISOString().slice(0, 10);
-    const events = await listEvents(env, { id, from, to: next });
+    const [events, all] = await Promise.all([listEvents(env, { id, from, to: next }), people(env)]);
     for (const e of events) {
+      // Names this event is for (null = everyone).
+      e.invited = e.invite ? all.filter((p) => isInvited(e, p)).map((p) => p.name) : null;
       if (!manage) { e.responses = e.responses.map(({ reason, ...r }) => r); delete e.remindersSent; }
     }
-    return json({ events, people: await people(env) });
+    return json({ events, people: all });
   } catch (e) { return fail(e); }
 }
 
