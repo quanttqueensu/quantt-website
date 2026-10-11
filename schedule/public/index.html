@@ -246,6 +246,12 @@ svg { display: block; }
 .dlg p { color: var(--ink2); margin: 0 0 8px; line-height: 1.5; }
 
 /* events */
+/* the sidebar scrolls; its items keep their size instead of squashing when the event list makes it taller */
+.rail > * { flex-shrink: 0; }
+:root { --dlg: var(--surface); }
+:root[data-theme="dark"] { --dlg: #1e1f20; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --dlg: #1e1f20; } }
+.dlg { background: var(--dlg); }
 #confirm { z-index: 35; } /* confirmations open on top of the event dialog */
 #app:not(.mgr) #createBtn, #app:not(.mgr) .mgr-only { display: none !important; }
 .cmenu { position: absolute; z-index: 25; background: var(--surface); border-radius: 4px; box-shadow: var(--shadow); padding: 8px 0; min-width: 180px; }
@@ -311,7 +317,9 @@ svg { display: block; }
 .badge.no { background: transparent; border: 1px solid var(--muted); }
 .stack { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 0 52px; }
 @media (max-width: 720px) { .stack { padding: 0 8px 0 12px; } .evrow { grid-template-columns: 40px minmax(0, 1fr); padding-right: 8px; } }
-.f3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; }
+.f3 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.f3 input { min-width: 0; }
+@media (max-width: 480px) { .f3 { grid-template-columns: 1fr 1fr; } .f3 > :first-child { grid-column: 1 / -1; } }
 .dlg .chk { display: grid; grid-template-columns: 18px 1fr; gap: 2px 12px; align-items: start; font-size: 14px; color: var(--ink); margin: 0 0 14px; cursor: pointer; }
 .dlg .chk input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--blue); padding: 0; }
 .dlg .chk small { grid-column: 2; color: var(--ink2); font-size: 12px; }
@@ -319,6 +327,26 @@ svg { display: block; }
 .note { font-size: 13px; color: var(--ink2); line-height: 1.5; margin: 0 0 12px; }
 .note.warn { color: var(--ink); background: var(--blue-tint); border-radius: 8px; padding: 8px 12px; }
 .pop .mk { margin: 4px 0 0 52px; }
+.dlg .sh3 { font-size: 14px; font-weight: 500; margin: 18px 0 10px; color: var(--ink); }
+.dlg select { width: 100%; height: 44px; border: 1px solid var(--muted); border-radius: 4px; padding: 0 10px; background: var(--surface); font: inherit; color: inherit; }
+.dlg .chk input[type=radio] { width: 18px; height: 18px; }
+.testrow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.testrow input { flex: 1; min-width: 0; height: 44px; }
+.dlg .rems { border-top: 1px solid var(--line); margin: 4px 0 12px; padding-top: 12px; }
+.dlg .remh { font-weight: 500; margin-bottom: 8px; }
+.rrow { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
+.remsub { font-size: 12px; color: var(--ink2); margin: -4px 0 10px; }
+.rrow > svg { color: var(--ink2); flex: none; }
+.rrow .t { color: var(--ink2); font-size: 14px; }
+.dlg .rrow input { width: 58px; height: 40px; padding: 0 8px; font-size: 14px; }
+.dlg .rrow input[type=time] { width: 112px; }
+@media (max-width: 480px) { .rrow { flex-wrap: wrap; } .rrow .aud, .rrow.fu .t:last-of-type { margin-left: 26px; } }
+.dlg .rrow select { width: auto; height: 40px; padding: 0 6px; font-size: 14px; }
+.rrow .ib { width: 36px; height: 36px; margin-left: auto; }
+.remadd { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px -8px; }
+.remlist { margin: 0 0 6px; padding: 0; list-style: none; }
+.remlist li { padding: 2px 0; }
+#evEdit .dlg { max-width: 520px; }
 </style>
 </head>
 <body>
@@ -369,7 +397,7 @@ svg { display: block; }
 
       <section class="sec evs" id="secEv">
         <button class="sh" type="button" aria-expanded="true">Upcoming events<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
-        <div class="body"><ul id="evList"></ul><button class="tb imp mgr-only" type="button" id="remOpen">Reminder emails</button></div>
+        <div class="body"><ul id="evList"></ul></div>
       </section>
 
       <section class="sec best" id="secBest">
@@ -434,17 +462,16 @@ svg { display: block; }
     <div class="f"><label for="evLoc">Location</label><input id="evLoc" type="text" maxlength="160" autocomplete="off" placeholder="Room, building or link"></div>
     <div class="f"><label for="evDesc">Description</label><textarea id="evDesc" rows="3" maxlength="4000"></textarea></div>
     <label class="chk"><input type="checkbox" id="evMand" checked><span>Attendance required</span><small>Anyone who can't come has to request an exemption with a reason.</small></label>
-    <label class="chk"><input type="checkbox" id="evRem" checked><span>Send reminder emails</span><small>On the schedule set under Reminder emails.</small></label>
+    <div class="rems">
+      <div class="remh">Email reminders</div>
+      <div class="remsub">Nobody who is excused or said they can't come gets these.</div>
+      <div id="remRows"></div>
+      <div id="fuRow"></div>
+      <div class="remadd"><button type="button" class="tb" id="remAdd">Add reminder</button><button type="button" class="tb" id="fuAdd">Add follow-up</button></div>
+      <label class="chk"><input type="checkbox" id="remDefault"><span>Use these reminders for new events</span></label>
+    </div>
     <div class="help" id="evHelp"></div>
     <div class="acts"><button class="tb" type="button" id="evCancel">Cancel</button><button class="tb fill" type="submit" id="evSave">Save</button></div>
-  </form>
-</div>
-<div class="scrim" id="remDlg" hidden>
-  <form class="dlg" id="remForm" novalidate>
-    <h2>Reminder emails</h2>
-    <div id="remBody"><p>Loading…</p></div>
-    <div class="help" id="remHelp"></div>
-    <div class="acts"><button class="tb" type="button" id="remCancel">Cancel</button><button class="tb fill" type="submit" id="remSave">Save</button></div>
   </form>
 </div>
 <div class="snack" id="snack" hidden></div>
@@ -521,7 +548,7 @@ svg { display: block; }
   /* ---------- sign in ---------- */
   function signOut(msg) {
     key = ""; store.del("qs-key"); admin = false; store.del("qs-admin"); role = "team"; store.del("qs-role");
-    ["evView", "evEdit", "remDlg", "dlg", "confirm"].forEach(id => $(id).hidden = true);
+    ["evView", "evEdit", "dlg", "confirm"].forEach(id => $(id).hidden = true);
     $("gate").hidden = false; $("app").hidden = true;
     $("gateMsg").textContent = msg || "";
     $("gatePw").value = ""; $("gatePw").focus();
@@ -560,6 +587,8 @@ svg { display: block; }
     document.title = `QUANTT Schedule · Week of ${MONTHS[a.getMonth()].slice(0, 3)} ${a.getDate()}`;
     placeNow();
     mini();
+    // Show this week's events (cached or none) until loadEvents brings fresh ones; never the previous week's.
+    weekEvents = evCache.get(iso(weekStart)) || [];
     placeEvents();
   }
 
@@ -735,7 +764,6 @@ svg { display: block; }
     else if (!$("confirm").hidden) { $("confirm").hidden = true; confirmAction = null; }
     else if (!$("dlg").hidden) closeDlg();
     else if (!$("evEdit").hidden) $("evEdit").hidden = true;
-    else if (!$("remDlg").hidden) $("remDlg").hidden = true;
     else if (!$("evView").hidden) closeView();
     else hide();
   });
@@ -1007,7 +1035,7 @@ svg { display: block; }
   }
   $("evList").addEventListener("click", e => { const b = e.target.closest("button[data-ev]"); if (b) openEvent(b.dataset.ev); });
 
-  let viewing = null, exemptOpen = false;
+  let viewing = null, exemptOpen = false, testOpen = false;
   async function openEvent(id, fresh) {
     let e = !fresh && [...weekEvents, ...upcoming].find(x => x.id === id);
     if (!e) {
@@ -1081,8 +1109,13 @@ svg { display: block; }
           ${none.length ? `<details><summary>No response (${none.length})</summary><div class="names">${none.map(esc).join(", ")}</div></details>` : ""}
         </div>
         ${mgr() ? `<div class="box"><div class="lab">Reminder emails</div>
-          <div class="mine-st" style="margin-top:0">${e.reminders ? "On for this event." : "Off for this event."}${sent ? ` Last sent ${new Date(sent.sent_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} to ${sent.recipients} ${sent.recipients === 1 ? "person" : "people"}.` : ""}</div>
-          ${done ? "" : `<div class="rsvp"><button type="button" class="chip" id="sendNow">${ICON_MAIL}Send a reminder now</button></div>`}</div>` : ""}
+          ${(() => { const c = e.reminders ? e.reminderCfg || remDefaults : null; const items = c ? [...c.reminders.map(r => `${remText(r.minutes)}${r.audience === "pending" ? ", to people who haven't responded" : ""}`), ...(c.followUp ? [fuText(c.followUp)] : [])] : [];
+            return items.length ? `<ul class="remlist">${items.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : `<div class="mine-st" style="margin-top:0">No reminders for this event.</div>`; })()}
+          ${sent ? `<div class="mine-st" style="margin-top:0">Last sent ${new Date(sent.sent_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} to ${sent.recipients} ${sent.recipients === 1 ? "person" : "people"}.</div>` : ""}
+          ${remInfo && !remInfo.ready ? `<p class="note warn" style="margin-top:8px">Email sending isn't connected yet, so nothing goes out until an admin adds the email key.</p>` : ""}
+          ${done ? "" : `<div class="rsvp"><button type="button" class="chip" id="sendNow">${ICON_MAIL}Send a reminder now</button><button type="button" class="chip" id="testOpen">Send a test</button></div>`}
+          ${testOpen ? `<div class="testrow" style="margin-top:10px"><input id="testTo" type="email" placeholder="you@queensu.ca" aria-label="Email for a test" style="flex:1;min-width:0;height:40px;border:1px solid var(--muted);border-radius:4px;padding:0 12px;background:var(--surface);font:inherit;color:inherit"><button type="button" class="tb fill" id="testSend">Send</button></div>` : ""}
+          ${remInfo && remInfo.missing.length ? `<p class="note" style="margin:8px 0 0">No email on file for ${remInfo.missing.map(esc).join(", ")}.</p>` : ""}</div>` : ""}
       </div>`;
     if (exemptOpen) $("reason").focus();
   }
@@ -1119,6 +1152,14 @@ svg { display: block; }
       catch (err) { t.disabled = false; if (err.message !== "unauthorized") snack(err.message); }
       return;
     }
+    if (t.id === "testOpen") { testOpen = !testOpen; renderView(); if (testOpen) $("testTo").focus(); return; }
+    if (t.id === "testSend") {
+      const to = $("testTo").value.trim(); if (!to) return $("testTo").focus();
+      t.disabled = true;
+      try { await api("/api/reminders", { method: "POST", body: JSON.stringify({ test: to }) }); snack(`Test email sent to ${to}`); testOpen = false; renderView(); }
+      catch (err) { t.disabled = false; if (err.message !== "unauthorized") snack(err.message); }
+      return;
+    }
     if (t.id === "sendNow") return askConfirm("Send a reminder now?", `Everyone who hasn't been excused from ${ev.title} gets a reminder email now.`, "Send", async () => {
       try { const d = await api("/api/reminders", { method: "POST", body: JSON.stringify({ sendNow: ev.id }) }); snack(`Reminder sent to ${d.sent} ${d.sent === 1 ? "person" : "people"}`); await afterChange(ev.id); }
       catch (err) { if (err.message !== "unauthorized") snack(err.message); }
@@ -1145,7 +1186,9 @@ svg { display: block; }
     $("evLoc").value = ev ? ev.location : "";
     $("evDesc").value = ev ? ev.description : "";
     $("evMand").checked = ev ? ev.mandatory : true;
-    $("evRem").checked = ev ? ev.reminders : true;
+    $("remDefault").checked = false;
+    remCfg = JSON.parse(JSON.stringify(ev ? (ev.reminders ? ev.reminderCfg || remDefaults : { reminders: [], followUp: null }) : remDefaults));
+    drawRems();
     $("evEdit").hidden = false; $("evTitle").focus();
   }
   $("evCancel").onclick = () => { $("evEdit").hidden = true; };
@@ -1157,17 +1200,69 @@ svg { display: block; }
     if (!title) return err("Give the event a title.");
     if (!date || !st || !en) return err("Pick a date, start time and end time.");
     if (en <= st) return err("The event has to end after it starts.");
-    const body = { title, start: `${date}T${st}`, end: `${date}T${en}`, location: $("evLoc").value, description: $("evDesc").value, mandatory: $("evMand").checked, reminders: $("evRem").checked };
+    const body = { title, start: `${date}T${st}`, end: `${date}T${en}`, location: $("evLoc").value, description: $("evDesc").value, mandatory: $("evMand").checked };
+    const cfg = readRems(); if (cfg.error) return err(cfg.error);
+    Object.assign(body, { reminders: cfg.reminders.length > 0 || !!cfg.followUp, reminderCfg: cfg, saveDefault: $("remDefault").checked });
     $("evSave").disabled = true;
     try {
       const was = editing;
       const d = await api(was ? `/api/events?id=${encodeURIComponent(was.id)}` : "/api/events", { method: was ? "PUT" : "POST", body: JSON.stringify(body) });
       $("evEdit").hidden = true; snack(was ? "Event updated" : `Created ${title}`);
+      if (body.saveDefault) remDefaults = body.reminderCfg;
       await refreshEvents();
       openEvent(d.id || was.id, true);
     } catch (x) { if (x.message !== "unauthorized") err(x.message); }
     finally { $("evSave").disabled = false; }
   });
+
+  /* reminder rows in the event form, like Google Calendar notifications */
+  let remDefaults = { reminders: [{ minutes: 4320, audience: "all" }, { minutes: 1440, audience: "all" }, { minutes: 120, audience: "all" }], followUp: null };
+  let remCfg = remDefaults, remInfo = null;
+  const UNITS = [["weeks", 10080], ["days", 1440], ["hours", 60], ["minutes", 1]];
+  const splitMin = m => { for (const [u, k] of UNITS) if (m && m % k === 0) return [m / k, u]; return [m, "minutes"]; };
+  const ICON_RM = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+  function drawRems() {
+    $("remRows").innerHTML = remCfg.reminders.map((r, i) => { const [n, u] = splitMin(r.minutes); return `<div class="rrow" data-i="${i}">${ICON_MAIL}
+      <input type="number" min="0" max="999" class="amt" value="${n}" aria-label="How long before">
+      <select class="unit" aria-label="Unit">${UNITS.map(([x]) => `<option ${x === u ? "selected" : ""}>${x}</option>`).join("")}</select>
+      <span class="t">before, to</span>
+      <select class="aud" aria-label="Who gets it"><option value="all" ${r.audience !== "pending" ? "selected" : ""}>everyone</option><option value="pending" ${r.audience === "pending" ? "selected" : ""}>non-responders</option></select>
+      <button type="button" class="ib rm" aria-label="Remove reminder">${ICON_RM}</button></div>`; }).join("");
+    const f = remCfg.followUp;
+    $("fuRow").innerHTML = f ? `<div class="rrow fu">${ICON_MAIL}<span class="t">Every</span>
+      <input type="number" min="1" max="30" class="fdays" value="${f.days}" aria-label="Days between follow-ups"><span class="t fdl">day${f.days === 1 ? "" : "s"} at</span>
+      <input type="time" class="ftime" value="${f.time}" aria-label="Time"><span class="t">to non-responders</span>
+      <button type="button" class="ib rmfu" aria-label="Remove follow-up">${ICON_RM}</button></div>` : "";
+    $("fuAdd").hidden = !!f;
+  }
+  // Reads the rows back into remCfg, so adding or removing a row keeps unsaved edits.
+  function readRems() {
+    const reminders = [];
+    for (const row of $("remRows").querySelectorAll(".rrow")) {
+      const raw = row.querySelector(".amt").value, n = +raw, k = UNITS.find(([u]) => u === row.querySelector(".unit").value)[1];
+      if (raw === "" || !Number.isFinite(n) || n < 0) return { error: "Enter how long before the event each reminder goes out." };
+      if (n * k > 4 * 10080) return { error: "Reminders can go out at most 4 weeks before the event." };
+      reminders.push({ minutes: Math.round(n * k), audience: row.querySelector(".aud").value });
+    }
+    let followUp = null;
+    const fr = $("fuRow").querySelector(".rrow");
+    if (fr) {
+      const d = Math.round(+fr.querySelector(".fdays").value), t = fr.querySelector(".ftime").value || "09:00";
+      if (!(d >= 1 && d <= 30)) return { error: "Follow-ups repeat every 1 to 30 days." };
+      followUp = { days: d, time: t };
+    }
+    remCfg = { reminders, followUp };
+    return remCfg;
+  }
+  const keep = () => { const r = readRems(); return !r.error; };
+  $("remAdd").onclick = () => { keep(); remCfg.reminders.push({ minutes: 1440, audience: "all" }); drawRems(); $("remRows").lastElementChild.querySelector(".amt").focus(); };
+  $("fuAdd").onclick = () => { keep(); remCfg.followUp = { days: 2, time: "09:00" }; drawRems(); };
+  $("remRows").addEventListener("click", e => { const b = e.target.closest(".rm"); if (!b) return; const i = +b.closest(".rrow").dataset.i; keep(); remCfg.reminders.splice(i, 1); drawRems(); });
+  $("fuRow").addEventListener("click", e => { if (!e.target.closest(".rmfu")) return; keep(); remCfg.followUp = null; drawRems(); });
+  $("fuRow").addEventListener("input", e => { if (e.target.matches(".fdays")) $("fuRow").querySelector(".fdl").textContent = `day${+e.target.value === 1 ? "" : "s"} at`; });
+  async function loadRemDefaults() { try { const d = await api("/api/reminders"); remDefaults = d.settings; remInfo = d; } catch { /* keep built-in defaults */ } }
+  const remText = m => { if (!m) return "When the event starts"; const [n, u] = splitMin(m); return `${n} ${n === 1 ? u.slice(0, -1) : u} before`; };
+  const fuText = f => `Every ${f.days === 1 ? "day" : f.days + " days"} at ${clockTxt(+f.time.slice(0, 2) * 60 + +f.time.slice(3))}, to people who haven't responded`;
 
   /* create button: admins choose event or member calendar; Ops & Marketing go straight to a new event */
   $("createBtn").addEventListener("click", e => {
@@ -1178,30 +1273,6 @@ svg { display: block; }
   });
   $("menuEvent").onclick = () => { $("createMenu").hidden = true; openEditor(null); };
   document.addEventListener("click", e => { if (!e.target.closest("#createMenu")) $("createMenu").hidden = true; });
-
-  /* reminder settings */
-  const HOURS_LABEL = h => h >= 24 && h % 24 === 0 ? (h === 168 ? "1 week before" : h === 24 ? "1 day before" : `${h / 24} days before`) : `${h} hour${h === 1 ? "" : "s"} before`;
-  $("remOpen").onclick = async () => {
-    $("remDlg").hidden = false; $("remHelp").textContent = ""; $("remBody").innerHTML = "<p>Loading…</p>";
-    try {
-      const d = await api("/api/reminders");
-      $("remBody").innerHTML = `
-        ${d.ready ? "" : `<p class="note warn">Email sending isn't connected yet, so nothing goes out until an admin adds the email key. Your choices here are saved.</p>`}
-        <label class="chk"><input type="checkbox" id="remOn" ${d.settings.enabled ? "checked" : ""}><span>Send reminder emails for upcoming events</span></label>
-        <p class="note">Send a reminder:</p>
-        <div class="grid2">${d.choices.map(h => `<label class="chk"><input type="checkbox" name="remH" value="${h}" ${d.settings.hours.includes(h) ? "checked" : ""}><span>${HOURS_LABEL(h)}</span></label>`).join("")}</div>
-        <p class="note">Reminders go to everyone on the team list who hasn't been excused or said they can't go. Each event can turn reminders off in its settings. ${d.withEmail} ${d.withEmail === 1 ? "person has" : "people have"} an email address on file.${d.missing.length ? ` No email for ${d.missing.map(esc).join(", ")}.` : ""}</p>`;
-    } catch (err) { if (err.message !== "unauthorized") $("remBody").innerHTML = `<p>${esc(err.message)}</p>`; }
-  };
-  $("remCancel").onclick = () => { $("remDlg").hidden = true; };
-  $("remDlg").addEventListener("click", e => { if (e.target === $("remDlg")) $("remDlg").hidden = true; });
-  $("remForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    if (!$("remOn")) return;
-    const hours = [...document.querySelectorAll("input[name=remH]:checked")].map(x => +x.value);
-    try { await api("/api/reminders", { method: "POST", body: JSON.stringify({ enabled: $("remOn").checked, hours }) }); $("remDlg").hidden = true; snack("Reminder schedule saved"); }
-    catch (err) { if (err.message !== "unauthorized") { $("remHelp").textContent = err.message; $("remHelp").className = "help err"; } }
-  });
 
   // Links in reminder emails open the event: calendar.quantt.ca/#event=<id>
   function openFromHash() {
@@ -1227,7 +1298,7 @@ svg { display: block; }
     setRole(role);
     build(); paint(); loadWeek(); loadEvents(); loadUpcoming();
     // Re-check which login this password is, in case it changed since the last visit.
-    api("/api/session", { method: "POST" }).then(d => { if (d.role && d.role !== role) { setRole(d.role); refreshEvents(); } }).catch(() => {});
+    api("/api/session", { method: "POST" }).then(d => { if (d.role && d.role !== role) { setRole(d.role); refreshEvents(); } if (mgr()) loadRemDefaults(); }).catch(() => {});
     api("/api/order").then(d => { order = d.order || []; roster(); }).catch(() => {});
     openFromHash();
     const t = new Date(), mins = t.getHours() * 60 + t.getMinutes() - START * 30;
