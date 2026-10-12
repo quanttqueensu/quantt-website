@@ -8,6 +8,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+// Static export: every post is built ahead of time; any other slug is the 404 page.
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return getBlogSlugs().map((slug) => ({ slug }));
 }
