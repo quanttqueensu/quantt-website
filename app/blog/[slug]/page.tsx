@@ -12,7 +12,9 @@ interface Props {
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return getBlogSlugs().map((slug) => ({ slug }));
+  // Static export refuses an empty list, so with no posts yet one placeholder is built; it renders the 404 page.
+  const slugs = getBlogSlugs();
+  return (slugs.length ? slugs : ["none"]).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
