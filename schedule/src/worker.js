@@ -10,6 +10,7 @@ import * as attendance from "./api/attendance.js";
 import * as review from "./api/review.js";
 import * as reminders from "./api/reminders.js";
 import { runReminders } from "./events.js";
+import { identify } from "./core.js";
 
 const routes = {
   "/api/members": members, "/api/busy": busy, "/api/session": session, "/api/roster": roster, "/api/order": order,
@@ -24,6 +25,8 @@ export default {
     if (mod) {
       const handler = mod[METHOD[request.method]];
       if (!handler) return new Response("Method not allowed", { status: 405 });
+      try { await identify(request, env); }
+      catch { return new Response(JSON.stringify({ error: "Couldn't check your sign-in. Try again." }), { status: 503, headers: { "content-type": "application/json" } }); }
       return handler({ request, env });
     }
     if (pathname.startsWith("/api/")) return new Response("Not found", { status: 404 });

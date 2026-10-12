@@ -542,6 +542,8 @@ svg { display: block; }
   let admin = store.get("qs-admin", "") === "1";
   // team: view and respond; ops (Ops & Marketing): also manage events and reminders; admin: everything.
   let role = store.get("qs-role", admin ? "admin" : "team");
+  // Signed in through Cloudflare Access: the server knows who this is from their email, so there is no password or name picker.
+  let viaAccess = false, myEmail = "";
   const mgr = () => role === "admin" || role === "ops";
   const hidden = new Set(store.get("qs-hidden", []));
   const saveHidden = () => store.set("qs-hidden", [...hidden]);
@@ -578,6 +580,7 @@ svg { display: block; }
     catch { throw new Error("Couldn't reach the calendar. Check your connection and try again."); }
     let data = {};
     try { data = await res.json(); } catch { /* empty body */ }
+    if (res.status === 401 && viaAccess) { location.reload(); throw new Error("unauthorized"); }
     if (res.status === 401) { signOut("Your password was not accepted. Enter the current team password."); throw new Error("unauthorized"); }
     if (!res.ok) throw new Error(data.error || "Something went wrong. Try again.");
     return data;
@@ -915,7 +918,7 @@ svg { display: block; }
     requestAnimationFrame(() => { placeNow(); placeEvents(); });
   };
   $("refresh").onclick = () => { weekCache.clear(); loadWeek(true); refreshEvents(); };
-  $("signout").onclick = () => signOut("");
+  $("signout").onclick = () => { if (viaAccess) location.href = "/cdn-cgi/access/logout"; else signOut(""); };
 
   /* ---------- week nav ---------- */
   const go = n => {
@@ -1132,13 +1135,15 @@ svg { display: block; }
     let mine;
     if (me && !forMe(e)) {
       mine = `<div class="lab">Your response</div>
-        <div>Responding as <b>${esc(me)}</b> · <button type="button" class="linkb" id="meChange">Not you?</button></div>
+        <div>Responding as <b>${esc(me)}</b>${viaAccess ? "" : ` · <button type="button" class="linkb" id="meChange">Not you?</button>`}</div>
         <div class="mine-st">This event is only for ${esc(inviteText(e.invite))}, so you don't need to respond.</div>`;
+    } else if (!me && viaAccess) {
+      mine = `<div class="lab">Your response</div><div class="mine-st">You're signed in as <b>${esc(myEmail)}</b>, which isn't on the team list, so you can't respond yet. Ask an admin to add this address to your contact.</div>`;
     } else if (!me) {
       mine = `<div class="lab">Who are you?</div><select id="meSel" aria-label="Your name"><option value="">Choose your name</option>${people.map(n => `<option>${esc(n)}</option>`).join("")}</select>`;
     } else {
       mine = `<div class="lab">Your response</div>
-        <div>Responding as <b>${esc(me)}</b> · <button type="button" class="linkb" id="meChange">Not you?</button></div>
+        <div>Responding as <b>${esc(me)}</b>${viaAccess ? "" : ` · <button type="button" class="linkb" id="meChange">Not you?</button>`}</div>
         ${r ? `<div class="mine-st">${r.status === "going" ? "You're <b>going</b>." : r.status === "no" ? "You said you <b>can't go</b>." : `Your exemption request is <b>${{ pending: "waiting for review", approved: "approved", denied: "denied" }[r.review] || "pending"}</b>.${r.review === "denied" ? " You're expected to attend." : ""}`}</div>` : e.mandatory && !done ? `<div class="mine-st">Attendance is required. If you can't make it, request an exemption with a reason.</div>` : ""}
         ${done ? `<div class="mine-st">This event has ended.</div>` : `<div class="rsvp">
           <button type="button" class="chip${r && r.status === "going" ? " on" : ""}" data-rsvp="going">Going</button>
@@ -1409,7 +1414,7 @@ svg { display: block; }
     $("app").classList.toggle("admin", admin); $("app").classList.toggle("mgr", mgr());
     $("createLabel").textContent = admin ? "Create" : "New event";
     const who = { admin: "Admin", ops: "Ops & Marketing", team: "Team" }[r];
-    $("signout").title = `${me ? me + " · " : ""}${who} login. Click to sign out.`;
+    $("signout").title = viaAccess ? `${me || myEmail} · ${who}. Click to sign out.` : `${me ? me + " · " : ""}${who} login. Click to sign out.`;
     $("signout").textContent = me ? initials(me) : "Q";
   }
 
@@ -1418,13 +1423,31 @@ svg { display: block; }
     setRole(role);
     build(); paint(); loadWeek(); loadEvents(); loadUpcoming();
     // Re-check which login this password is, in case it changed since the last visit.
-    api("/api/session", { method: "POST" }).then(d => { if (d.role && d.role !== role) { setRole(d.role); refreshEvents(); } if (mgr()) loadRemDefaults(); }).catch(() => {});
+    if (!viaAccess) api("/api/session", { method: "POST" }).then(d => { if (d.role && d.role !== role) { setRole(d.role); refreshEvents(); } if (mgr()) loadRemDefaults(); }).catch(() => {});
     api("/api/order").then(d => { order = d.order || []; roster(); }).catch(() => {});
     openFromHash();
     const t = new Date(), mins = t.getHours() * 60 + t.getMinutes() - START * 30;
     surface.scrollTop = Math.max(0, Math.min(mins, ROWS * 30) / 30 * ROW_H - 120);
   }
-  if (key) start(); else signOut("");
+  // Ask the server who this is first: with Cloudflare Access sign-in on, it answers from the person's email.
+  function signedIn(d) {
+    viaAccess = true; myEmail = d.email || ""; key = ""; store.del("qs-key");
+    me = d.name || ""; if (me) store.set("qs-me", me); else store.del("qs-me");
+    setRole(d.role || "team");
+    start();
+    if (mgr()) loadRemDefaults();
+  }
+  fetch("/api/session").then(r => r.json().then(d => ({ ok: r.ok, ...d }))).catch(() => ({})).then(d => {
+    if (d.access && d.ok) return signedIn(d);
+    if (d.access) {
+      $("gate").hidden = false; $("app").hidden = true; $("gateForm").querySelectorAll("input,.acts").forEach(x => x.style.display = "none");
+      $("gateForm").querySelector("p").textContent = "The QUANTT calendar is private.";
+      if (d.notMember) $("gateMsg").innerHTML = `${esc(d.email)} isn't on the QUANTT team list. <a href="/cdn-cgi/access/logout">Sign out</a> and use the email the club has for you, or ask an exec to add this one.`;
+      else $("gateMsg").textContent = "Your sign-in has expired. Reload the page to sign in again.";
+      return;
+    }
+    if (key) start(); else signOut("");
+  });
 })();
 </script>
 

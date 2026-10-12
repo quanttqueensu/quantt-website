@@ -1,5 +1,7 @@
 // Shared helpers for the schedule API: auth, member storage, ICS parsing.
-// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), DB (D1, events), SCHEDULE_PASSWORD, OPS_PASSWORD and ADMIN_PASSWORD (secrets).
+// Runs in a Cloudflare Worker. Bindings: SCHEDULE_KV (KV namespace), DB (D1, events), SCHEDULE_PASSWORD, OPS_PASSWORD and ADMIN_PASSWORD (secrets),
+// or for per-person sign-in ACCESS_TEAM, ACCESS_AUD, ADMIN_EMAILS and OPS_EMAILS (variables).
+import { viewer, teamUrl } from "./access.js";
 
 const STORE_KEY = "members";
 const ALLOWED_HOSTS = ["mytimetable.queensu.ca", "outlook.office365.com", "outlook.live.com", "calendar.google.com"];
@@ -17,7 +19,12 @@ export function json(data, status = 200) {
 }
 
 // "admin" can do everything; "ops" (Ops & Marketing) can also manage events and reminder emails; "team" can view and respond to events.
-export function role(request, env) {
+// Two ways in. With ACCESS_TEAM set, Cloudflare Access signs each person in by email (one-time code) and their role comes from
+// ADMIN_EMAILS / OPS_EMAILS; the shared passwords stop working. Without it, the shared passwords below apply as before.
+// worker.js calls identify() once per request; role() and the helpers below read that result.
+const identities = new WeakMap();
+
+function passwordRole(request, env) {
   const key = request.headers.get("x-schedule-key");
   if (!key) return null;
   if (env.ADMIN_PASSWORD && key === env.ADMIN_PASSWORD) return "admin";
@@ -26,9 +33,38 @@ export function role(request, env) {
   return null;
 }
 
-export const authorized = (request, env) => role(request, env) !== null;
-export const isAdmin = (request, env) => role(request, env) === "admin";
-export const canManageEvents = (request, env) => ["admin", "ops"].includes(role(request, env));
+export const accessMode = (env) => !!env.ACCESS_TEAM;
+
+// ADMIN_EMAILS and OPS_EMAILS: comma-separated emails or full names from the contacts list.
+const listed = (v, email, name) => String(v || "").split(",").map((x) => x.trim()).filter(Boolean)
+  .some((x) => x.includes("@") ? x.toLowerCase() === email : !!name && normName(x) === normName(name));
+
+// { via: "access", email, name, role } | { via: "password", role } | null. name is null when the email isn't on the contacts list,
+// and role is null when that person isn't allowed in.
+export async function identify(request, env) {
+  let who = null;
+  if (accessMode(env)) {
+    const v = await viewer(request, teamUrl(env.ACCESS_TEAM), env.ACCESS_AUD || "");
+    if (v.email) {
+      const name = await nameForEmail(env, v.email);
+      // Only people on the contacts list (or named in ADMIN_EMAILS / OPS_EMAILS) get in, whatever the Access policy allows.
+      const r = listed(env.ADMIN_EMAILS, v.email, name) ? "admin" : listed(env.OPS_EMAILS, v.email, name) ? "ops" : name ? "team" : null;
+      who = { via: "access", email: v.email, name, role: r };
+    }
+  } else {
+    const r = passwordRole(request, env);
+    if (r) who = { via: "password", role: r };
+  }
+  identities.set(request, who);
+  return who;
+}
+
+export const currentUser = (request) => identities.get(request) || null;
+export const role = (request) => currentUser(request)?.role || null;
+export const authorized = (request) => role(request) !== null;
+export const isAdmin = (request) => role(request) === "admin";
+export const canManageEvents = (request) => ["admin", "ops"].includes(role(request));
+
 export const icsKey = (id) => `ics:${id}`;
 const MAX_ICS_BYTES = 1024 * 1024;
 
@@ -150,6 +186,33 @@ export function emailsFromContacts(text) {
     if (name && pick) out[name] = pick;
   }
   return out;
+}
+// Sign-in only: { address: name } for every address a contact has, so people can sign in with whichever one they use.
+const LOGINS_KEY = "logins";
+export function loginsFromContacts(text) {
+  const [head, ...body] = parseCSV(String(text).replace(/^\uFEFF/, ""));
+  if (!head) return {};
+  const col = (n) => head.indexOf(n);
+  const iFirst = col("First Name"), iLast = col("Last Name");
+  const out = {};
+  for (const r of body) {
+    const name = `${r[iFirst] || ""} ${r[iLast] || ""}`.trim();
+    if (!name) continue;
+    for (const v of [1, 2, 3].flatMap((k) => (r[col(`E-mail ${k} - Value`)] || "").split(":::")).map((v) => v.trim().toLowerCase())) {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) out[v] = name;
+    }
+  }
+  return out;
+}
+export async function saveLogins(env, logins) {
+  await env.SCHEDULE_KV.put(LOGINS_KEY, JSON.stringify(logins));
+}
+// The contacts name for a signed-in email: every address from the last import, then the reminder addresses saved before that.
+export async function nameForEmail(env, email) {
+  const [logins, emails] = await Promise.all([env.SCHEDULE_KV.get(LOGINS_KEY, "json"), loadEmails(env)]);
+  if (logins && logins[email]) return logins[email];
+  const hit = Object.entries(emails).find(([, e]) => String(e).toLowerCase() === email);
+  return hit ? hit[0] : null;
 }
 export async function loadEmails(env) {
   return (await env.SCHEDULE_KV.get(EMAILS_KEY, "json")) || {};
