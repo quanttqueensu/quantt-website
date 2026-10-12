@@ -947,7 +947,7 @@ svg { display: block; }
     loading(true);
     try {
       const r = await api("/api/roster", { method: "POST", body: JSON.stringify({ csv: await file.text() }) });
-      snack(`Saved ${r.emails ?? 0} email addresses and grouped ${r.matched} people into teams` + (r.unmatched.length ? `; not in contacts: ${r.unmatched.join(", ")}` : ""));
+      snack(`Grouped ${r.matched} people into teams` + (r.unmatched.length ? `; not in contacts: ${r.unmatched.join(", ")}` : ""));
       weekCache.clear(); loadWeek(true);
       // Refresh everything that depends on the contacts, so nothing needs a page reload.
       await Promise.all([loadRemDefaults(), refreshEvents()]);
