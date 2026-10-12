@@ -252,14 +252,6 @@ async function sendBatch(env, msgs) {
   }
 }
 
-// A sample reminder to one address, so Ops can check how the emails look.
-export async function sendTest(env, to) {
-  if (!emailReady(env)) throw new Error("Reminder emails aren't set up yet (RESEND_API_KEY is missing).");
-  const t = wallMinutes(nowWall()) + 2 * 1440, d = new Date(Math.floor(t / 1440) * 86400000).toISOString().slice(0, 10);
-  const ev = { id: "test", title: "Sample event", start: `${d}T18:00`, end: `${d}T19:00`, location: "Goodes Hall", description: "This is a test of QUANTT reminder emails.", mandatory: true, responses: [] };
-  await sendBatch(env, [message(env, ev, { name: "there", email: to })]);
-}
-
 export async function sendReminder(env, ev, { audience = "all", nudge = false } = {}) {
   if (!emailReady(env)) throw new Error("Reminder emails aren't set up yet (RESEND_API_KEY is missing).");
   const list = await recipients(env, ev, nudge ? "pending" : audience);
