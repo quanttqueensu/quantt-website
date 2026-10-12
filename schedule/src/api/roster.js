@@ -10,7 +10,8 @@ export async function onRequestPost({ request, env }) {
   if (!roster.length) return json({ error: "That file doesn't look like a contacts export." }, 400);
   await saveRoster(env, roster);
   // Email addresses are kept server-side for event reminders only.
-  await saveEmails(env, emailsFromContacts(body.csv));
+  const emails = emailsFromContacts(body.csv);
+  await saveEmails(env, emails);
   const members = await loadMembers(env);
   const unmatched = [];
   for (const m of members) {
@@ -19,5 +20,5 @@ export async function onRequestPost({ request, env }) {
   }
   members.sort((a, b) => a.name.localeCompare(b.name));
   await saveMembers(env, members);
-  return json({ matched: members.length - unmatched.length, unmatched });
+  return json({ matched: members.length - unmatched.length, unmatched, emails: Object.keys(emails).length });
 }
