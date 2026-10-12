@@ -1,7 +1,7 @@
 // Events: everyone signed in can list them; the Ops & Marketing and admin logins can create, edit and delete.
 // Exemption reasons are only included for those two logins.
 import { authorized, canManageEvents, json } from "../core.js";
-import { listEvents, cleanEvent, saveEvent, deleteEvent, people, isInvited, saveReminderSettings } from "../events.js";
+import { listEvents, cleanEvent, saveEvent, deleteEvent, people, isInvited, saveReminderSettings, cleanAnnouncement, sendAnnouncement } from "../events.js";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const denied = () => json({ error: "Wrong password" }, 401);
@@ -35,16 +35,28 @@ async function save(request, env, id) {
   const { event, error } = cleanEvent(body);
   if (error) return json({ error }, 400);
   try {
-    const saved = await saveEvent(env, id, event);
+    const saved = await saveEvent(env, id, event, typeof body?.updatedAt === "string" ? body.updatedAt : null);
     if (!saved) return json({ error: "That event no longer exists." }, 404);
+    if (saved.conflict) return json({ error: "Someone else changed this event while you were editing it. Close this window and open the event again to see their changes." }, 409);
     // "Use as default for new events" in the event form.
     if (body?.saveDefault && body?.reminderCfg) await saveReminderSettings(env, body.reminderCfg);
+    // "Email an announcement" in the new event form. The event is saved either way; a failed email is reported, not fatal.
+    const announce = !id && cleanAnnouncement(body?.announce);
+    if (announce) {
+      try {
+        const [ev] = await listEvents(env, { id: saved });
+        return json({ id: saved, announced: await sendAnnouncement(env, ev, announce) }, 201);
+      } catch (e) { return json({ id: saved, announceError: e.message || "The announcement email couldn't be sent." }, 201); }
+    }
     return json({ id: saved }, id ? 200 : 201);
   } catch (e) { return fail(e); }
 }
 
 export const onRequestPost = ({ request, env }) => save(request, env, null);
-export const onRequestPut = ({ request, env }) => save(request, env, new URL(request.url).searchParams.get("id"));
+export function onRequestPut({ request, env }) {
+  const id = new URL(request.url).searchParams.get("id");
+  return id ? save(request, env, id) : json({ error: "Say which event to change." }, 400);
+}
 
 export async function onRequestDelete({ request, env }) {
   if (!authorized(request, env)) return denied();
