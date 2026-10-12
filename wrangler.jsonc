@@ -1,0 +1,11 @@
+// quantt.ca on Cloudflare: the static export in out/ served as Worker static assets (no Worker code).
+// Workers Builds: build command `npm run build`, deploy command `npx wrangler deploy`.
+{
+  "name": "quantt-site",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
