@@ -335,6 +335,8 @@ svg { display: block; }
 .dlg .chk input[type=radio] { width: 18px; height: 18px; }
 .testrow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .testrow input { flex: 1; min-width: 0; height: 44px; }
+.dlg .ann { border-top: 1px solid var(--line); padding-top: 14px; }
+.dlg .ann .chk { margin-bottom: 12px; }
 .dlg .rems { border-top: 1px solid var(--line); margin: 4px 0 12px; padding-top: 12px; }
 .dlg .remh { font-weight: 500; margin-bottom: 8px; }
 /* A reminder row: icon, then its parts in whole chunks that wrap to a second line when the dialog is narrow, then the remove button. */
@@ -502,6 +504,13 @@ svg { display: block; }
     <div class="f"><label for="invIn">Invite</label>
       <div class="inv" id="invBox"><span id="invChips"></span><input id="invIn" type="text" list="invOpts" autocomplete="off" placeholder="Everyone. Add teams or people to narrow it"></div>
       <datalist id="invOpts"></datalist><div class="invsub" id="invSub"></div></div>
+    <div class="ann" id="annBox">
+      <label class="chk"><input type="checkbox" id="annOn"><span>Email an announcement</span><small id="annSub">Sends the event to everyone invited when you save.</small></label>
+      <div id="annFields" hidden>
+        <div class="f"><label for="annSubj">Subject</label><input id="annSubj" type="text" maxlength="150" autocomplete="off"></div>
+        <div class="f"><label for="annMsg">Message</label><textarea id="annMsg" rows="3" maxlength="4000" placeholder="Optional. Shown above the event details."></textarea></div>
+      </div>
+    </div>
     <div class="rems">
       <div class="remh">Email reminders</div>
       <div class="remsub">Nobody who is excused or said they can't come gets these.</div>
@@ -564,7 +573,9 @@ svg { display: block; }
 
   /* ---------- API ---------- */
   async function api(path, opts = {}) {
-    const res = await fetch(path, { ...opts, headers: { "content-type": "application/json", "x-schedule-key": key, ...(opts.headers || {}) } });
+    let res;
+    try { res = await fetch(path, { ...opts, headers: { "content-type": "application/json", "x-schedule-key": key, ...(opts.headers || {}) } }); }
+    catch { throw new Error("Couldn't reach the calendar. Check your connection and try again."); }
     let data = {};
     try { data = await res.json(); } catch { /* empty body */ }
     if (res.status === 401) { signOut("Your password was not accepted. Enter the current team password."); throw new Error("unauthorized"); }
@@ -804,7 +815,7 @@ svg { display: block; }
     if (!$("createMenu").hidden) $("createMenu").hidden = true;
     else if (!$("confirm").hidden) { $("confirm").hidden = true; confirmAction = null; }
     else if (!$("dlg").hidden) closeDlg();
-    else if (!$("evEdit").hidden) $("evEdit").hidden = true;
+    else if (!$("evEdit").hidden) closeEditor();
     else if (!$("evView").hidden) closeView();
     else hide();
   });
@@ -1163,6 +1174,7 @@ svg { display: block; }
         ${mgr() ? `<div class="box"><div class="lab">Reminder emails</div>
           ${(() => { const c = e.reminders ? e.reminderCfg || remDefaults : null; const items = c ? [...c.reminders.map(r => `${remText(r.minutes)}${r.audience === "pending" ? ", to people who haven't responded" : ""}`), ...(c.followUp ? [fuText(c.followUp)] : [])] : [];
             return items.length ? `<ul class="remlist">${items.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : `<div class="mine-st" style="margin-top:0">No reminders for this event.</div>`; })()}
+          ${e.announced_at ? `<div class="mine-st" style="margin-top:0">Announcement emailed ${new Date(e.announced_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} to ${e.announced_to} ${e.announced_to === 1 ? "person" : "people"}.</div>` : ""}
           ${sent ? `<div class="mine-st" style="margin-top:0">Last sent ${new Date(sent.sent_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} to ${sent.recipients} ${sent.recipients === 1 ? "person" : "people"}.</div>` : ""}
           ${remInfo && !remInfo.ready ? `<p class="note warn" style="margin-top:8px">Email sending isn't connected yet, so nothing goes out until an admin adds the email key.</p>` : ""}
           ${done ? "" : `<div class="rsvp"><button type="button" class="chip" id="sendNow">${ICON_MAIL}Send a reminder now</button><button type="button" class="chip" id="testOpen">Send a test</button></div>`}
@@ -1243,10 +1255,30 @@ svg { display: block; }
     $("invIn").value = ""; drawInvite();
     remCfg = JSON.parse(JSON.stringify(ev ? (ev.reminders ? ev.reminderCfg || remDefaults : { reminders: [], followUp: null }) : remDefaults));
     drawRems();
+    $("annBox").hidden = !!ev; $("annOn").checked = false; $("annSubj").value = ""; $("annMsg").value = ""; drawAnn();
     $("evEdit").hidden = false; $("evTitle").focus();
+    editStart = formState();
   }
-  $("evCancel").onclick = () => { $("evEdit").hidden = true; };
-  $("evEdit").addEventListener("click", e => { if (e.target === $("evEdit")) $("evEdit").hidden = true; });
+  // Announcement email (new events only): one checkbox; the subject and message only show once it's ticked.
+  function drawAnn() {
+    const off = remInfo && !remInfo.ready, on = $("annOn").checked && !off;
+    $("annOn").disabled = off;
+    $("annSub").textContent = off ? "Email sending isn't connected yet." : "Sends the event to everyone invited when you save.";
+    $("annFields").hidden = !on;
+    $("annSubj").placeholder = `New event: ${$("evTitle").value.trim() || "event title"}`;
+    $("evSave").textContent = on ? "Save and send" : "Save";
+  }
+  $("annOn").addEventListener("change", () => { drawAnn(); if ($("annOn").checked) $("annMsg").focus(); });
+  $("evTitle").addEventListener("input", () => { if (!$("annFields").hidden) drawAnn(); });
+  // Clicking outside the form or pressing Escape never throws away typed changes without asking.
+  let editStart = "";
+  const formState = () => JSON.stringify([[...$("evForm").elements].map(x => x.type === "checkbox" ? x.checked : x.value), invSel]);
+  function closeEditor(force) {
+    if (force || formState() === editStart) { $("evEdit").hidden = true; return; }
+    askConfirm("Discard changes?", "Your changes to this event haven't been saved.", "Discard", () => { $("evEdit").hidden = true; });
+  }
+  $("evCancel").onclick = () => closeEditor(true);
+  $("evEdit").addEventListener("click", e => { if (e.target === $("evEdit")) closeEditor(); });
   $("evForm").addEventListener("submit", async e => {
     e.preventDefault();
     const err = t => { $("evHelp").textContent = t; $("evHelp").className = "help err"; };
@@ -1258,11 +1290,15 @@ svg { display: block; }
     const cfg = readRems(); if (cfg.error) return err(cfg.error);
     body.invite = { teams: invSel.filter(x => x.team).map(x => x.team), people: invSel.filter(x => x.name).map(x => x.name) };
     Object.assign(body, { reminders: cfg.reminders.length > 0 || !!cfg.followUp, reminderCfg: cfg, saveDefault: $("remDefault").checked });
+    if (editing) body.updatedAt = editing.updated_at;
+    else if ($("annOn").checked && !$("annOn").disabled) body.announce = { subject: $("annSubj").value.trim(), message: $("annMsg").value.trim() };
     $("evSave").disabled = true;
     try {
       const was = editing;
       const d = await api(was ? `/api/events?id=${encodeURIComponent(was.id)}` : "/api/events", { method: was ? "PUT" : "POST", body: JSON.stringify(body) });
-      $("evEdit").hidden = true; snack(was ? "Event updated" : `Created ${title}`);
+      $("evEdit").hidden = true;
+      snack(was ? "Event updated" : d.announceError ? `Created ${title}, but the announcement wasn't sent: ${d.announceError}`
+        : d.announced != null ? `Created ${title} and emailed ${d.announced} ${d.announced === 1 ? "person" : "people"}` : `Created ${title}`);
       if (body.saveDefault) remDefaults = body.reminderCfg;
       await refreshEvents();
       openEvent(d.id || was.id, true);

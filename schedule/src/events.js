@@ -14,14 +14,20 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
 ];
 
-// Columns added after the first release. ALTER fails harmlessly once the column exists.
-const MIGRATIONS = ["ALTER TABLE events ADD COLUMN reminder_cfg TEXT", "ALTER TABLE events ADD COLUMN invite TEXT"];
+// Columns added after the first release. Only missing ones are added, and a failure is retried on the next request
+// rather than leaving the table without a column that saves depend on.
+const COLUMNS = { reminder_cfg: "TEXT", invite: "TEXT", announced_at: "TEXT", announced_to: "INTEGER" };
 
 let ready = null;
 export function db(env) {
   if (!env.DB) throw new Error("The events database isn't connected yet.");
   ready ||= env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)))
-    .then(async () => { for (const m of MIGRATIONS) await env.DB.prepare(m).run().catch(() => {}); })
+    .then(async () => {
+      const have = new Set((await env.DB.prepare("PRAGMA table_info(events)").all()).results.map((c) => c.name));
+      for (const [col, type] of Object.entries(COLUMNS)) {
+        if (!have.has(col)) await env.DB.prepare(`ALTER TABLE events ADD COLUMN ${col} ${type}`).run();
+      }
+    })
     .catch((e) => { ready = null; throw e; });
   return ready.then(() => env.DB);
 }
@@ -106,7 +112,9 @@ export async function listEvents(env, { from, to, id }) {
   }));
 }
 
-export async function saveEvent(env, id, e) {
+// updatedAt (optional): the version the editor started from. If someone saved the event since, nothing is
+// overwritten and "conflict" comes back, so two people editing at once can't silently undo each other.
+export async function saveEvent(env, id, e, updatedAt) {
   const DB = await db(env);
   const at = new Date().toISOString();
   if (!id) {
@@ -115,13 +123,15 @@ export async function saveEvent(env, id, e) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(id, e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, e.invite, at, at).run();
     return id;
   }
-  const old = await DB.prepare("SELECT start FROM events WHERE id = ?").bind(id).first();
+  const old = await DB.prepare("SELECT start, updated_at FROM events WHERE id = ?").bind(id).first();
   if (!old) return null;
-  const stmts = [DB.prepare(`UPDATE events SET title = ?, start = ?, end = ?, location = ?, description = ?, mandatory = ?, reminders = ?, reminder_cfg = ?, invite = ?, updated_at = ? WHERE id = ?`)
-    .bind(e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, e.invite, at, id)];
+  if (updatedAt && updatedAt !== old.updated_at) return { conflict: true };
+  const stmts = [DB.prepare(`UPDATE events SET title = ?, start = ?, end = ?, location = ?, description = ?, mandatory = ?, reminders = ?, reminder_cfg = ?, invite = ?, updated_at = ? WHERE id = ? AND updated_at = ?`)
+    .bind(e.title, e.start, e.end, e.location, e.description, e.mandatory, e.reminders, e.reminder_cfg, e.invite, at, id, old.updated_at)];
   // A moved event gets its reminders again, counted from the new time.
   if (old.start !== e.start) stmts.push(DB.prepare("DELETE FROM reminders_sent WHERE event_id = ?").bind(id));
-  await DB.batch(stmts);
+  const res = await DB.batch(stmts);
+  if (!(res[0].meta?.changes > 0)) return { conflict: true };
   return id;
 }
 
@@ -205,18 +215,22 @@ function leadText(ev) {
 }
 const escHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-function message(env, ev, person, nudge) {
+// announce: { subject, message } for the email sent when an event is created; its note goes above the event details.
+function message(env, ev, person, nudge, announce) {
   const link = `${appUrl(env)}/#event=${encodeURIComponent(ev.id)}`;
   const first = person.name.split(" ")[0];
   const going = person.response?.status === "going";
-  const subject = nudge ? `Please respond: ${ev.title} ${leadText(ev)}` : `Reminder: ${ev.title} ${leadText(ev)}`;
+  const subject = announce ? announce.subject || `New event: ${ev.title} ${leadText(ev)}`
+    : nudge ? `Please respond: ${ev.title} ${leadText(ev)}` : `Reminder: ${ev.title} ${leadText(ev)}`;
+  const note = announce?.message || "";
   const ask = going ? "You're marked as going."
     : nudge ? `You haven't responded yet. ${ev.mandatory ? "Attendance is required, so if you can't make it, open the event and request an exemption with a reason." : "Let us know if you're coming."}`
     : ev.mandatory ? "Attendance is required. If you can't make it, open the event and request an exemption with a reason."
     : "Let us know if you're coming.";
-  const lines = [`Hi ${first},`, "", `${ev.title}`, whenText(ev), ev.location ? `Location: ${ev.location}` : "", ev.description ? `\n${ev.description}` : "", "", ask, link, "", "QUANTT Operations & Marketing"].filter((l, i, a) => l !== "" || a[i - 1] !== "");
+  const lines = [`Hi ${first},`, "", ...(note ? [note, ""] : []), `${ev.title}`, whenText(ev), ev.location ? `Location: ${ev.location}` : "", ev.description ? `\n${ev.description}` : "", "", ask, link, "", "QUANTT Operations & Marketing"].filter((l, i, a) => l !== "" || a[i - 1] !== "");
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1f1f1f;line-height:1.5">
 <p>Hi ${escHtml(first)},</p>
+${note ? `<p style="white-space:pre-line">${escHtml(note)}</p>` : ""}
 <p style="font-size:18px;margin:0 0 4px"><b>${escHtml(ev.title)}</b></p>
 <p style="margin:0">${escHtml(whenText(ev))}</p>
 ${ev.location ? `<p style="margin:0">${escHtml(ev.location)}</p>` : ""}
@@ -250,6 +264,21 @@ export async function sendReminder(env, ev, { audience = "all", nudge = false } 
   if (!emailReady(env)) throw new Error("Reminder emails aren't set up yet (RESEND_API_KEY is missing).");
   const list = await recipients(env, ev, nudge ? "pending" : audience);
   await sendBatch(env, list.map((p) => message(env, ev, p, nudge)));
+  return list.length;
+}
+
+export function cleanAnnouncement(b) {
+  if (!b || typeof b !== "object") return null;
+  return { subject: clip(b.subject, 150), message: clip(b.message, 4000) };
+}
+
+// The announcement email when an event is created: everyone invited who has an email on file.
+export async function sendAnnouncement(env, ev, announce) {
+  if (!emailReady(env)) throw new Error("Email sending isn't connected yet (RESEND_API_KEY is missing).");
+  const list = await recipients(env, ev, "all");
+  await sendBatch(env, list.map((p) => message(env, ev, p, false, announce)));
+  const DB = await db(env);
+  await DB.prepare("UPDATE events SET announced_at = ?, announced_to = ? WHERE id = ?").bind(new Date().toISOString(), list.length, ev.id).run();
   return list.length;
 }
 
@@ -293,7 +322,7 @@ async function followUp(env, DB, ev, cfg, nowMin) {
   const today = Math.floor(nowMin / 1440), at = +f.time.slice(0, 2) * 60 + +f.time.slice(3);
   if (nowMin % 1440 < at || Math.floor(wallMinutes(ev.start) / 1440) <= today) return null;
   const nudges = ev.remindersSent.filter((r) => r.hours < 0).map((r) => -r.hours);
-  const created = Math.floor(Date.parse(ev.created_at) / 86400000);
+  const created = toToronto(new Date(ev.created_at)).day;
   const last = nudges.length ? Math.max(...nudges) : created;
   if (today - last < f.days) return null;
   if (ev.remindersSent.some((r) => r.hours >= 0 && Date.now() - Date.parse(r.sent_at) < 20 * 3600 * 1000)) return null;
