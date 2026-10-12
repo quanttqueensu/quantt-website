@@ -1,6 +1,8 @@
 name = "quantt-calendar"
 main = "src/worker.js"
 compatibility_date = "2026-09-01"
+# Keep variables set in the dashboard (MEMBER_LOGIN, EMAIL_FROM, ...) on deploy.
+keep_vars = true
 
 [assets]
 directory = "./public"
@@ -18,3 +20,10 @@ database_name = "quantt-calendar-events"
 # Reminder emails: checks every 15 minutes for events with a reminder due.
 [triggers]
 crons = ["*/15 * * * *"]
+
+# Member sign-in: the shared member directory (members/ in this repo, Worker quantt-members) says who a Cloudflare Access email
+# belongs to. Deploy quantt-members before this binding. Sign-in is on only when the variable MEMBER_LOGIN is "on".
+[[services]]
+binding = "MEMBERS"
+service = "quantt-members"
+entrypoint = "Directory"

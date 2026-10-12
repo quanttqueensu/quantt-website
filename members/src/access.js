@@ -1,5 +1,5 @@
 // Cloudflare Access sign-in: checks the token Access adds to every request and returns the viewer's email.
-// Same check as strategy.quantt.ca (quantt_strategies functions/_lib/access.js), plus the optional audience tag.
+// Same check as strategy.quantt.ca (quantt_strategies functions/_lib/access.js), plus optional audience tags.
 
 let certCache = { at: 0, team: "", keys: null };
 
@@ -20,9 +20,10 @@ export function teamUrl(v) {
   return t.startsWith("https://") ? t : "https://" + t.replace(/^http:\/\//, "");
 }
 
-// Returns { email } for a valid Access token from `team` (and for application `aud`, when given), otherwise { reason }.
-export async function viewer(request, team, aud) {
-  const token = request.headers.get("cf-access-jwt-assertion") || cookie(request, "CF_Authorization");
+export const requestToken = (request) => request.headers.get("cf-access-jwt-assertion") || cookie(request, "CF_Authorization") || "";
+
+// Returns { email } for a valid Access token from `team` (and, when `auds` is non-empty, for one of those applications), otherwise { reason }.
+export async function verify(token, team, auds = []) {
   if (!token) return { reason: "no Access token on the request" };
   const [h, p, s] = token.split(".");
   if (!s) return { reason: "malformed Access token" };
@@ -35,7 +36,7 @@ export async function viewer(request, team, aud) {
   }
   if (payload.iss !== team) return { reason: `token issuer ${payload.iss} does not match ACCESS_TEAM ${team}` };
   if (!payload.exp || payload.exp * 1000 < Date.now()) return { reason: "Access token expired" };
-  if (aud && ![].concat(payload.aud || []).includes(aud)) return { reason: "token is for another Access application" };
+  if (auds.length && ![].concat(payload.aud || []).some((a) => auds.includes(a))) return { reason: "token is for another Access application" };
 
   if (!certCache.keys || certCache.team !== team || Date.now() - certCache.at > 3_600_000) {
     const r = await fetch(`${team}/cdn-cgi/access/certs`);

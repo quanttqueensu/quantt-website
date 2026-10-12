@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>QUANTT Members</title>
+<style>
+  :root { --bg: #f8f9fc; --surface: #fff; --text: #1f1f1f; --muted: #5f6368; --line: #dadce0; --blue: #0b57d0; --soft: #e8f0fe; --red: #b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1b1b1f; --surface: #26262b; --text: #e3e3e3; --muted: #a8abb0; --line: #3c4043; --blue: #a8c7fa; --soft: #2b3a55; --red: #f2b8b5; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 Roboto, system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header b { font-size: 18px; font-weight: 500; }
+  .sp { flex: 1; }
+  .who { color: var(--muted); }
+  a { color: var(--blue); }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  button, .file { height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); color: var(--blue); font: inherit; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; }
+  .file input { display: none; }
+  input[type=search] { height: 36px; border: 1px solid var(--line); border-radius: 18px; padding: 0 14px; background: var(--surface); color: inherit; font: inherit; min-width: 0; flex: 1; max-width: 280px; }
+  .stat { color: var(--muted); }
+  .msg { min-height: 20px; margin: 0 0 8px; color: var(--muted); }
+  .msg.err { color: var(--red); }
+  .wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+  th { font-weight: 500; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  tr:last-child td { border-bottom: 0; }
+  td.em { white-space: normal; color: var(--muted); font-size: 13px; }
+  select { height: 30px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: inherit; font: inherit; }
+  .gate { max-width: 420px; margin: 15vh auto; padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+</style>
+</head>
+<body>
+<header><b>QUANTT Members</b><span class="sp"></span><span class="who" id="who"></span><a href="/cdn-cgi/access/logout">Sign out</a></header>
+<div class="gate" id="gate" hidden><p id="gateMsg"></p></div>
+<main id="app" hidden>
+  <div class="bar">
+    <label class="file">Import contacts CSV<input type="file" id="csv" accept=".csv,text/csv"></label>
+    <input type="search" id="q" placeholder="Filter" aria-label="Filter members">
+    <span class="stat" id="stat"></span>
+  </div>
+  <p class="msg" id="msg" role="status"></p>
+  <div class="wrap"><table>
+    <thead><tr><th>Name</th><th>Team</th><th>Calendar</th><th>Directory</th><th>Emails</th><th>ID</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</main>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  let data = { members: [], apps: {} };
+  const LABEL = { "": "Member", ops: "Ops & Marketing", admin: "Admin" };
+
+  async function api(path, opts = {}) {
+    const res = await fetch(path, { ...opts, headers: { "content-type": "application/json" } });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(d.error || "Something went wrong."), { status: res.status });
+    return d;
+  }
+  function say(t, err) { $("msg").textContent = t; $("msg").className = "msg" + (err ? " err" : ""); }
+
+  function render() {
+    const q = $("q").value.trim().toLowerCase();
+    const ms = data.members.filter((m) => !q || [m.name, m.team, ...m.emails].join(" ").toLowerCase().includes(q));
+    const sel = (m, app) => `<select data-id="${esc(m.id)}" data-app="${app}" aria-label="${esc(m.name)} ${app} role">${["", ...(data.apps[app] || [])].map((r) => `<option value="${r}"${(m.roles?.[app] || "") === r ? " selected" : ""}>${LABEL[r]}</option>`).join("")}</select>`;
+    $("rows").innerHTML = ms.map((m) => `<tr><td>${esc(m.name)}</td><td>${esc((m.team || "").replace("Quantitative", "Quant"))}</td><td>${sel(m, "calendar")}</td><td>${sel(m, "directory")}</td><td class="em">${m.emails.map(esc).join("<br>")}</td><td class="stat">${esc(m.id)}</td></tr>`).join("");
+    $("stat").textContent = `${data.members.length} members · ${data.members.reduce((n, m) => n + m.emails.length, 0)} emails${data.updated ? " · updated " + new Date(data.updated).toLocaleString() : ""}`;
+  }
+  async function refresh() { data = await api("/api/members"); render(); }
+
+  $("q").addEventListener("input", render);
+  $("rows").addEventListener("change", async (e) => {
+    const s = e.target.closest("select"); if (!s) return;
+    try { const m = await api("/api/role", { method: "POST", body: JSON.stringify({ id: s.dataset.id, app: s.dataset.app, role: s.value }) }); say(`${m.name}: ${s.dataset.app} role set to ${LABEL[s.value]}.`); await refresh(); }
+    catch (err) { say(err.message, true); await refresh(); }
+  });
+  $("csv").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    say("Importing…");
+    try {
+      const r = await api("/api/import", { method: "POST", body: JSON.stringify({ csv: await f.text() }) });
+      say(`Imported ${r.members} members with ${r.emails} emails.${r.removed.length ? " No longer in the file: " + r.removed.join(", ") + "." : ""}`);
+      await refresh();
+    } catch (err) { say(err.message, true); }
+  });
+
+  api("/api/me").then(async (me) => {
+    $("who").textContent = me.name ? `${me.name} · ${me.email}` : me.email;
+    if (me.roles?.directory !== "admin") { $("gate").hidden = false; $("gateMsg").textContent = me.id ? `You're in the directory as ${me.name}. Only directory admins can manage members.` : `${me.email} isn't in the QUANTT member directory.`; return; }
+    $("app").hidden = false; await refresh();
+  }).catch((err) => { $("gate").hidden = false; $("gateMsg").textContent = err.status === 401 ? "Your sign-in has expired. Reload the page to sign in again." : err.message; });
+})();
+</script>
+</body>
+</html>
