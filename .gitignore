@@ -51,3 +51,8 @@ AGENTS.md
 .claude/
 docs/superpowers/
 research/
+
+# Source photos dropped in the repo root; the site uses the copies in public/images/.
+/*.jpg
+/*.jpeg
+/*.png

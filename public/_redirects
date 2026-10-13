@@ -1,0 +1,5 @@
+# Cloudflare static-asset redirects (Next.js redirects don't run in a static export).
+# /hiring became /portfolios when recruiting closed. 302 so /hiring can come back
+# as its own page next recruiting cycle.
+/hiring /portfolios 302
+/hiring/ /portfolios 302

@@ -7,9 +7,6 @@ export const metadata: Metadata = {
   description: "Get in touch with the QUANTT team at Queen's University.",
 };
 
-// The recruiting message expires by date, so re-evaluate it daily.
-export const revalidate = 86400;
-
 const channels = [
   { href: "https://www.instagram.com/quanttqueens", title: "Instagram", note: "Recruiting and event announcements" },
   { href: "https://www.linkedin.com/company/quanttqueens/", title: "LinkedIn", note: "Club news and partner updates" },

@@ -12,9 +12,6 @@ import {
   getTeamYears,
 } from "@/lib/content";
 
-// The recruiting status expires by date; re-evaluate it daily.
-export const revalidate = 86400;
-
 export default function Home() {
   const portfolios = getPortfolios();
   const weeks = getEducationChapters().length;
