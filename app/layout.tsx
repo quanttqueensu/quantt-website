@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "QUANTT — Queen's University Algorithmic Network & Trading Team",
   description:
-    "Queen's University students researching, building, and trading quantitative strategies across eight portfolios.",
+    "Queen's University students researching, building, and trading quantitative strategies across this year's portfolios.",
   icons: { icon: "/favicon.png", apple: "/apple-icon.png" },
   openGraph: {
     title: "QUANTT — Queen's University Algorithmic Network & Trading Team",

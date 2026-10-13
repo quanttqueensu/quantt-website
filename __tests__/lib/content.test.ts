@@ -62,7 +62,7 @@ describe("content loading", () => {
   it("loads portfolios sorted by order with slugs", () => {
     const portfolios = getPortfolios();
     expect(Array.isArray(portfolios)).toBe(true);
-    expect(portfolios.length).toBe(8);
+    expect(portfolios.length).toBe(7);
     for (const portfolio of portfolios) {
       expect(portfolio).toHaveProperty("title");
       expect(portfolio).toHaveProperty("slug");

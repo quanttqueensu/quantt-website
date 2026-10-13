@@ -172,10 +172,10 @@ function CorporateView({ year }: { year: TeamYear }) {
             <Fragment key={tier.tier}>
               <h2 className="cs-h2 cs-h2--md cs-reveal pt-16 pb-10">Trading Desks</h2>
               {buildDesks(tierMembers, analysts).map((desk) => (
-                // A joint desk takes the first-listed manager's project name.
+                // A joint desk lists each distinct project once.
                 <Group
                   key={desk.pms.map((p) => p.name).join("+")}
-                  title={desk.pms[0].department ?? desk.pms[0].name}
+                  title={[...new Set(desk.pms.map((p) => p.department ?? p.name))].join(" & ")}
                 >
                   <Rows
                     rows={[

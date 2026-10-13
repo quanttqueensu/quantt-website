@@ -119,7 +119,7 @@ export default function Home() {
               Portfolios
             </>
           }
-          intro={<p>Eight desks for 2026–2027, each with its own thesis, data, and tooling.</p>}
+          intro={<p>{portfolios.length} desks for 2026–2027, each with its own thesis, data, and tooling.</p>}
           items={portfolios.map((p) => ({
             href: `/portfolios#${p.slug}`,
             title: p.title,

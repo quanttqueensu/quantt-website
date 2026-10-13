@@ -2,7 +2,7 @@
 name: "Benjamin Gorenc"
 role: "Portfolio Manager"
 tier: "portfolio-manager"
-department: "Causal Discovery"
+department: "L/S Gamma"
 order: 7
 bio: ""
 ---
