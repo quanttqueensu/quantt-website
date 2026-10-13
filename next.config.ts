@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // /hiring became /portfolios when recruiting closed. Temporary, so /hiring can
+  // come back as its own page next recruiting cycle.
+  async redirects() {
+    return [{ source: "/hiring", destination: "/portfolios", permanent: false }];
+  },
 };
 
 export default nextConfig;

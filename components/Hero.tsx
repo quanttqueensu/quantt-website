@@ -1,81 +1,44 @@
-import Link from "next/link";
-import ParticleCanvas from "./ParticleCanvas";
-import RotatingText from "./RotatingText";
-import SectionLabel from "./SectionLabel";
+import MediaSlot from "./MediaSlot";
+import RotatingPhrase from "./RotatingPhrase";
+import { Button } from "./ui";
+import { getSiteConfig } from "@/lib/content";
 
+/** Full-bleed photo with the blue panel anchored bottom-right, cyan bar at its edge. */
 export default function Hero() {
+  const { media } = getSiteConfig();
+
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden bg-gradient-to-br from-navy via-navy-mid to-primary">
-      {/* Grid overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: "linear-gradient(to right, #cfd6f6 1px, transparent 1px)",
-          backgroundSize: "calc(100% / 16) 100%",
-        }}
-        aria-hidden="true"
-      />
+    <section className="cs-hero cs-reveal on-blue" aria-labelledby="hero-title">
+      <div className="relative">
+        <MediaSlot
+          src={media?.hero}
+          alt="QUANTT members on a visit to an industry partner's office"
+          className="cs-hero__media"
+          sizes="100vw"
+          priority
+        >
+          <div className="cs-hero__media" aria-hidden="true" />
+        </MediaSlot>
+        <p className="cs-hero__label">Queen&apos;s University Algorithmic Network &amp; Trading Team</p>
+      </div>
 
-      {/* Chart lines SVG */}
-      <svg
-        className="pointer-events-none absolute bottom-0 left-0 h-[200px] w-full opacity-10"
-        viewBox="0 0 500 200"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <polyline
-          points="0,160 50,130 100,140 150,80 200,110 250,40 300,70 350,30 400,56 450,20 500,36"
-          fill="none"
-          stroke="#6b8fd4"
-          strokeWidth="1.5"
-        />
-        <polyline
-          points="0,180 50,150 100,160 150,110 200,124 250,76 300,90 350,60 400,80 450,50 500,60"
-          fill="none"
-          stroke="#4a7ae0"
-          strokeWidth="1"
-          opacity="0.5"
-        />
-      </svg>
-
-      <ParticleCanvas />
-
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-32">
-        <SectionLabel>
-          <span className="text-text-light">
-            Queen&apos;s University Algorithmic Network &amp; Trading Team
+      <div className="cs-hero__panel">
+        <h1 id="hero-title" className="cs-h1">
+          <span className="sr-only">
+            Tomorrow&apos;s talent in quantitative finance, algorithmic trading, and data science.
           </span>
-        </SectionLabel>
-
-        <h1 className="mt-4 font-heading text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
-          Tomorrow&apos;s Talent in
-          <br />
-          <RotatingText />
+          <span aria-hidden="true" className="block">
+            Tomorrow&apos;s Talent in
+          </span>
+          <RotatingPhrase />
         </h1>
-
-        <p className="mt-3 text-sm font-medium text-blue-light">
-          Canada&apos;s Premier Quantitative Finance Club &middot; Est. 2018
+        <p>
+          Queen&apos;s students research, build, and trade quantitative strategies, learning and
+          building side by side all year.
         </p>
-
-        <p className="mt-4 max-w-md text-sm leading-relaxed text-text-light md:text-base">
-          Bridging academic research and industry practice through
-          collaboration, research, and real-world application.
-        </p>
-
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Link
-            href="/contact"
-            className="inline-block rounded bg-primary px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-colors hover:bg-primary/80"
-          >
-            Get Involved
-          </Link>
-          <a
-            href="#pillars"
-            className="text-xs uppercase tracking-wider text-text-light transition-colors hover:text-white"
-          >
-            Our Work ↓
-          </a>
-        </div>
+        <Button href="/competition" variant="cyan">
+          Explore Our Research
+        </Button>
       </div>
     </section>
   );

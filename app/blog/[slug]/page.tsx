@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import GradientBackground from "@/components/GradientBackground";
+import { formatPostDate } from "@/components/BlogCard";
 import { getBlogPost, getBlogSlugs } from "@/lib/blog";
 
 interface Props {
@@ -40,18 +40,23 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <GradientBackground variant="short">
-      <article className="mx-auto max-w-3xl px-6 pt-32 pb-20">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-light">
-          {new Date(post.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}{" "}
-          &middot; {post.author}
-        </p>
-        <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-4xl">{post.title}</h1>
-
-        <div className="prose-sm prose-invert mt-10 max-w-none prose-headings:font-heading prose-headings:text-white prose-p:text-text-light prose-a:text-blue-light prose-strong:text-white prose-li:text-text-light prose-code:text-blue-light prose-blockquote:text-text-light prose-blockquote:border-white/20 prose-pre:bg-white/[0.06] prose-pre:border prose-pre:border-white/10">
-          <MDXRemote source={post.content} />
+    <article className="cs-intro">
+      <div className="cs-wrap">
+        <div className="cs-grid cs-split">
+          <h1 className="cs-h2">{post.title}</h1>
+          <p className="cs-meta cs-byline !mb-0 self-end">
+            <span>
+              <time dateTime={post.date}>{formatPostDate(post.date)}</time>
+            </span>
+            <span>{post.author}</span>
+          </p>
         </div>
-      </article>
-    </GradientBackground>
+        <div className="cs-section">
+          <div className="prose prose-lg max-w-[65ch] prose-headings:font-normal prose-headings:tracking-[-0.02em] prose-headings:text-ink prose-p:text-body prose-a:text-blue-link prose-strong:font-medium prose-strong:text-ink prose-li:text-body prose-code:text-ink prose-blockquote:border-blue prose-blockquote:text-ink prose-pre:rounded-none prose-pre:bg-panel prose-pre:text-ink prose-img:rounded-none">
+            <MDXRemote source={post.content} />
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }

@@ -6,124 +6,92 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const navLinks = [
-  { href: "/", label: "Home" },
+  { href: "/portfolios", label: "Portfolios" },
   { href: "/education", label: "Education" },
+  { href: "/competition", label: "Research" },
+  { href: "/team", label: "Team" },
   { href: "/partners", label: "Partners" },
-  { href: "/team", label: "Who We Are" },
-  { href: "/competition", label: "Competition" },
-  { href: "/hiring", label: "Hiring" },
   { href: "/blog", label: "Blog" },
+  { href: "/contact", label: "Contact" },
 ];
+
+const isActive = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(`${href}/`);
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const lastScrollY = useRef(0);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
 
+  // Hides on scroll down, returns on scroll up. Never hides with the menu open.
   useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      setScrolled(currentY > 50);
-      setHidden(currentY > lastScrollY.current && currentY > 100);
-      lastScrollY.current = currentY;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setHidden(y > lastY.current && y > 200);
+        lastY.current = y;
+        ticking = false;
+      });
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
   return (
-    <nav
-      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-        hidden && !menuOpen ? "-translate-y-full" : "translate-y-0"
-      } ${scrolled ? "bg-navy/95 backdrop-blur-sm shadow-lg" : "bg-transparent"}`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
+    <header className={`cs-header ${hidden && !menuOpen ? "is-hidden" : ""}`}>
+      <div className="cs-wrap cs-header__row relative">
+        <Link href="/" aria-label="QUANTT home" className="flex min-h-11 flex-shrink-0 items-center">
           <Image
-            src="/images/logos/quantt-icon.png"
+            src="/images/logos/quantt-full.png"
             alt=""
-            width={40}
-            height={40}
-            className="h-8 w-8"
+            width={1617}
+            height={400}
+            className="h-8 w-auto max-[900px]:h-7"
             priority
           />
-          <span className="text-[15px] font-bold tracking-[2px] text-white">
-            QUANTT
-          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden items-center gap-5 md:flex">
+        <nav id="site-nav" aria-label="Main" className={`cs-nav ${menuOpen ? "is-open" : ""}`}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-[11px] uppercase tracking-[1px] transition-colors ${
-                pathname === link.href
-                  ? "text-white"
-                  : "text-white/55 hover:text-white/80"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link
-            href="/contact"
-            className={`rounded border px-3.5 py-1.5 text-[11px] uppercase tracking-[1px] transition-colors ${
-              pathname === "/contact"
-                ? "border-white/40 text-white"
-                : "border-white/20 text-white/70 hover:border-white/40 hover:text-white"
-            }`}
-          >
-            Contact
-          </Link>
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="flex h-11 w-11 items-center justify-center md:hidden"
-          aria-label="Toggle menu"
-        >
-          <div className="flex flex-col gap-1.5">
-            <span
-              className={`block h-0.5 w-5 bg-white transition-transform ${
-                menuOpen ? "translate-y-2 rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-white transition-opacity ${
-                menuOpen ? "opacity-0" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-white transition-transform ${
-                menuOpen ? "-translate-y-2 -rotate-45" : ""
-              }`}
-            />
-          </div>
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="border-t border-white/10 bg-navy/95 px-6 pb-6 backdrop-blur-sm md:hidden">
-          {[...navLinks, { href: "/contact", label: "Contact" }].map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
               onClick={() => setMenuOpen(false)}
-              className={`block py-3 text-sm ${
-                pathname === link.href ? "text-white" : "text-white/60"
-              }`}
+              aria-current={isActive(pathname, link.href) ? "page" : undefined}
             >
               {link.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="cs-header__tools">
+          <button
+            type="button"
+            className="cs-menu-btn min-h-11 min-w-11 items-center justify-center"
+            aria-controls="site-nav"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              {menuOpen ? <path d="M5 5l14 14M19 5L5 19" /> : <path d="M3 7h18M3 12h18M3 17h18" />}
+            </svg>
+          </button>
         </div>
-      )}
-    </nav>
+      </div>
+    </header>
   );
 }

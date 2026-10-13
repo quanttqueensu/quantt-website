@@ -1,57 +1,58 @@
 import { getEvents } from "@/lib/content";
-import SectionLabel from "./SectionLabel";
-import ScrollReveal from "./ScrollReveal";
+import { ArrowCircle, Wrap } from "./ui";
 
+const formatDate = (date: string) =>
+  new Date(`${date}T00:00:00`).toLocaleDateString("en-CA", {
+    weekday: "short",
+    month: "long",
+    day: "numeric",
+  });
+
+/** Grey list panel of events. Rows with a URL link out; the rest are plain rows. */
 export default function UpcomingEvents() {
   const events = getEvents();
   if (events.length === 0) return null;
 
   return (
-    <ScrollReveal>
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <SectionLabel>
-          <span className="g-muted">Coming Up</span>
-        </SectionLabel>
-        <h2 className="mt-2 font-heading text-2xl font-bold g-heading">
-          Upcoming Events
-        </h2>
-        <div className="mt-8 grid gap-3 md:grid-cols-3">
-          {events.map((event) => {
-            const Card = (
-              <>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                  {new Date(event.date + "T00:00:00").toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-                <h3 className="mt-1.5 text-sm font-semibold text-white">{event.title}</h3>
-                <p className="mt-1 text-xs text-text-light">
-                  {event.location} &middot; {event.time}
-                </p>
-              </>
-            );
-            return event.url ? (
-              <a
-                key={`${event.date}-${event.title}`}
-                href={event.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-lg border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm transition-transform hover:-translate-y-0.5"
-              >
-                {Card}
-              </a>
-            ) : (
-              <div
-                key={`${event.date}-${event.title}`}
-                className="rounded-lg border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm"
-              >
-                {Card}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    </ScrollReveal>
+    <div className="cs-section">
+      <Wrap>
+        <section className="cs-panel cs-reveal" aria-labelledby="events-title">
+          <div className="cs-panel__intro">
+            <h2 id="events-title" className="cs-h2 cs-h2--md">
+              Upcoming Events
+            </h2>
+          </div>
+          <ul className="cs-list">
+            {events.map((e) => {
+              const body = (
+                <>
+                  <div className="cs-byline">
+                    <span>
+                      <time dateTime={e.date}>{formatDate(e.date)}</time>, {e.time}
+                    </span>
+                    <span>{e.location}</span>
+                  </div>
+                  <div>
+                    <h3>{e.title}</h3>
+                  </div>
+                </>
+              );
+              return (
+                <li key={`${e.date}-${e.title}`}>
+                  {e.url ? (
+                    <a href={e.url} target="_blank" rel="noopener noreferrer">
+                      {body}
+                      <ArrowCircle />
+                    </a>
+                  ) : (
+                    <div className="grid grid-cols-[1fr_auto] border-b border-line pb-10">{body}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      </Wrap>
+    </div>
   );
 }

@@ -1,26 +1,468 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-@theme {
-  /* Colors */
-  --color-navy: #0a1628;
-  --color-navy-mid: #0f1d35;
-  --color-primary: #2452a1;
-  --color-blue-mid: #1e3360;
-  --color-blue-light: #6b8fd4;
-  --color-blue-accent: #c8d6ea;
-  --color-blue-grey: #162a4a;
-  --color-text-light: #8a9fc4;
-  --color-text-dark: #0f1d35;
-  --color-text-dark-body: #2a4060;
-
-  /* Fonts — CSS variables set by next/font in layout.tsx */
-  --font-heading: var(--font-merriweather);
-  --font-body: var(--font-inter);
+/* Institutional finance system (royal blue + cyan), applied to QUANTT's own brand.
+   Contrast (WCAG): ink #101213 on white 18.9:1 · body #373a3c 11.4:1 · meta #696969
+   5.5:1 · white on blue #1c409b 9.4:1 · ink on cyan #6ee8e9 14.5:1 · navy on cyan 11.5:1. */
+:root {
+  --cs-blue: #1c409b;
+  --cs-blue-link: #144aa5;
+  --cs-blue-hover: #1258cd;
+  --cs-navy: #08225a;
+  --cs-footer: #181739;
+  --cs-cyan: #6ee8e9;
+  --cs-ink: #101213;
+  --cs-text: #373a3c;
+  --cs-meta: #696969;
+  --cs-line: #bfc2c5;
+  --cs-line-soft: #d0d1d4;
+  --cs-panel: #efefef;
+  --cs-bg: #fff;
+  --cs-on-dark-muted: rgba(255, 255, 255, 0.62);
+  --cs-on-dark-line: rgba(255, 255, 255, 0.3);
+  --cs-font: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --cs-font-body: var(--cs-font);
+  --cs-pill: 43px;
+  --cs-max: 1440px;
+  --cs-gutter: clamp(24px, 3.9vw, 56px);
+  --cs-col-gap: 16px;
+  --cs-section: clamp(56px, 7vw, 104px);
+  --cs-band-pad: clamp(56px, 5.6vw, 80px);
+  --cs-ease: cubic-bezier(0.39, 0.57, 0.56, 1);
+  --cs-ease-draw: cubic-bezier(0.5, 0, 0.1, 1);
+  --cs-fast: 0.15s;
 }
 
-/* General-purpose text colors that work on the gradient */
-.g-heading { color: white; }
-.g-body { color: #8a9fc4; }
-.g-muted { color: #6b7a8e; }
+@theme {
+  --color-blue: #1c409b;
+  --color-blue-link: #144aa5;
+  --color-blue-hover: #1258cd;
+  --color-navy: #08225a;
+  --color-indigo: #181739;
+  --color-cyan: #6ee8e9;
+  --color-ink: #101213;
+  --color-body: #373a3c;
+  --color-meta: #696969;
+  --color-line: #bfc2c5;
+  --color-line-soft: #d0d1d4;
+  --color-panel: #efefef;
 
+  --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Hero headline roll: the outgoing phrase lifts away as the next one rises in. */
+@keyframes phrase-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes phrase-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--cs-bg);
+    color: var(--cs-text);
+    font: 400 16px/1.5 var(--cs-font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--cs-font);
+    font-weight: 400;
+    color: var(--cs-ink);
+  }
+  a {
+    transition: color var(--cs-fast) ease-out;
+  }
+  :focus-visible {
+    outline: 2px solid var(--cs-cyan);
+    outline-offset: 3px;
+  }
+  /* On white, cyan alone is faint (1.4:1); pair it with a blue inner ring. */
+  :focus-visible:not(.on-blue *) {
+    box-shadow: 0 0 0 2px var(--cs-blue-link);
+  }
+  sup {
+    font-size: 0.32em;
+    vertical-align: top;
+    position: relative;
+    top: 0.35em;
+    margin-left: 0.06em;
+    letter-spacing: 0;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+    }
+  }
+}
+
+@layer components {
+  .cs-wrap { max-width: var(--cs-max); margin: 0 auto; padding-inline: max(var(--cs-gutter), env(safe-area-inset-left)) max(var(--cs-gutter), env(safe-area-inset-right)); }
+  .cs-grid { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); column-gap: var(--cs-col-gap); }
+  .cs-section { padding-top: var(--cs-section); }
+
+  /* ---------- type roles ---------- */
+  .cs-h1 { font-size: clamp(38px, 4.45vw, 64px); line-height: 1; font-weight: 500; letter-spacing: -.02em; color: #fff; }
+  .cs-h2 { font-size: clamp(36px, 4.45vw, 64px); line-height: 1.15; letter-spacing: -.03em; }
+  .cs-h2--on-blue { line-height: 1; letter-spacing: -.02em; color: #fff; }
+  .cs-h2--md { font-size: clamp(32px, 3.34vw, 48px); line-height: 1.2; letter-spacing: -.01em; }
+  .cs-lede { font-size: clamp(18px, 1.39vw, 20px); line-height: 1.4; letter-spacing: -.02em; color: var(--cs-ink); }
+  .cs-meta { font-size: 14px; line-height: 20px; letter-spacing: -.01em; }
+
+  /* ---------- header ---------- */
+  .cs-header { position: sticky; top: 0; z-index: 50; background: #fff; transition: transform .3s ease-in; }
+  .cs-header.is-hidden { transform: translateY(-105%); }
+  .cs-header__row { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 112px; }
+  .cs-nav { display: flex; gap: 32px; }
+  .cs-nav a {
+    color: var(--cs-navy); font: 400 18px/26px var(--cs-font);
+    background: linear-gradient(var(--cs-blue-link), var(--cs-blue-link)) left bottom / 0 2px no-repeat;
+    padding-bottom: 4px; transition: color var(--cs-fast) ease-out, background-size .3s var(--cs-ease);
+  }
+  .cs-nav a:hover, .cs-nav a[aria-current="page"] { color: var(--cs-blue); background-size: 100% 2px; }
+  .cs-header__tools { display: flex; align-items: center; gap: 24px; color: var(--cs-navy); font-size: 14px; }
+  .cs-menu-btn { display: none; background: none; border: 0; padding: 8px; color: var(--cs-navy); cursor: pointer; }
+
+  /* ---------- buttons ---------- */
+  .cs-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 400 16px/1.2 var(--cs-font); letter-spacing: -.02em;
+    padding: 14px 24px 15px; border: 0; border-radius: var(--cs-pill); cursor: pointer;
+    transition: background-color var(--cs-fast) ease-out, color var(--cs-fast) ease-out;
+  }
+  .cs-btn--cyan { background: var(--cs-cyan); color: var(--cs-ink); }           /* use on blue */
+  .cs-btn--cyan:hover { background: #fff; color: var(--cs-ink); }
+  .cs-btn--blue { background: var(--cs-blue); color: #fff; }                    /* use on white/grey */
+  .cs-btn--blue:hover { background: var(--cs-cyan); color: var(--cs-navy); }
+
+  /* circular outlined arrow — list rows, "read more" */
+  .cs-arrow {
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--cs-blue-link); color: var(--cs-blue-link);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background-color .4s var(--cs-ease), border-color .4s var(--cs-ease), color .4s var(--cs-ease);
+  }
+  .cs-arrow svg { width: 24px; height: 24px; fill: currentColor; }
+  a:hover .cs-arrow, .cs-arrow:hover { background: var(--cs-cyan); border-color: var(--cs-cyan); color: var(--cs-navy); }
+
+  /* ---------- hero: full-bleed media + overlapping blue panel ---------- */
+  .cs-hero { position: relative; padding-bottom: 80px; }
+  .cs-hero__media { width: 100%; height: clamp(320px, 43vw, 620px); object-fit: cover; background: var(--cs-blue); }
+  .cs-hero__panel {
+    position: absolute; right: var(--cs-gutter); bottom: 0; width: min(45.4%, 653px);
+    background: var(--cs-blue); color: #fff; padding: 56px 54px 56px 56px;
+  }
+  .cs-hero__panel .cs-h1 { position: relative; }
+  .cs-hero__panel .cs-h1::before {             /* cyan accent bar at the panel edge */
+    content: ""; position: absolute; left: -56px; top: 0; bottom: 0; width: 4px; background: var(--cs-cyan);
+    transform: scaleY(0); transform-origin: top; transition: transform .6s var(--cs-ease) .4s;
+  }
+  .cs-hero.is-visible .cs-hero__panel .cs-h1::before, .no-js .cs-hero__panel .cs-h1::before { transform: scaleY(1); }
+  .cs-hero__panel p { margin-top: 40px; font-size: 20px; line-height: 24px; color: #fff; max-width: 32em; }
+  .cs-hero__panel .cs-btn { margin-top: 34px; }
+
+  /* ---------- split: statement left, lede + CTA right (24-col grid) ---------- */
+  .cs-split > :first-child { grid-column: 1 / 12; }
+  .cs-split > :last-child { grid-column: 13 / -1; }
+  .cs-split .cs-btn { margin-top: 32px; }
+
+  /* ---------- stats ---------- */
+  .cs-stats { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); margin-top: clamp(56px, 7vw, 104px); }
+  .cs-stat { position: relative; padding: 0 12% 56px 24px; }
+  .cs-stat::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--cs-line-soft);
+    transform: scaleY(0); transform-origin: top; transition: transform 1s var(--cs-ease-draw);
+  }
+  .cs-stats.is-visible .cs-stat::before, .no-js .cs-stat::before { transform: scaleY(1); }
+  .cs-stat__num { font: 400 clamp(56px, 6.25vw, 90px)/1.1 var(--cs-font); letter-spacing: -.02em; color: var(--cs-blue); white-space: nowrap; }
+  .cs-stats--lg .cs-stat__num { font-size: clamp(72px, 10vw, 144px); line-height: 1; }
+  .cs-stats--lg .cs-stat { padding-left: 40px; }
+  .cs-stat__label { margin-top: 48px; font-size: 20px; line-height: 28px; letter-spacing: -.02em; color: var(--cs-ink); }
+
+  /* ---------- blue band with half-overhanging media ---------- */
+  .cs-band {
+    --cs-overhang: calc((min(100vw, var(--cs-max)) - 2 * var(--cs-gutter)) * .2);
+    margin-top: var(--cs-section); padding-top: var(--cs-band-pad); color: #fff;
+    background: linear-gradient(var(--cs-blue), var(--cs-blue)) top / 100% calc(100% - var(--cs-overhang)) no-repeat;
+  }
+  .cs-band .cs-lede { color: #fff; }
+  .cs-band__media { margin-top: 64px; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; }
+  .cs-band__media--inset { width: 83.3%; margin-inline: auto; aspect-ratio: 16 / 9; }
+  .cs-band--flat { background: var(--cs-blue); padding-bottom: var(--cs-band-pad); }   /* no media */
+
+  /* round play button over video */
+  .cs-play { position: absolute; inset: 0; margin: auto; width: 112px; height: 112px; border-radius: 50%; border: 0; background: var(--cs-cyan); color: var(--cs-blue); display: grid; place-items: center; cursor: pointer; transition: background-color var(--cs-fast) ease-out; }
+  .cs-play:hover { background: #fff; }
+
+  /* ---------- grey panel with list (news / insights / documents) ---------- */
+  .cs-panel { background: var(--cs-panel); padding: 80px 56px; margin-top: 80px; display: grid; grid-template-columns: minmax(0, 446fr) minmax(0, 703fr); column-gap: 67px; }
+  .cs-panel__intro p { margin-top: 48px; font-size: 18px; line-height: 28px; color: var(--cs-ink); }
+  .cs-list { list-style: none; margin: 0; padding: 0; }
+  .cs-list li + li { margin-top: 24px; }
+  .cs-list a { display: grid; grid-template-columns: 1fr auto; column-gap: 32px; align-items: center; padding-bottom: 40px; border-bottom: 1px solid var(--cs-line); color: var(--cs-ink); }
+  .cs-byline { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; color: var(--cs-ink); margin-bottom: 16px; }
+  .cs-byline span + span { padding-left: 8px; border-left: 1px solid #000; color: var(--cs-meta); }
+  .cs-list h3 {
+    display: inline; font-size: 20px; line-height: 28px; max-width: 30em; color: var(--cs-ink);
+    background: linear-gradient(currentColor, currentColor) left calc(100% - 1px) / 0 1px no-repeat;
+    transition: background-size .4s var(--cs-ease);
+  }
+  .cs-list a:hover h3 { background-size: 100% 1px; }
+
+  /* ---------- footer ---------- */
+  .cs-footer { background: var(--cs-footer); color: #fff; padding: 80px 0 56px; margin-top: 0; }
+  .cs-footer a { color: #fff; }
+  .cs-footer a:hover { color: var(--cs-cyan); }
+  .cs-footer__top { display: grid; align-items: start; grid-template-columns: 1fr auto auto; column-gap: clamp(48px, 10vw, 146px); padding-bottom: 80px; }
+  .cs-footer__col { display: flex; flex-direction: column; gap: 16px; font-size: 16px; line-height: 22px; letter-spacing: -.01em; }
+  .cs-footer__bar { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; padding: 24px 0; border-block: 1px solid var(--cs-on-dark-line); }
+  .cs-footer__legal { display: flex; gap: 32px; flex-wrap: wrap; font-size: 14px; }
+  .cs-footer__copy { font-size: 14px; line-height: 20px; color: var(--cs-on-dark-muted); max-width: 30em; }
+  .cs-social { display: flex; gap: 26px; }
+  .cs-social a { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--cs-on-dark-line); display: grid; place-items: center; transition: background-color var(--cs-fast) ease-out, border-color var(--cs-fast) ease-out; }
+  .cs-social a:hover { background: var(--cs-cyan); border-color: var(--cs-cyan); color: var(--cs-navy); }
+  .cs-footer__note { margin-top: 40px; font-size: 14px; }
+
+  /* ---------- scroll reveal ---------- */
+  .cs-reveal { opacity: 0; transition: opacity .4s var(--cs-ease); }
+  .cs-reveal.is-visible, .no-js .cs-reveal { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .cs-reveal { opacity: 1; transition: none; }
+    .cs-stat::before, .cs-hero__panel .cs-h1::before { transform: none; transition: none; }
+    .cs-header { transition: none; }
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1100px) {
+    .cs-nav { gap: 22px; }
+    .cs-nav a { font-size: 16px; }
+    .cs-stats { --cols: 2 !important; row-gap: 48px; }
+    .cs-panel { grid-template-columns: 1fr; row-gap: 48px; padding: 56px 40px; }
+  }
+  @media (max-width: 900px) {
+    .cs-header__row { min-height: 72px; }
+    .cs-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: #fff; flex-direction: column; gap: 0; padding: 8px var(--cs-gutter) 24px; border-top: 1px solid var(--cs-line); }
+    .cs-nav.is-open { display: flex; }
+    .cs-nav a { font-size: 20px; padding: 14px 0; }
+    .cs-menu-btn { display: inline-flex; }
+    .cs-hero { padding-bottom: 0; }
+    .cs-hero__panel { position: relative; right: auto; width: calc(100% - var(--cs-gutter)); margin-top: -48px; padding: 40px 24px 40px 32px; }
+    .cs-hero__panel .cs-h1::before { left: -32px; }
+    .cs-grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
+    .cs-split > :first-child, .cs-split > :last-child { grid-column: 1 / -1; }
+    .cs-split > :last-child { margin-top: 32px; }
+    .cs-footer__top { grid-template-columns: 1fr 1fr; row-gap: 40px; }
+    .cs-footer__top > :first-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 640px) {
+    .cs-header__tools > :not(.cs-menu-btn) { display: none; }
+    .cs-stats { --cols: 1 !important; }
+    .cs-stat { padding-right: 0; padding-bottom: 8px; }
+    .cs-stat__label { margin-top: 20px; }
+    .cs-split .cs-btn, .cs-hero__panel .cs-btn { width: 100%; }
+    .cs-panel { padding: 40px 24px; margin-inline: calc(-1 * var(--cs-gutter)); }
+    .cs-band__media--inset { width: 100%; }
+    .cs-list a { column-gap: 16px; }
+    .cs-play { width: 72px; height: 72px; }
+    .cs-footer__bar { flex-direction: column; align-items: flex-start; }
+  }
+
+
+  /* ---------- QUANTT additions ---------- */
+
+  /* Inline link on white: blue-link, hover blue-hover. */
+  .cs-link {
+    color: var(--cs-blue-link);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .cs-link:hover {
+    color: var(--cs-blue-hover);
+  }
+
+  /* Page intro for inner pages: H1 set at the section-heading scale, on white. */
+  .cs-intro {
+    padding-top: clamp(40px, 5vw, 72px);
+  }
+  .cs-intro .cs-h2 {
+    font-weight: 400;
+  }
+  .cs-intro .cs-lede + .cs-btn {
+    margin-top: 32px;
+  }
+  .cs-intro__media {
+    margin-top: clamp(40px, 5vw, 64px);
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    background: var(--cs-blue);
+  }
+
+  /* Split rows: 1px top rule, headline left, text right. Used for portfolios, tracks, team groups. */
+  .cs-row {
+    padding-top: 32px;
+    padding-bottom: clamp(40px, 5vw, 64px);
+    border-top: 1px solid var(--cs-line);
+  }
+  .cs-row__title {
+    font-size: clamp(24px, 2.2vw, 32px);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--cs-ink);
+  }
+
+  /* Tabs styled like nav links, with the growing underline. */
+  .cs-tabs {
+    display: flex;
+    gap: 32px;
+    border-bottom: 1px solid var(--cs-line);
+  }
+  .cs-tabs button {
+    font: 400 18px/26px var(--cs-font);
+    color: var(--cs-navy);
+    background: linear-gradient(var(--cs-blue-link), var(--cs-blue-link)) left bottom / 0 2px no-repeat;
+    border: 0;
+    padding: 10px 0 12px;
+    transition: color var(--cs-fast) ease-out, background-size 0.3s var(--cs-ease);
+  }
+  .cs-tabs button:hover,
+  .cs-tabs button[aria-selected="true"] {
+    color: var(--cs-blue);
+    background-size: 100% 2px;
+  }
+
+  /* Band texture: animated price paths sit behind band text. */
+  .cs-band--texture {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Paper pages are portrait (17:22), so the band's blue stops at half a page's
+     height instead of the default 16:7-media overhang. */
+  .cs-band--papers {
+    --cs-overhang: calc((min(100vw, var(--cs-max)) - 2 * var(--cs-gutter) - 4 * var(--cs-col-gap)) / 5 * 22 / 17 / 2);
+  }
+  @media (max-width: 900px) {
+    .cs-band--papers {
+      --cs-overhang: calc((min(100vw, var(--cs-max)) - 2 * var(--cs-gutter) - 2 * var(--cs-col-gap)) / 3 * 22 / 17 / 2);
+    }
+  }
+
+  /* Paper first pages hanging out of the research band. */
+  .cs-papers {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--cs-col-gap);
+  }
+  .cs-papers img {
+    width: 100%;
+    aspect-ratio: 17 / 22;
+    object-fit: cover;
+    object-position: top;
+    background: #fff;
+  }
+  @media (max-width: 900px) {
+    .cs-papers {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .cs-papers > :nth-child(n + 4) {
+      display: none;
+    }
+  }
+
+  /* Label over the hero photo: a flat blue block, no gradient scrim. */
+  .cs-hero__label {
+    position: absolute;
+    left: var(--cs-gutter);
+    top: clamp(20px, 2.8vw, 40px);
+    max-width: calc(100% - 2 * var(--cs-gutter));
+    background: var(--cs-blue);
+    color: #fff;
+    font-size: clamp(14px, 1.39vw, 20px);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    padding: 12px 18px;
+  }
+
+  /* Hero headline sized to the panel itself, so the longest rotating phrase
+     ("Quantitative Finance", ~10.4em) always fits on one line. */
+  .cs-hero__panel {
+    container-type: inline-size;
+  }
+  .cs-hero__panel .cs-h1 {
+    font-size: clamp(28px, 9.2cqi, 60px);
+  }
+
+  /* Hero headline: rotating phrase line. */
+  .cs-h1__roll {
+    display: inline-grid;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-bottom: 0.1em;
+  }
+  .cs-h1__roll > * {
+    grid-area: 1 / 1;
+  }
+
+  /* Partner logo grid: square white cells separated by hairlines. */
+  .cs-logos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--cs-line);
+    border-left: 1px solid var(--cs-line);
+  }
+  .cs-logos > li {
+    border-right: 1px solid var(--cs-line);
+    border-bottom: 1px solid var(--cs-line);
+    padding: 32px;
+  }
+  @media (max-width: 1100px) {
+    .cs-logos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 640px) {
+    .cs-logos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .cs-logos > li {
+      padding: 24px;
+    }
+    .cs-intro .cs-btn,
+    .cs-band .cs-btn {
+      width: 100%;
+    }
+  }
+}

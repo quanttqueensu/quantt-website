@@ -7,14 +7,23 @@ import {
   getTeamYears,
   getPortfolios,
   getEducationChapters,
+  isRecruitingOpen,
 } from "@/lib/content";
 
 describe("content loading", () => {
   it("loads site config", () => {
     const config = getSiteConfig();
     expect(config).toHaveProperty("recruiting");
-    expect(config).toHaveProperty("copyright");
     expect(typeof config.recruiting).toBe("boolean");
+  });
+
+  it("never ships an expired recruiting deadline", () => {
+    const config = getSiteConfig();
+    if (config.recruiting && config.recruitingUntil) {
+      expect(new Date(`${config.recruitingUntil}T23:59:59`).getTime()).toBeGreaterThanOrEqual(
+        Date.now()
+      );
+    }
   });
 
   it("loads events as array", () => {
@@ -72,5 +81,22 @@ describe("content loading", () => {
     if (chapters.length > 1) {
       expect(chapters[0].chapter).toBeLessThanOrEqual(chapters[1].chapter);
     }
+  });
+});
+
+describe("isRecruitingOpen", () => {
+  const now = new Date("2026-09-30T12:00:00");
+
+  it("is closed when recruiting is off", () => {
+    expect(isRecruitingOpen({ recruiting: false }, now)).toBe(false);
+  });
+
+  it("is open with no deadline", () => {
+    expect(isRecruitingOpen({ recruiting: true }, now)).toBe(true);
+  });
+
+  it("stays open through the last day and closes after it", () => {
+    expect(isRecruitingOpen({ recruiting: true, recruitingUntil: "2026-09-30" }, now)).toBe(true);
+    expect(isRecruitingOpen({ recruiting: true, recruitingUntil: "2026-09-29" }, now)).toBe(false);
   });
 });

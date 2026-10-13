@@ -1,4 +1,17 @@
-recruiting: true
-recruitingDetails: "Applications open until April 15, 2026"
-recruitingUrl: "https://linktr.ee/quantt"
-copyright: "2026 QUANTT"
+# Recruiting status shown in the home hero and on /contact. Set to true during a
+# recruiting round; recruitingUrl should point at /portfolios, not Linktree.
+recruiting: false
+recruitingDetails: "Analyst applications for 2026–2027 are opening soon — application details will be posted on Instagram."
+recruitingUrl: "/portfolios"
+# Optional expiry guard. When set, the banner stops rendering after the end of
+# this day (local time), so a stale deadline can never linger in production.
+# Always set this alongside any dated copy in recruitingDetails.
+# recruitingUntil: "2027-04-15"
+
+# Photos per media slot. Paths are under /public. Remove a line to fall back to
+# the slot's built-in visual.
+media:
+  hero: "/images/photos/firm-visit.jpg"
+  partners: "/images/photos/team-atrium.jpg"
+  education: "/images/photos/campus.jpg"
+  team: "/images/photos/team-office.jpg"

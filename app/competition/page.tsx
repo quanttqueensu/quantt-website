@@ -1,101 +1,96 @@
 import type { Metadata } from "next";
-import GradientBackground from "@/components/GradientBackground";
-import SectionLabel from "@/components/SectionLabel";
-import ScrollReveal from "@/components/ScrollReveal";
 import YearTabs from "@/components/YearTabs";
+import { List, PageIntro, Stats, Wrap } from "@/components/ui";
 import type { TeamYear } from "@/lib/content";
 import { getTeamYears } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Competition — QUANTT",
-  description:
-    "QUANTT's project teams and their research papers from each competition year.",
+  title: "Research — QUANTT",
+  description: "Research papers from QUANTT's project teams, by competition year.",
 };
 
-function ProjectsView({ year }: { year: TeamYear }) {
+function PapersList({ year }: { year: TeamYear }) {
   const teams = year.config.projectTeams ?? [];
   const papers = year.config.researchPapers ?? {};
+  const details = year.config.researchPaperDetails ?? {};
   const winner = year.config.winner;
 
+  // The winning team leads; the rest keep their configured order.
+  const ordered =
+    winner && teams.includes(winner) ? [winner, ...teams.filter((t) => t !== winner)] : teams;
+
   return (
-    <ScrollReveal>
-      <div className="grid gap-4 md:grid-cols-2">
-        {teams.map((name) => {
-          const paper = papers[name];
-          const isWinner = name === winner;
-          const pm = year.members.find(
-            (m) => m.tier === "project-manager" && m.department === name
-          );
-          return (
-            <div
-              key={name}
-              className={`rounded-lg border p-5 backdrop-blur-md ${
-                isWinner
-                  ? "border-yellow-400/30 bg-yellow-400/[0.06]"
-                  : "border-white/15 bg-white/[0.06]"
-              }`}
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold g-heading">{name}</h3>
-                {isWinner && (
-                  <span className="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-200">
-                    🏆 Winner
-                  </span>
-                )}
-              </div>
-              {isWinner && pm && (
-                <p className="mt-1 text-xs g-muted">Led by {pm.name}</p>
-              )}
-              {paper && (
-                <a
-                  href={encodeURI(paper)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${name} research paper (opens in new tab)`}
-                  className="mt-3 inline-block rounded-md bg-white/[0.07] px-3 py-2 text-xs font-semibold text-white/60 transition-colors hover:bg-white/[0.12] hover:text-white"
-                >
-                  Research Paper ↗
-                </a>
-              )}
-            </div>
-          );
+    <List
+      items={ordered
+        .filter((team) => papers[team])
+        .map((team) => {
+          const pm = year.members.find((m) => m.tier === "project-manager" && m.department === team);
+          const title = details[team]?.title ?? `${team}`;
+          return {
+            href: encodeURI(papers[team]),
+            external: true,
+            title,
+            byline: [
+              team === winner ? `${year.config.year} winner` : team,
+              [details[team]?.date, pm && `Led by ${pm.name}`].filter(Boolean).join(" · ") || "PDF",
+            ],
+            label: `${title}, ${team} team${team === winner ? `, ${year.config.year} winner` : ""} (PDF, opens in new tab)`,
+          };
         })}
-      </div>
-    </ScrollReveal>
+    />
   );
 }
 
 export default function CompetitionPage() {
-  const years = getTeamYears().filter(
-    (year) => (year.config.projectTeams ?? []).length > 0
+  const years = getTeamYears().filter((year) => (year.config.projectTeams ?? []).length > 0);
+  const paperCount = years.reduce(
+    (sum, year) => sum + Object.keys(year.config.researchPapers ?? {}).length,
+    0
   );
+  const latest = years[0];
 
   const tabs = years.map((year) => ({
     year: year.config.year,
     current: year.config.current,
-    content: <ProjectsView year={year} />,
+    content: <PapersList year={year} />,
   }));
 
   return (
-    <GradientBackground variant="short">
-      <div className="mx-auto max-w-5xl px-6 pt-32 pb-20">
-        <ScrollReveal>
-          <SectionLabel>
-            <span className="text-blue-light">Project Teams</span>
-          </SectionLabel>
-          <h1 className="mt-2 font-heading text-3xl font-bold text-white md:text-4xl">
-            Competition
-          </h1>
-          <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70">
-            Each year our project teams research, build, and trade a
-            quantitative strategy — read their research papers below.
+    <>
+      <PageIntro
+        title="Research, Written Up."
+        lede={
+          <p>
+            Each year our project teams research, build, and trade a quantitative strategy, then
+            publish the paper. Every one is free to read in full.
           </p>
-        </ScrollReveal>
+        }
+      >
+        <Stats
+          large
+          items={[
+            { value: paperCount, label: "Papers published" },
+            { value: latest?.config.projectTeams?.length ?? 0, label: `Project teams in ${latest?.config.year ?? ""}` },
+            ...(latest?.config.winner ? [{ value: 1, label: `Winner: ${latest.config.winner}` }] : []),
+          ]}
+        />
+      </PageIntro>
 
-        <div className="mt-8">
-          <YearTabs tabs={tabs} />
-        </div>
+      <div className="cs-section">
+        <Wrap>
+          <section className="cs-panel cs-reveal" aria-labelledby="papers-title">
+            <div className="cs-panel__intro">
+              <h2 id="papers-title" className="cs-h2 cs-h2--md">
+                The Papers
+              </h2>
+              <p>Opened as PDFs. The winning paper is listed first.</p>
+            </div>
+            <div>
+              <YearTabs tabs={tabs} label="Competition year" />
+            </div>
+          </section>
+        </Wrap>
       </div>
-    </GradientBackground>
+    </>
   );
 }

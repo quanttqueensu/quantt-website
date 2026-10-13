@@ -33,9 +33,9 @@ hierarchy:
   - tier: "analyst"
     label: "Analysts"
     teams:
-      - "Trading"
-      - "Research"
-      - "Developer"
+      - "Quantitative Trading"
+      - "Quantitative Research"
+      - "Quantitative Development"
       - "Operations"
       - "Marketing"
-    placeholder: "Hiring September 2026"
+    placeholder: "To be announced"

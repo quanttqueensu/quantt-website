@@ -25,3 +25,25 @@ researchPapers:
   "Intraday Volatility": "/papers/Intraday Volatility.pdf"
   "Macro Regime": "/papers/Macro Regime.pdf"
   "Pairs Trading": "/papers/Pairs Trading.pdf"
+
+# Title and date as printed on each paper's first page. Optional per team.
+researchPaperDetails:
+  "Binomial Pricing":
+    title: "From Price Mispricing to Volatility Surface Arbitrage: A CRR Binomial Framework for Delta-Neutral Options Research"
+    date: "March 2026"
+    image: "/images/papers/binomial-pricing.png"
+  "Equities Hedged":
+    title: "A Dual-Layer, Consensus-Based, Multi-Factor Framework for Market-Neutral Long/Short Equity Investing"
+    image: "/images/papers/equities-hedged.png"
+  "Intraday Volatility":
+    title: "Intraday Volatility Monitor Report"
+    date: "February 2026"
+    image: "/images/papers/intraday-volatility.png"
+  "Macro Regime":
+    title: "Macro Regime–Based Asset Rotation: A Multi-Asset Strategy Using Economic Regime Classification and Walk-Forward Optimization"
+    date: "February 2026"
+    image: "/images/papers/macro-regime.png"
+  "Pairs Trading":
+    title: "Transient Pair Discovery Using Unsupervised Clustering Methods"
+    date: "March 2026"
+    image: "/images/papers/pairs-trading.png"

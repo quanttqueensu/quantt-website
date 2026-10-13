@@ -8,8 +8,19 @@ const contentDir = path.join(process.cwd(), "content");
 export interface SiteConfig {
   recruiting: boolean;
   recruitingDetails?: string;
+  /** Internal route (e.g. "/portfolios") or absolute external URL. */
   recruitingUrl?: string;
-  copyright: string;
+  /** "YYYY-MM-DD". When set, the banner expires at the end of this day. */
+  recruitingUntil?: string;
+  /** Optional photo overrides per media slot; each slot has a built-in fallback. */
+  media?: Partial<Record<"hero" | "research" | "partners" | "education" | "team", string>>;
+}
+
+export interface ResearchPaperDetail {
+  title: string;
+  date?: string;
+  /** First-page render in /public, used as imagery. */
+  image?: string;
 }
 
 export interface Event {
@@ -41,6 +52,8 @@ export interface TeamMember {
   order: number;
   bio: string;
   linkedin?: string;
+  /** Trading analysts: the portfolio manager(s) whose desk they sit on. */
+  lead?: string;
 }
 
 export interface HierarchyRole {
@@ -69,6 +82,7 @@ export interface TeamYearConfig {
   projectTeams?: string[];
   winner?: string;
   researchPapers?: Record<string, string>;
+  researchPaperDetails?: Record<string, ResearchPaperDetail>;
   hierarchy?: HierarchyTier[];
 }
 
@@ -115,6 +129,16 @@ function readMdDir<T>(dir: string): (T & { body: string })[] {
 
 export function getSiteConfig(): SiteConfig {
   return readYaml<SiteConfig>("config.yml");
+}
+
+/**
+ * Whether the recruiting message should render. A dated message expires at the end
+ * of `recruitingUntil`, so a stale deadline can never linger in production.
+ */
+export function isRecruitingOpen(config: SiteConfig, now = new Date()): boolean {
+  if (!config.recruiting) return false;
+  if (!config.recruitingUntil) return true;
+  return new Date(`${config.recruitingUntil}T23:59:59`) >= now;
 }
 
 export function getEvents(): Event[] {
