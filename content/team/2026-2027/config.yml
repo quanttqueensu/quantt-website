@@ -16,8 +16,6 @@ hierarchy:
         short: "COO"
       - title: "Chief Marketing Officer"
         short: "CMO"
-      - title: "Chief People Officer"
-        short: "CPO"
   - tier: "director"
     label: "Directors"
     roles:
