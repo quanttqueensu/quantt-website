@@ -33,7 +33,7 @@ const socials = [
 
 export default function Footer() {
   return (
-    <footer className="cs-footer on-blue mt-[var(--cs-section)]">
+    <footer className="cs-footer on-blue">
       <div className="cs-wrap">
         <div className="cs-footer__top">
           <Link href="/" aria-label="QUANTT home" className="inline-flex min-h-11 items-start">

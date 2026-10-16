@@ -222,18 +222,13 @@ export default function TeamPage() {
         title="Team"
         lede={<p>Executive team, portfolio managers, and analysts by academic year.</p>}
       >
-        {/* The source photo is 800px wide, so it sits in the right column at its
-            natural scale instead of stretching full-bleed. */}
-        <div className="cs-grid mt-[clamp(40px,5vw,64px)]">
-          <div className="[grid-column:13/-1] max-[900px]:[grid-column:1/-1]">
-            <MediaSlot
-              src={media?.team}
-              alt="QUANTT members at an industry partner's office"
-              className="aspect-[4/3] w-full"
-              sizes="(max-width: 900px) 100vw, 656px"
-            />
-          </div>
-        </div>
+        <MediaSlot
+          src={media?.team}
+          alt="QUANTT members at an industry partner's office"
+          className="mt-[clamp(40px,5vw,64px)] aspect-[16/7] w-full"
+          imgClassName="object-[center_65%]"
+          sizes="(max-width: 1440px) 100vw, 1328px"
+        />
       </PageIntro>
 
       <section aria-label="Team by year" className="cs-section">

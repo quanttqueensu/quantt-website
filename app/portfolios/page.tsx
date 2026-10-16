@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PageIntro, Stats, Wrap } from "@/components/ui";
+import { PageIntro, Wrap } from "@/components/ui";
 import { getPortfolios } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -14,20 +14,14 @@ export default function PortfoliosPage() {
   return (
     <>
       <PageIntro
-        title="This Year’s Portfolios."
+        title="This Year’s Portfolios"
         lede={
           <p>
             Each portfolio is a live strategy with its own thesis, data, and tooling. Here is what
             every desk is building for 2026–2027.
           </p>
         }
-      >
-        <Stats
-          items={[
-            { value: portfolios.length, label: "Portfolios for 2026–2027" },
-          ]}
-        />
-      </PageIntro>
+      />
 
       <section aria-label="Portfolios" className="cs-section">
         <Wrap>

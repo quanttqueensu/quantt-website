@@ -1,5 +1,5 @@
 ---
-name: "Roan James McReynolds"
+name: "Roan McReynolds"
 role: "General Member"
 tier: "member"
 department: "Binomial Pricing"

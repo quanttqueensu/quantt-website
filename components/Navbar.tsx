@@ -70,11 +70,11 @@ export default function Navbar() {
             priority
           />
           <Image
-            src="/images/logos/quantt-text-white.png"
+            src="/images/logos/quantt-full-white.png"
             alt=""
-            width={877}
-            height={399}
-            className="cs-header__logo-white h-10 w-auto max-[900px]:h-9"
+            width={1617}
+            height={400}
+            className="cs-header__logo-white h-8 w-auto max-[900px]:h-7"
             priority
           />
         </Link>
