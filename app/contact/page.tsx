@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 const channels = [
   { href: "https://www.instagram.com/quanttqueens", title: "Instagram", note: "Recruiting and event announcements" },
-  { href: "https://www.linkedin.com/company/quanttqueens/", title: "LinkedIn", note: "Club news and partner updates" },
-  { href: "https://www.facebook.com/QUANTTpage", title: "Facebook", note: "Club page" },
+  { href: "https://www.linkedin.com/company/quanttqueens/", title: "LinkedIn", note: "Announcements and partner updates" },
+  { href: "https://www.facebook.com/QUANTTpage", title: "Facebook", note: "Updates" },
   { href: "https://linktr.ee/quantt", title: "Linktree", note: "Every link in one place" },
 ];
 
@@ -21,9 +21,9 @@ export default function ContactPage() {
   return (
     <>
       <PageIntro
-        title="Talk to the Team."
-        lede={<p>Students and partners: email reaches the executive team directly.</p>}
-        cta={<Button href="mailto:quanttgroup@gmail.com">Email quanttgroup@gmail.com</Button>}
+        title="Contact"
+        lede={<p>For partnership, recruiting, or general inquiries, email the executive team.</p>}
+        cta={<Button href="mailto:quantt@clubs.queensu.ca">Email quantt@clubs.queensu.ca</Button>}
       />
 
       {recruiting && (
@@ -31,7 +31,7 @@ export default function ContactPage() {
           <Wrap>
             <Split
               onBlue
-              title="Recruiting Now."
+              title="Applications Open"
               lede={config.recruitingDetails && <p>{config.recruitingDetails}</p>}
               cta={
                 config.recruitingUrl && (

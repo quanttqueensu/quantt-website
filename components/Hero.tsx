@@ -30,8 +30,8 @@ export default function Hero() {
           <RotatingPhrase />
         </h1>
         <p>
-          Queen&apos;s students research, build, and trade quantitative strategies, learning and
-          building side by side all year.
+          Students research, build, and test systematic strategies across equities, rates, credit,
+          options, and energy.
         </p>
         <div className="cs-hero__ctas">
           <Button href="/competition" variant="accent">

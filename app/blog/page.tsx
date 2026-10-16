@@ -15,8 +15,8 @@ export default function BlogPage() {
   return (
     <>
       <PageIntro
-        title="Notes From the Desks."
-        lede={<p>Writing from QUANTT members on the strategies they build and trade.</p>}
+        title="Blog"
+        lede={<p>Articles by QUANTT members on quantitative finance and their research.</p>}
       />
 
       <div className="cs-section">
@@ -28,11 +28,11 @@ export default function BlogPage() {
               </h2>
               {posts.length === 0 && (
                 <p>
-                  In the meantime, the{" "}
+                  See the{" "}
                   <Link href="/competition" className="cs-link">
                     research papers
                   </Link>{" "}
-                  from past project teams are the best place to see our work.
+                  from past project teams.
                 </p>
               )}
             </div>

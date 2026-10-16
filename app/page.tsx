@@ -5,11 +5,10 @@ import PricePaths from "@/components/PricePaths";
 import ResearchList from "@/components/ResearchList";
 import UpcomingEvents from "@/components/UpcomingEvents";
 import { Button, ListPanel, Section, Split, Stats, Wrap } from "@/components/ui";
-import { getEducationChapters, getPartners, getPortfolios, getTeamYears } from "@/lib/content";
+import { getPartners, getPortfolios, getTeamYears } from "@/lib/content";
 
 export default function Home() {
   const portfolios = getPortfolios();
-  const weeks = getEducationChapters().length;
   const partners = getPartners().current;
 
   // The most recent year that published papers.
@@ -33,7 +32,6 @@ export default function Home() {
           strip
           items={[
             { value: portfolios.length, label: "Portfolios this year" },
-            { value: weeks, label: "Weeks of curriculum" },
             { value: papers.length, label: `Papers published in ${paperYear?.config.year ?? "our last year"}` },
             { value: partners.length, label: "Industry partners" },
           ]}
@@ -42,11 +40,11 @@ export default function Home() {
 
       <Section>
         <Split
-          title="Rigorous Research. Real Portfolios."
+          title="Research and Portfolios"
           lede={
             <p>
-              Our members build live quantitative strategies across equities, rates, credit,
-              options, and energy, and publish what they find.
+              Members design, build, and run live quantitative strategies across equities, rates,
+              credit, options, and energy, and publish the results.
             </p>
           }
           cta={<Button href="/portfolios">Explore the Portfolios</Button>}
@@ -59,11 +57,11 @@ export default function Home() {
             <div className="cs-research__head cs-reveal">
               <div>
                 <h2 id="papers-title" className="cs-h2">
-                  Research, Written Up.
+                  Published Research
                 </h2>
                 <p>
-                  Every project team publishes a paper on the strategy it built.
-                  {winner && ` The ${paperYear.config.year} winner was ${winner}.`}
+                  Each project team publishes a research paper on its strategy.
+                  {winner && ` The ${paperYear.config.year} competition winner was ${winner}.`}
                 </p>
               </div>
               <Link href="/competition" className="cs-link whitespace-nowrap">
@@ -77,22 +75,16 @@ export default function Home() {
 
       <Section>
         <Split
-          title="Learning and Building. All Year."
+          title="Curriculum"
           lede={
             <p>
-              Members build their portfolio&apos;s strategy alongside the curriculum, so every
-              lesson has somewhere to go. Two tracks: trading and development.
+              Coverage of asset classes and strategy types, coding and problem solving, and the
+              infrastructure behind a strategy, from data to automation. Grounded in math and
+              probability, with Green Book problems and market-making games, and taught alongside
+              portfolio work.
             </p>
           }
           cta={<Button href="/education">Explore the Curriculum</Button>}
-        />
-        <Stats
-          large
-          items={[
-            { value: weeks, label: "Weeks of curriculum" },
-            { value: 2, label: "Tracks: trading and development" },
-            { value: portfolios.length, label: "Live portfolios" },
-          ]}
         />
       </Section>
 
@@ -100,12 +92,12 @@ export default function Home() {
         <ListPanel
           title={
             <>
-              This Year&apos;s
+              2026–2027
               <br />
               Portfolios
             </>
           }
-          intro={<p>{portfolios.length} desks for 2026–2027, each with its own thesis, data, and tooling.</p>}
+          intro={<p>{portfolios.length} desks, each with its own thesis, data, and tooling.</p>}
           items={portfolios.map((p) => ({
             href: `/portfolios#${p.slug}`,
             title: p.title,
@@ -124,12 +116,12 @@ export default function Home() {
         <Wrap>
           <div className="cs-grid cs-split cs-reveal">
             <h2 id="partners-title" className="cs-h2 cs-h2--on-blue">
-              Partner With QUANTT.
+              Partnerships
             </h2>
             <div>
               <p className="cs-lede">
-                {partners.map((p) => p.name).join(", ")} work with QUANTT. We are looking for
-                partners for the coming year.
+                QUANTT works with {partners.map((p) => p.name).join(", ")}. We welcome new
+                partners for the 2026–2027 year.
               </p>
               <Button href="/partners" variant="accent" className="mt-8">
                 Explore Partnerships

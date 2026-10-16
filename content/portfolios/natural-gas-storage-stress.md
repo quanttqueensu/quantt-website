@@ -1,16 +1,13 @@
 ---
 title: "Natural Gas Storage Stress"
 slug: "natural-gas-storage-stress"
-description: "A systematic trading strategy for natural gas calendar spreads driven by abnormal storage stress in salt caverns."
-tech: ["Energy Markets", "Commodities", "Data Engineering", "IBKR"]
+manager: "Roan McReynolds"
+description: "A systematic commodities portfolio combining storage-stress research with a broader approach to futures trading."
+tech: ["Energy Markets", "Commodities", "Data Engineering", "Systematic Trading"]
 status: active
 order: 1
 ---
 
-Systematic trading strategy for natural gas calendar spreads. The primary driver is quantifying storage stress in salt caverns.
+Originally focused on abnormal storage stress in natural gas salt caverns, this portfolio has evolved into a long/short strategy across 22 commodity futures markets. It combines carry, momentum, and changes in futures curves to identify relative opportunities.
 
-Seasonal storage stress patterns are typically already priced into the market. This portfolio aims to identify abnormally large stress events to find an edge.
-
-Pulls data from national and institutional databases that report on storage flow and regional pricing. Trades execute through IBKR.
-
-Great for analysts who want to understand energy markets, commodities pricing, and data engineering.
+Analysts research signals, build data pipelines and evaluate strategies through realistic backtesting and IBKR paper trading.

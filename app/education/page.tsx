@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Accordion from "@/components/Accordion";
 import MediaSlot from "@/components/MediaSlot";
-import { Button, PageIntro, Stats, Wrap } from "@/components/ui";
+import { Button, PageIntro, Wrap } from "@/components/ui";
 import { getEducationChapters, getSiteConfig } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Curriculum — QUANTT",
   description:
-    "Explore QUANTT's intensive 10-week curriculum covering quantitative trading, computational finance, and software engineering for quantitative research.",
+    "QUANTT's curriculum: markets and strategy types, coding and problem solving, strategy infrastructure from data to automation, and the math and probability underneath.",
 };
 
 function TopicList({ title, topics }: { title: string; topics: string[] }) {
@@ -23,36 +23,46 @@ function TopicList({ title, topics }: { title: string; topics: string[] }) {
   );
 }
 
-const tracks = [
+const focusAreas = [
   {
-    name: "Trading Track",
-    focus: "Strategy and markets",
-    body: "Market inefficiencies, hypothesis generation, strategy design, options theory, volatility models, post-earnings announcement drift, and portfolio risk.",
+    name: "Markets and Strategies",
+    focus: "Asset classes and strategy types",
+    body: "Equities, rates, credit, options, and energy, and the strategy types that trade them: momentum, relative value, volatility, and event-driven.",
   },
   {
-    name: "Development Track",
-    focus: "Data and engineering",
-    body: "Python and pandas, data cleaning, regression, time-series stationarity, backtesting engines, numerical methods, and market APIs.",
+    name: "Coding and Problem Solving",
+    focus: "Python, puzzles, and games",
+    body: "Python and pandas for research, Green Book problems, and market-making games.",
   },
+  {
+    name: "Strategy Infrastructure",
+    focus: "From data to automation",
+    body: "Building a strategy from the ground up: data pipelines, backtesting engines, execution through market APIs, and automation.",
+  },
+  {
+    name: "Math and Probability",
+    focus: "The quantitative foundation",
+    body: "Probability, statistics, regression, time-series methods, and option pricing.",
+  },
+];
+
+// Every topic for a module in one list; the curriculum has a single track.
+const topicsOf = (ch: ReturnType<typeof getEducationChapters>[number]) => [
+  ...(ch.topics ?? []),
+  ...(ch.trading_track ?? []),
+  ...(ch.development_track ?? []),
 ];
 
 export default function EducationPage() {
   const chapters = getEducationChapters();
   const { media } = getSiteConfig();
-  const dualTrackWeeks = chapters.filter((ch) => ch.trading_track || ch.development_track).length;
 
   const items = chapters.map((ch) => ({
-    title: `Week ${ch.chapter}. ${ch.title}`,
+    title: `Module ${ch.chapter}. ${ch.title}`,
     content: (
       <div className="grid gap-8 md:grid-cols-2">
         {ch.body && <p className="max-w-[65ch] text-base text-body md:col-span-2">{ch.body}</p>}
-        {ch.trading_track?.length ? <TopicList title="Trading track" topics={ch.trading_track} /> : null}
-        {ch.development_track?.length ? (
-          <TopicList title="Development track" topics={ch.development_track} />
-        ) : null}
-        {!ch.trading_track && !ch.development_track && ch.topics?.length ? (
-          <TopicList title="Foundations" topics={ch.topics} />
-        ) : null}
+        {topicsOf(ch).length ? <TopicList title="Topics" topics={topicsOf(ch)} /> : null}
       </div>
     ),
   }));
@@ -60,14 +70,14 @@ export default function EducationPage() {
   return (
     <>
       <PageIntro
-        title="Ten Weeks. Two Tracks."
+        title="Curriculum"
         lede={
           <p>
-            From core market concepts to production-quality quantitative software, taught
-            alongside the portfolio work members do all year.
+            Coverage of asset classes and strategy types, coding and problem solving, and the
+            infrastructure behind a strategy, from data to automation, taught alongside portfolio work.
           </p>
         }
-        cta={<Button href="#weeks">Explore Every Week</Button>}
+        cta={<Button href="#modules">Explore Every Module</Button>}
       >
         <MediaSlot
           src={media?.education}
@@ -75,19 +85,11 @@ export default function EducationPage() {
           className="cs-intro__media"
           sizes="(max-width: 1440px) 100vw, 1328px"
         />
-        <Stats
-          items={[
-            { value: chapters.length, label: "Weeks" },
-            { value: 2, label: "Tracks" },
-            { value: chapters.length - dualTrackWeeks, label: "Shared foundation weeks" },
-            { value: dualTrackWeeks, label: "Weeks split by track" },
-          ]}
-        />
       </PageIntro>
 
-      <section aria-label="Tracks" className="cs-section">
+      <section aria-label="Focus areas" className="cs-section">
         <Wrap>
-          {tracks.map((t) => (
+          {focusAreas.map((t) => (
             <div key={t.name} className="cs-row cs-grid cs-split cs-reveal">
               <div>
                 <h2 className="cs-row__title">{t.name}</h2>
@@ -99,15 +101,15 @@ export default function EducationPage() {
         </Wrap>
       </section>
 
-      <section id="weeks" aria-labelledby="weeks-title" className="cs-section scroll-mt-28">
+      <section id="modules" aria-labelledby="modules-title" className="cs-section scroll-mt-28">
         <Wrap>
-          <h2 id="weeks-title" className="cs-h2 cs-reveal mb-12">
-            Week by Week.
+          <h2 id="modules-title" className="cs-h2 cs-reveal mb-12">
+            Modules
           </h2>
           {items.length > 0 ? (
             <Accordion items={items} />
           ) : (
-            <p className="cs-lede">The week-by-week plan is published before the curriculum starts.</p>
+            <p className="cs-lede">The module plan is published before the curriculum starts.</p>
           )}
         </Wrap>
       </section>

@@ -58,11 +58,11 @@ export default function CompetitionPage() {
   return (
     <>
       <PageIntro
-        title="Research, Written Up."
+        title="Research"
         lede={
           <p>
-            Each year our project teams research, build, and trade a quantitative strategy, then
-            publish the paper. Every one is free to read in full.
+            Each year, project teams research and test a quantitative strategy and publish a paper
+            on the results. All papers are available in full.
           </p>
         }
       >
@@ -71,7 +71,6 @@ export default function CompetitionPage() {
           items={[
             { value: paperCount, label: "Papers published" },
             { value: latest?.config.projectTeams?.length ?? 0, label: `Project teams in ${latest?.config.year ?? ""}` },
-            ...(latest?.config.winner ? [{ value: 1, label: `Winner: ${latest.config.winner}` }] : []),
           ]}
         />
       </PageIntro>
@@ -81,9 +80,9 @@ export default function CompetitionPage() {
           <section className="cs-panel cs-reveal" aria-labelledby="papers-title">
             <div className="cs-panel__intro">
               <h2 id="papers-title" className="cs-h2 cs-h2--md">
-                The Papers
+                Papers
               </h2>
-              <p>Opened as PDFs. The winning paper is listed first.</p>
+              <p>PDF. The competition winner is listed first.</p>
             </div>
             <div>
               <YearTabs tabs={tabs} label="Competition year" />
