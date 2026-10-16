@@ -3,7 +3,7 @@ import RotatingPhrase from "./RotatingPhrase";
 import { Button } from "./ui";
 import { getSiteConfig } from "@/lib/content";
 
-/** Full-bleed photo with the blue panel anchored bottom-right, cyan bar at its edge. */
+/** Full-bleed photo with the blue panel anchored bottom-right, accent bar at its edge. */
 export default function Hero() {
   const { media } = getSiteConfig();
 
@@ -36,7 +36,7 @@ export default function Hero() {
           Queen&apos;s students research, build, and trade quantitative strategies, learning and
           building side by side all year.
         </p>
-        <Button href="/competition" variant="cyan">
+        <Button href="/competition" variant="accent">
           Explore Our Research
         </Button>
       </div>

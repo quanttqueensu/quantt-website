@@ -45,7 +45,7 @@ type OgImageOptions = {
 };
 
 /**
- * Shared composition for every QUANTT OG card: flat royal blue, a cyan accent
+ * Shared composition for every QUANTT OG card: flat QUANTT blue, a pale-blue accent
  * bar, the wordmark, and one supporting line. Deliberately low-density — these
  * render as ~300px-wide thumbnails in the Instagram and LinkedIn feeds.
  */
@@ -66,12 +66,12 @@ export function renderOgImage({
           flexDirection: "column",
           justifyContent: "center",
           padding: "0 92px",
-          // Flat royal blue, matching the site's hero panel and bands.
-          backgroundColor: "#1c409b",
+          // Flat QUANTT blue, matching the site's hero panel and bands.
+          backgroundColor: "#295caa",
           position: "relative",
         }}
       >
-        {/* Cyan accent bar at the left edge, as on the site's hero panel. */}
+        {/* Accent accent bar at the left edge, as on the site's hero panel. */}
         <div
           style={{
             position: "absolute",
@@ -79,7 +79,7 @@ export function renderOgImage({
             top: 0,
             bottom: 0,
             width: 16,
-            backgroundColor: "#6ee8e9",
+            backgroundColor: "#a9c0e3",
           }}
         />
 
@@ -89,7 +89,7 @@ export function renderOgImage({
               fontSize: 26,
               letterSpacing: "0.32em",
               textTransform: "uppercase",
-              color: "#6ee8e9",
+              color: "#a9c0e3",
               marginBottom: 34,
             }}
           >

@@ -63,7 +63,7 @@ export default function Home() {
                   Every project team publishes a paper on the strategy it built.
                   {winner && ` The ${paperYear.config.year} winner was ${winner}.`}
                 </p>
-                <Button href="/competition" variant="cyan" className="mt-8">
+                <Button href="/competition" variant="accent" className="mt-8">
                   Explore the Papers
                 </Button>
               </div>
@@ -140,7 +140,7 @@ export default function Home() {
                 {partners.map((p) => p.name).join(", ")} work with QUANTT. We are looking for
                 partners for the coming year.
               </p>
-              <Button href="/partners" variant="cyan" className="mt-8">
+              <Button href="/partners" variant="accent" className="mt-8">
                 Explore Partnerships
               </Button>
             </div>

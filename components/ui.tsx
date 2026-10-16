@@ -3,9 +3,9 @@ import type { CSSProperties, ReactNode } from "react";
 
 /* ---------- Buttons & arrows ---------- */
 
-type ButtonVariant = "blue" | "cyan";
+type ButtonVariant = "blue" | "accent";
 
-/** Pill CTA. Blue on white/grey surfaces, cyan on blue. One per text block. */
+/** Pill CTA. Blue on white/grey surfaces, accent on blue. One per text block. */
 export function Button({
   href,
   children,
@@ -38,7 +38,7 @@ export function Button({
   );
 }
 
-/** 40px outlined circle with a thin right arrow. Fills cyan when its row is hovered. */
+/** 40px outlined circle with a thin right arrow. Fills accent when its row is hovered. */
 export function ArrowCircle({ className = "" }: { className?: string }) {
   return (
     <span className={`cs-arrow ${className}`} aria-hidden="true">

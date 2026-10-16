@@ -52,7 +52,7 @@ export default function PartnersPage() {
             title={<span id="partner-cta">Partner With Us for 2026–2027.</span>}
             lede={<p>Tell us what your team works on and what you would want from our members.</p>}
             cta={
-              <Button href="mailto:quanttgroup@gmail.com" variant="cyan" className="mt-8">
+              <Button href="mailto:quanttgroup@gmail.com" variant="accent" className="mt-8">
                 Email the Team
               </Button>
             }
