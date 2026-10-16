@@ -2,7 +2,7 @@
 name: "Gabriel Soler"
 role: "Portfolio Manager"
 tier: "portfolio-manager"
-department: "L/S Gamma"
+department: "Long/Short Gamma"
 order: 6
 bio: ""
 ---

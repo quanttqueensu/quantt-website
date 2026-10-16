@@ -2,7 +2,7 @@
 name: "Roan McReynolds"
 role: "Portfolio Manager"
 tier: "portfolio-manager"
-department: "Nat Gas"
+department: "Natural Gas Storage Stress"
 order: 5
 bio: ""
 ---
