@@ -1,16 +1,18 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Institutional finance system (royal blue + cyan), applied to QUANTT's own brand.
+/* Institutional finance system in QUANTT's logo colours: logo blue #295caa with a pale
+   tint of the logo's light blue as the accent.
    Contrast (WCAG): ink #101213 on white 18.9:1 · body #373a3c 11.4:1 · meta #696969
-   5.5:1 · white on blue #1c409b 9.4:1 · ink on cyan #6ee8e9 14.5:1 · navy on cyan 11.5:1. */
+   5.5:1 · white on blue #295caa 6.6:1 · ink on accent #a9c0e3 10.1:1 · navy on accent 8.2:1
+   · accent on blue 3.5:1 (focus ring, accent bar). */
 :root {
-  --cs-blue: #1c409b;
-  --cs-blue-link: #144aa5;
-  --cs-blue-hover: #1258cd;
-  --cs-navy: #08225a;
-  --cs-footer: #181739;
-  --cs-cyan: #6ee8e9;
+  --cs-blue: #295caa;
+  --cs-blue-link: #295caa;
+  --cs-blue-hover: #1d4682;
+  --cs-navy: #0f2547;
+  --cs-footer: #0b1a33;
+  --cs-accent: #a9c0e3;
   --cs-ink: #101213;
   --cs-text: #373a3c;
   --cs-meta: #696969;
@@ -34,12 +36,12 @@
 }
 
 @theme {
-  --color-blue: #1c409b;
-  --color-blue-link: #144aa5;
-  --color-blue-hover: #1258cd;
-  --color-navy: #08225a;
-  --color-indigo: #181739;
-  --color-cyan: #6ee8e9;
+  --color-blue: #295caa;
+  --color-blue-link: #295caa;
+  --color-blue-hover: #1d4682;
+  --color-navy: #0f2547;
+  --color-indigo: #0b1a33;
+  --color-accent: #a9c0e3;
   --color-ink: #101213;
   --color-body: #373a3c;
   --color-meta: #696969;
@@ -95,10 +97,10 @@
     transition: color var(--cs-fast) ease-out;
   }
   :focus-visible {
-    outline: 2px solid var(--cs-cyan);
+    outline: 2px solid var(--cs-accent);
     outline-offset: 3px;
   }
-  /* On white, cyan alone is faint (1.4:1); pair it with a blue inner ring. */
+  /* On white, accent alone is faint (1.9:1); pair it with a blue inner ring. */
   :focus-visible:not(.on-blue *) {
     box-shadow: 0 0 0 2px var(--cs-blue-link);
   }
@@ -160,10 +162,10 @@
     padding: 14px 24px 15px; border: 0; border-radius: var(--cs-pill); cursor: pointer;
     transition: background-color var(--cs-fast) ease-out, color var(--cs-fast) ease-out;
   }
-  .cs-btn--cyan { background: var(--cs-cyan); color: var(--cs-ink); }           /* use on blue */
-  .cs-btn--cyan:hover { background: #fff; color: var(--cs-ink); }
+  .cs-btn--accent { background: var(--cs-accent); color: var(--cs-ink); }           /* use on blue */
+  .cs-btn--accent:hover { background: #fff; color: var(--cs-ink); }
   .cs-btn--blue { background: var(--cs-blue); color: #fff; }                    /* use on white/grey */
-  .cs-btn--blue:hover { background: var(--cs-cyan); color: var(--cs-navy); }
+  .cs-btn--blue:hover { background: var(--cs-accent); color: var(--cs-navy); }
 
   /* circular outlined arrow — list rows, "read more" */
   .cs-arrow {
@@ -173,7 +175,7 @@
     transition: background-color .4s var(--cs-ease), border-color .4s var(--cs-ease), color .4s var(--cs-ease);
   }
   .cs-arrow svg { width: 24px; height: 24px; fill: currentColor; }
-  a:hover .cs-arrow, .cs-arrow:hover { background: var(--cs-cyan); border-color: var(--cs-cyan); color: var(--cs-navy); }
+  a:hover .cs-arrow, .cs-arrow:hover { background: var(--cs-accent); border-color: var(--cs-accent); color: var(--cs-navy); }
 
   /* ---------- hero: full-bleed media + overlapping blue panel ---------- */
   .cs-hero { position: relative; padding-bottom: 80px; }
@@ -183,8 +185,8 @@
     background: var(--cs-blue); color: #fff; padding: 56px 54px 56px 56px;
   }
   .cs-hero__panel .cs-h1 { position: relative; }
-  .cs-hero__panel .cs-h1::before {             /* cyan accent bar at the panel edge */
-    content: ""; position: absolute; left: -56px; top: 0; bottom: 0; width: 4px; background: var(--cs-cyan);
+  .cs-hero__panel .cs-h1::before {             /* accent accent bar at the panel edge */
+    content: ""; position: absolute; left: -56px; top: 0; bottom: 0; width: 4px; background: var(--cs-accent);
     transform: scaleY(0); transform-origin: top; transition: transform .6s var(--cs-ease) .4s;
   }
   .cs-hero.is-visible .cs-hero__panel .cs-h1::before, .no-js .cs-hero__panel .cs-h1::before { transform: scaleY(1); }
@@ -221,7 +223,7 @@
   .cs-band--flat { background: var(--cs-blue); padding-bottom: var(--cs-band-pad); }   /* no media */
 
   /* round play button over video */
-  .cs-play { position: absolute; inset: 0; margin: auto; width: 112px; height: 112px; border-radius: 50%; border: 0; background: var(--cs-cyan); color: var(--cs-blue); display: grid; place-items: center; cursor: pointer; transition: background-color var(--cs-fast) ease-out; }
+  .cs-play { position: absolute; inset: 0; margin: auto; width: 112px; height: 112px; border-radius: 50%; border: 0; background: var(--cs-accent); color: var(--cs-blue); display: grid; place-items: center; cursor: pointer; transition: background-color var(--cs-fast) ease-out; }
   .cs-play:hover { background: #fff; }
 
   /* ---------- grey panel with list (news / insights / documents) ---------- */
@@ -242,7 +244,7 @@
   /* ---------- footer ---------- */
   .cs-footer { background: var(--cs-footer); color: #fff; padding: 80px 0 56px; margin-top: 0; }
   .cs-footer a { color: #fff; }
-  .cs-footer a:hover { color: var(--cs-cyan); }
+  .cs-footer a:hover { color: var(--cs-accent); }
   .cs-footer__top { display: grid; align-items: start; grid-template-columns: 1fr auto auto; column-gap: clamp(48px, 10vw, 146px); padding-bottom: 80px; }
   .cs-footer__col { display: flex; flex-direction: column; gap: 16px; font-size: 16px; line-height: 22px; letter-spacing: -.01em; }
   .cs-footer__bar { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; padding: 24px 0; border-block: 1px solid var(--cs-on-dark-line); }
@@ -250,7 +252,7 @@
   .cs-footer__copy { font-size: 14px; line-height: 20px; color: var(--cs-on-dark-muted); max-width: 30em; }
   .cs-social { display: flex; gap: 26px; }
   .cs-social a { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--cs-on-dark-line); display: grid; place-items: center; transition: background-color var(--cs-fast) ease-out, border-color var(--cs-fast) ease-out; }
-  .cs-social a:hover { background: var(--cs-cyan); border-color: var(--cs-cyan); color: var(--cs-navy); }
+  .cs-social a:hover { background: var(--cs-accent); border-color: var(--cs-accent); color: var(--cs-navy); }
   .cs-footer__note { margin-top: 40px; font-size: 14px; }
 
   /* ---------- scroll reveal ---------- */

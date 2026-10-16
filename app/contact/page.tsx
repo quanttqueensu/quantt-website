@@ -35,7 +35,7 @@ export default function ContactPage() {
               lede={config.recruitingDetails && <p>{config.recruitingDetails}</p>}
               cta={
                 config.recruitingUrl && (
-                  <Button href={config.recruitingUrl} variant="cyan" className="mt-8">
+                  <Button href={config.recruitingUrl} variant="accent" className="mt-8">
                     Explore the Portfolios
                   </Button>
                 )
