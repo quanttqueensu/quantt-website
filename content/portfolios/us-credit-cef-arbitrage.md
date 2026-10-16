@@ -7,8 +7,6 @@ status: active
 order: 8
 ---
 
-This portfolio is focused on bonds and credit trading.
+The team trades bonds and credit. Its system trades US Treasury and corporate bond ETFs around predictable forced buying and selling by index funds and insurers.
 
-Our system trades US Treasury and corporate bond ETFs around moments when big players like index funds and insurers are forced to buy or sell at predictable times.
-
-As an analyst you will help refine how these strategies operate and dig into the data we own to find new sources of edge.
+Analysts refine how the strategies operate and research the team's proprietary data for new sources of edge.

@@ -7,7 +7,7 @@ status: active
 order: 6
 ---
 
-Building a systematic trading strategy based on momentum — the concept that assets that have been rising tend to continue rising for a period — incorporating game theory to account for the behavior of other investors chasing the same trends, which can lead to crowded trades and diminished returns.
+A systematic trading strategy based on momentum — the concept that assets that have been rising tend to continue rising for a period — incorporating game theory to account for the behavior of other investors chasing the same trends, which can lead to crowded trades and diminished returns.
 
 The objective is to create a strategy that captures the upside of strong markets while significantly minimizing losses during market crashes compared to the broader market.
 

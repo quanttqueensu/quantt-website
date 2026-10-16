@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 
 export default function PortfoliosPage() {
   const portfolios = getPortfolios();
-  const focusAreas = new Set(portfolios.flatMap((p) => p.tech)).size;
 
   return (
     <>
@@ -26,7 +25,6 @@ export default function PortfoliosPage() {
         <Stats
           items={[
             { value: portfolios.length, label: "Portfolios for 2026–2027" },
-            { value: focusAreas, label: "Distinct focus areas across the desks" },
           ]}
         />
       </PageIntro>

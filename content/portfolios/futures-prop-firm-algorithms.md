@@ -7,8 +7,8 @@ status: active
 order: 5
 ---
 
-Retail prop firm futures trading has ballooned in popularity recently due to the interesting payout convexity attributes that these online firms offer. Most retail traders choose to use guru strategies that don't have any live market edge nor prop firm edge.
+Retail futures prop firms have grown quickly because their account structures offer convex payouts. Most retail participants trade discretionary strategies with no demonstrated edge in the market or against the account rules.
 
-This portfolio is about finding algorithmic edges that exploit the nature of the prop firm account structure.
+The team looks for algorithmic edges that exploit the prop firm account structure.
 
-This portfolio will aim to fully automate simulated trading and create a mathematically positive EV strategy that is optimized dependent on account rules, prop firm, and account size.
+The goal is a fully automated strategy with positive expected value, optimized by prop firm, account rules, and account size, and traded on simulated accounts.

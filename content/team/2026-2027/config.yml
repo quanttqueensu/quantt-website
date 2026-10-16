@@ -29,7 +29,7 @@ hierarchy:
         short: "DoT"
   - tier: "portfolio-manager"
     label: "Portfolio Managers"
-    placeholder: "Trading desks TBA"
+    placeholder: "To be announced"
   - tier: "analyst"
     label: "Analysts"
     teams:

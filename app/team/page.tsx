@@ -170,7 +170,7 @@ function CorporateView({ year }: { year: TeamYear }) {
           const analysts = members.filter((m) => m.tier === "analyst" && m.lead);
           return (
             <Fragment key={tier.tier}>
-              <h2 className="cs-h2 cs-h2--md cs-reveal pt-16 pb-10">Trading Desks</h2>
+              <h2 className="cs-h2 cs-h2--md cs-reveal pt-16 pb-10">Portfolio Teams</h2>
               {buildDesks(tierMembers, analysts).map((desk) => (
                 // A joint desk lists each distinct project once.
                 <Group
@@ -219,8 +219,8 @@ export default function TeamPage() {
   return (
     <>
       <PageIntro
-        title="The People Behind the Desks."
-        lede={<p>Leadership, portfolio managers, and project teams, by academic year.</p>}
+        title="Team"
+        lede={<p>Executive team, portfolio managers, and analysts by academic year.</p>}
       >
         {/* The source photo is 800px wide, so it sits in the right column at its
             natural scale instead of stretching full-bleed. */}

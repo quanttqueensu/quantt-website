@@ -15,14 +15,14 @@ export default function PartnersPage() {
   return (
     <>
       <PageIntro
-        title="The Firms We Work With."
+        title="Partners"
         lede={
           <p>
-            Institutions that partner with QUANTT meet students who research, build, and trade
-            real strategies.
+            Firms that partner with QUANTT work with students who research, build, and trade
+            quantitative strategies.
           </p>
         }
-        cta={<Button href="mailto:quanttgroup@gmail.com">Become a Partner</Button>}
+        cta={<Button href="mailto:quantt@clubs.queensu.ca">Become a Partner</Button>}
       >
         <Stats
           items={[
@@ -49,10 +49,10 @@ export default function PartnersPage() {
         <Wrap>
           <Split
             onBlue
-            title={<span id="partner-cta">Partner With Us for 2026–2027.</span>}
-            lede={<p>Tell us what your team works on and what you would want from our members.</p>}
+            title={<span id="partner-cta">Partner with QUANTT for 2026–2027</span>}
+            lede={<p>Contact the executive team to discuss a partnership.</p>}
             cta={
-              <Button href="mailto:quanttgroup@gmail.com" variant="accent" className="mt-8">
+              <Button href="mailto:quantt@clubs.queensu.ca" variant="accent" className="mt-8">
                 Email the Team
               </Button>
             }

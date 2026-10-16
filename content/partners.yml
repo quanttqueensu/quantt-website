@@ -5,11 +5,11 @@ current:
 
   - name: "Picton Investments"
     logo: "/images/partners/picton.png"
-    description: "Canadian investment management firm focused on quantitative strategies."
+    description: "Canadian investment management firm specializing in alternative and long/short strategies."
 
   - name: "National Bank of Canada"
     logo: "/images/partners/nbc.jpg"
-    description: "Leading Canadian financial institution with a strong quantitative division."
+    description: "Canadian bank with global markets and quantitative research teams."
 
   - name: "Connor, Clark & Lunn"
     logo: "/images/partners/ccl.png"

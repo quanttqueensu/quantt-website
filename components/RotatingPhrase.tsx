@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
 // without needing a pause control.
 const SEQUENCE = [
   "Quantitative Finance",
-  "Algo Trading",
-  "Volatility",
+  "Algorithmic Trading",
+  "Derivatives",
   "Fixed Income",
   "Data Science",
   "Quantitative Finance",
