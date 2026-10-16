@@ -10,6 +10,8 @@ import { getPartners, getPortfolios, getTeamYears } from "@/lib/content";
 export default function Home() {
   const portfolios = getPortfolios();
   const partners = getPartners().current;
+  // "A, B, and C" instead of "A, B, C".
+  const partnerList = new Intl.ListFormat("en", { type: "conjunction" }).format(partners.map((p) => p.name));
 
   // The most recent year that published papers.
   const paperYear = getTeamYears().find(
@@ -120,8 +122,7 @@ export default function Home() {
             </h2>
             <div>
               <p className="cs-lede">
-                QUANTT works with {partners.map((p) => p.name).join(", ")}. We welcome new
-                partners for the 2026–2027 year.
+                QUANTT works with {partnerList}. We welcome new partners for the 2026–2027 year.
               </p>
               <Button href="/partners" variant="accent" className="mt-8">
                 Explore Partnerships

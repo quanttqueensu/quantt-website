@@ -129,7 +129,7 @@
 }
 
 @layer components {
-  .cs-wrap { max-width: var(--cs-max); margin: 0 auto; padding-inline: max(var(--cs-gutter), env(safe-area-inset-left)) max(var(--cs-gutter), env(safe-area-inset-right)); }
+  .cs-wrap { width: 100%; max-width: var(--cs-max); margin: 0 auto; padding-inline: max(var(--cs-gutter), env(safe-area-inset-left)) max(var(--cs-gutter), env(safe-area-inset-right)); }
   .cs-grid { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); column-gap: var(--cs-col-gap); }
   .cs-section { padding-top: var(--cs-section); }
 
@@ -158,6 +158,7 @@
     color: var(--cs-navy); font: 400 18px/26px var(--cs-font);
     background: linear-gradient(var(--cs-blue-link), var(--cs-blue-link)) left bottom / 0 2px no-repeat;
     padding-bottom: 4px; transition: color var(--cs-fast) ease-out, background-size .3s var(--cs-ease);
+    caret-color: transparent;
   }
   .cs-nav a:hover, .cs-nav a[aria-current="page"] { color: var(--cs-blue); background-size: 100% 2px; }
   .cs-header__tools { display: flex; align-items: center; gap: 24px; color: var(--cs-navy); font-size: 14px; }
@@ -233,7 +234,7 @@
   .cs-play:hover { background: #fff; }
 
   /* ---------- grey panel with list (news / insights / documents) ---------- */
-  .cs-panel { background: var(--cs-panel); padding: 80px 56px; margin-top: 80px; display: grid; grid-template-columns: minmax(0, 446fr) minmax(0, 703fr); column-gap: 67px; }
+  .cs-panel { background: var(--cs-panel); padding: 80px 56px; margin-top: 0; display: grid; grid-template-columns: minmax(0, 446fr) minmax(0, 703fr); column-gap: 67px; }
   .cs-panel__intro p { margin-top: 48px; font-size: 18px; line-height: 28px; color: var(--cs-ink); }
   .cs-list { list-style: none; margin: 0; padding: 0; }
   .cs-list li + li { margin-top: 24px; }
@@ -248,7 +249,9 @@
   .cs-list a:hover h3 { background-size: 100% 1px; }
 
   /* ---------- footer ---------- */
-  .cs-footer { background: var(--cs-footer); color: #fff; padding: 80px 0 56px; margin-top: 0; }
+  .cs-footer { background: var(--cs-footer); color: #fff; padding: 80px 0 56px; margin-top: var(--cs-section); }
+  /* A page that ends on a blue band runs straight into the footer. */
+  main:has(> .cs-band:last-child) + .cs-footer { margin-top: 0; }
   .cs-footer a { color: #fff; }
   .cs-footer a:hover { color: var(--cs-accent); }
   .cs-footer__top { display: grid; align-items: start; grid-template-columns: 1fr auto auto; column-gap: clamp(48px, 10vw, 146px); padding-bottom: 80px; }
@@ -275,6 +278,9 @@
     .cs-nav a { font-size: 16px; }
     .cs-stats { --cols: 2 !important; row-gap: 32px; }
     .cs-stat:nth-child(odd) { padding-left: 0; border-left: 0; }
+    /* The home strip has three stats, so it stays three across. */
+    .cs-stats.cs-stats--strip { --cols: 3 !important; }
+    .cs-stats--strip .cs-stat + .cs-stat { padding-left: 32px; border-left: 1px solid var(--cs-line-soft); }
     .cs-panel { grid-template-columns: 1fr; row-gap: 48px; padding: 56px 40px; }
   }
   @media (max-width: 900px) {
@@ -293,12 +299,20 @@
     .cs-footer__top { grid-template-columns: 1fr 1fr; row-gap: 40px; }
     .cs-footer__top > :first-child { grid-column: 1 / -1; }
   }
+  /* The tools slot only holds the menu button; on desktop it would push the nav off the right edge. */
+  @media (min-width: 901px) {
+    .cs-header__tools { display: none; }
+  }
   @media (max-width: 640px) {
     .cs-header__tools > :not(.cs-menu-btn) { display: none; }
     .cs-stat { padding-right: 16px; }
     .cs-stat + .cs-stat { padding-left: 16px; }
     .cs-stats--strip .cs-stat { padding-top: 28px; padding-bottom: 24px; }
-    .cs-stats--strip .cs-stat:nth-child(-n+2) { border-bottom: 1px solid var(--cs-line-soft); }
+    .cs-stats--strip .cs-stat { padding-right: 8px; }
+    .cs-stats--strip .cs-stat + .cs-stat { padding-left: 12px; }
+    .cs-stats--strip .cs-stat__label { font-size: 14px; line-height: 19px; }
+    .cs-byline { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .cs-byline span + span { padding-left: 0; border-left: 0; }
     .cs-split .cs-btn, .cs-hero__ctas .cs-btn { width: 100%; }
     .cs-panel { padding: 40px 24px; margin-inline: calc(-1 * var(--cs-gutter)); }
     .cs-band__media--inset { width: 100%; }
@@ -355,6 +369,7 @@
     gap: 32px;
     border-bottom: 1px solid var(--cs-line);
   }
+  .cs-tabs + [role="tabpanel"] > .cs-row:first-child { border-top: 0; padding-top: 0; }
   .cs-tabs button {
     font: 400 18px/26px var(--cs-font);
     color: var(--cs-navy);
@@ -416,20 +431,21 @@
     white-space: nowrap;
     padding-bottom: 0.1em;
   }
+  @media (max-width: 640px) {
+    .cs-h1__roll { white-space: normal; }
+  }
   .cs-h1__roll > * {
     grid-area: 1 / 1;
   }
 
-  /* Partner logo grid: square white cells separated by hairlines. */
+  /* Partner logo grid: hairline boxes that overlap by 1px, so a short last row stays closed. */
   .cs-logos {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--cs-line);
-    border-left: 1px solid var(--cs-line);
   }
   .cs-logos > li {
-    border-right: 1px solid var(--cs-line);
-    border-bottom: 1px solid var(--cs-line);
+    border: 1px solid var(--cs-line);
+    margin: 0 -1px -1px 0;
     padding: 32px;
   }
   @media (max-width: 1100px) {

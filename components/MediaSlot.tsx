@@ -10,6 +10,7 @@ export default function MediaSlot({
   src,
   alt,
   className = "",
+  imgClassName = "",
   sizes = "100vw",
   priority = false,
   children,
@@ -17,6 +18,8 @@ export default function MediaSlot({
   src?: string;
   alt: string;
   className?: string;
+  /** Extra classes on the image, e.g. an object-position to choose the crop. */
+  imgClassName?: string;
   sizes?: string;
   priority?: boolean;
   children?: ReactNode;
@@ -24,7 +27,7 @@ export default function MediaSlot({
   if (!src) return <>{children}</>;
   return (
     <div className={`relative overflow-hidden bg-blue ${className}`}>
-      <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className="object-cover" />
+      <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={`object-cover ${imgClassName}`} />
     </div>
   );
 }
