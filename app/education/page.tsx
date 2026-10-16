@@ -5,7 +5,7 @@ import { Button, PageIntro, Wrap } from "@/components/ui";
 import { getEducationChapters, getSiteConfig } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Curriculum — QUANTT",
+  title: "Education — QUANTT",
   description:
     "QUANTT's curriculum: markets and strategy types, coding and problem solving, strategy infrastructure from data to automation, and the math and probability underneath.",
 };
@@ -70,7 +70,7 @@ export default function EducationPage() {
   return (
     <>
       <PageIntro
-        title="Curriculum"
+        title="Education"
         lede={
           <p>
             Coverage of asset classes and strategy types, coding and problem solving, and the

@@ -1,7 +1,7 @@
 ---
 title: "Long/Short Gamma"
 slug: "long-short-gamma"
-manager: "Gabe Soler"
+manager: "Gabriel Soler"
 description: "A systematic SPY options portfolio researching the volatility risk premium and how to capture it efficiently."
 tech: ["SPY Options", "Volatility Risk Premium", "Quantitative Modelling", "Hedging"]
 status: active

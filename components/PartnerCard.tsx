@@ -5,8 +5,8 @@ import type { Partner } from "@/lib/content";
 export default function PartnerCard({ partner, past = false }: { partner: Partner; past?: boolean }) {
   const body = (
     <>
-      <div className="relative h-16 w-full max-w-[220px]">
-        {partner.logo ? (
+      {partner.logo && (
+        <div className="relative mb-6 h-16 w-full max-w-[220px]">
           <Image
             src={partner.logo}
             alt=""
@@ -14,9 +14,9 @@ export default function PartnerCard({ partner, past = false }: { partner: Partne
             sizes="220px"
             className={`object-contain object-left ${past ? "opacity-50 grayscale" : ""}`}
           />
-        ) : null}
-      </div>
-      <h3 className="mt-6 text-xl leading-7 tracking-[-0.02em] text-ink">{partner.name}</h3>
+        </div>
+      )}
+      <h3 className="text-xl leading-7 tracking-[-0.02em] text-ink">{partner.name}</h3>
       <p className="mt-2 text-base text-body">{partner.description}</p>
     </>
   );

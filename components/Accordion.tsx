@@ -7,7 +7,7 @@ interface AccordionItem {
   content: ReactNode;
 }
 
-/** Square rows under hairline rules; the arrow circle turns down when a row is open. */
+/** Square rows under hairline rules; the chevron flips up when a row is open. */
 export default function Accordion({ items }: { items: AccordionItem[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const id = useId();
@@ -32,12 +32,12 @@ export default function Accordion({ items }: { items: AccordionItem[] }) {
                 <span className="text-xl leading-7 tracking-[-0.02em] text-ink">{item.title}</span>
                 <span
                   className={`cs-arrow transition-transform duration-300 ${
-                    open ? "rotate-90" : ""
+                    open ? "rotate-180" : ""
                   }`}
                   aria-hidden="true"
                 >
-                  <svg viewBox="0 0 24 25">
-                    <path d="M20.707 12.6875L14.3535 6.33391L13.6464 7.04101L18.7928 12.1874L3.99989 12.1874V13.1874L18.7929 13.1874L13.6464 18.3339L14.3535 19.041L20.707 12.6875Z" />
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 16.207 4.646 8.854l.708-.708L12 14.793l6.646-6.647.708.708L12 16.207Z" />
                   </svg>
                 </span>
               </button>
