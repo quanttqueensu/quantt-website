@@ -22,7 +22,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [atTop, setAtTop] = useState(true);
   const lastY = useRef(0);
+  // On the home page the header sits on the hero photo until the page scrolls.
+  const overHero = pathname === "/" && atTop && !menuOpen;
 
   // Hides on scroll down, returns on scroll up. Never hides with the menu open.
   useEffect(() => {
@@ -33,11 +36,13 @@ export default function Navbar() {
       requestAnimationFrame(() => {
         const y = window.scrollY;
         setHidden(y > lastY.current && y > 200);
+        setAtTop(y < 40);
         lastY.current = y;
         ticking = false;
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -51,7 +56,9 @@ export default function Navbar() {
   }, [menuOpen]);
 
   return (
-    <header className={`cs-header ${hidden && !menuOpen ? "is-hidden" : ""}`}>
+    <header
+      className={`cs-header ${hidden && !menuOpen ? "is-hidden" : ""} ${overHero ? "is-over-hero" : ""}`}
+    >
       <div className="cs-wrap cs-header__row relative">
         <Link href="/" aria-label="QUANTT home" className="flex min-h-11 flex-shrink-0 items-center">
           <Image
@@ -59,7 +66,15 @@ export default function Navbar() {
             alt=""
             width={1617}
             height={400}
-            className="h-8 w-auto max-[900px]:h-7"
+            className="cs-header__logo h-8 w-auto max-[900px]:h-7"
+            priority
+          />
+          <Image
+            src="/images/logos/quantt-text-white.png"
+            alt=""
+            width={877}
+            height={399}
+            className="cs-header__logo-white h-10 w-auto max-[900px]:h-9"
             priority
           />
         </Link>

@@ -3,9 +3,9 @@ import type { CSSProperties, ReactNode } from "react";
 
 /* ---------- Buttons & arrows ---------- */
 
-type ButtonVariant = "blue" | "accent";
+type ButtonVariant = "blue" | "accent" | "ghost";
 
-/** Pill CTA. Blue on white/grey surfaces, accent on blue. One per text block. */
+/** CTA. Blue on white/grey surfaces; accent (white) or ghost (outline) on blue or a photo. */
 export function Button({
   href,
   children,
@@ -38,7 +38,7 @@ export function Button({
   );
 }
 
-/** 40px outlined circle with a thin right arrow. Fills accent when its row is hovered. */
+/** Thin right arrow at the end of a list row. Nudges right when its row is hovered. */
 export function ArrowCircle({ className = "" }: { className?: string }) {
   return (
     <span className={`cs-arrow ${className}`} aria-hidden="true">
@@ -133,10 +133,19 @@ export interface StatItem {
 }
 
 /** Big blue figures in columns separated by hairline rules. Only real numbers. */
-export function Stats({ items, large = false }: { items: StatItem[]; large?: boolean }) {
+export function Stats({
+  items,
+  large = false,
+  strip = false,
+}: {
+  items: StatItem[];
+  large?: boolean;
+  /** Full-width row with a bottom rule, directly under the home hero. */
+  strip?: boolean;
+}) {
   return (
     <dl
-      className={`cs-stats ${large ? "cs-stats--lg" : ""}`}
+      className={`cs-stats ${large ? "cs-stats--lg" : ""} ${strip ? "cs-stats--strip" : ""}`}
       style={{ "--cols": items.length } as CSSProperties}
     >
       {items.map((item) => (
@@ -162,7 +171,7 @@ export interface ListItem {
   label?: string;
 }
 
-/** Grey inset panel: intro on the left, linked rows with arrow circles on the right. */
+/** Tinted inset panel: intro on the left, linked rows with arrows on the right. */
 export function ListPanel({
   title,
   intro,

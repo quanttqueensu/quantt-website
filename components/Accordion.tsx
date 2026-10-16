@@ -31,7 +31,7 @@ export default function Accordion({ items }: { items: AccordionItem[] }) {
               >
                 <span className="text-xl leading-7 tracking-[-0.02em] text-ink">{item.title}</span>
                 <span
-                  className={`cs-arrow transition-transform duration-300 group-hover:border-accent group-hover:bg-accent group-hover:text-navy ${
+                  className={`cs-arrow transition-transform duration-300 ${
                     open ? "rotate-90" : ""
                   }`}
                   aria-hidden="true"

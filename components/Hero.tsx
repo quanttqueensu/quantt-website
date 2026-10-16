@@ -3,26 +3,23 @@ import RotatingPhrase from "./RotatingPhrase";
 import { Button } from "./ui";
 import { getSiteConfig } from "@/lib/content";
 
-/** Full-bleed photo with the blue panel anchored bottom-right, accent bar at its edge. */
+/** Full-bleed team photo with the headline set on it over a navy fade. The header sits on top. */
 export default function Hero() {
   const { media } = getSiteConfig();
 
   return (
     <section className="cs-hero cs-reveal on-blue" aria-labelledby="hero-title">
-      <div className="relative">
-        <MediaSlot
-          src={media?.hero}
-          alt="QUANTT members on a visit to an industry partner's office"
-          className="cs-hero__media"
-          sizes="100vw"
-          priority
-        >
-          <div className="cs-hero__media" aria-hidden="true" />
-        </MediaSlot>
-        <p className="cs-hero__label">Queen&apos;s University Algorithmic Network &amp; Trading Team</p>
-      </div>
+      <MediaSlot
+        src={media?.hero}
+        alt="QUANTT members on a visit to an industry partner's office"
+        className="cs-hero__media"
+        sizes="100vw"
+        priority
+      >
+        <div className="cs-hero__media" aria-hidden="true" />
+      </MediaSlot>
 
-      <div className="cs-hero__panel">
+      <div className="cs-wrap cs-hero__body">
         <h1 id="hero-title" className="cs-h1">
           <span className="sr-only">
             Tomorrow&apos;s talent in quantitative finance, algorithmic trading, and data science.
@@ -36,9 +33,14 @@ export default function Hero() {
           Queen&apos;s students research, build, and trade quantitative strategies, learning and
           building side by side all year.
         </p>
-        <Button href="/competition" variant="accent">
-          Explore Our Research
-        </Button>
+        <div className="cs-hero__ctas">
+          <Button href="/competition" variant="accent">
+            Explore Our Research
+          </Button>
+          <Button href="/team" variant="ghost">
+            Meet the Team
+          </Button>
+        </div>
       </div>
     </section>
   );

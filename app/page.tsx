@@ -1,34 +1,44 @@
-import Image from "next/image";
+import Link from "next/link";
 import Hero from "@/components/Hero";
-import MediaSlot from "@/components/MediaSlot";
+import PartnerLogos from "@/components/PartnerLogos";
 import PricePaths from "@/components/PricePaths";
+import ResearchList from "@/components/ResearchList";
 import UpcomingEvents from "@/components/UpcomingEvents";
 import { Button, ListPanel, Section, Split, Stats, Wrap } from "@/components/ui";
-import {
-  getEducationChapters,
-  getPartners,
-  getPortfolios,
-  getSiteConfig,
-  getTeamYears,
-} from "@/lib/content";
+import { getEducationChapters, getPartners, getPortfolios, getTeamYears } from "@/lib/content";
 
 export default function Home() {
   const portfolios = getPortfolios();
   const weeks = getEducationChapters().length;
   const partners = getPartners().current;
-  const { media } = getSiteConfig();
 
   // The most recent year that published papers.
   const paperYear = getTeamYears().find(
     (year) => Object.keys(year.config.researchPapers ?? {}).length > 0
   );
-  const papers = Object.keys(paperYear?.config.researchPapers ?? {});
+  const paperLinks = paperYear?.config.researchPapers ?? {};
   const details = paperYear?.config.researchPaperDetails ?? {};
   const winner = paperYear?.config.winner;
+  // Winner first, then the rest in config order.
+  const papers = Object.keys(paperLinks)
+    .sort((a, b) => Number(b === winner) - Number(a === winner))
+    .map((team) => ({ team, pdf: paperLinks[team], detail: details[team] }));
 
   return (
     <>
       <Hero />
+
+      <Wrap>
+        <Stats
+          strip
+          items={[
+            { value: portfolios.length, label: "Portfolios this year" },
+            { value: weeks, label: "Weeks of curriculum" },
+            { value: papers.length, label: `Papers published in ${paperYear?.config.year ?? "our last year"}` },
+            { value: partners.length, label: "Industry partners" },
+          ]}
+        />
+      </Wrap>
 
       <Section>
         <Split
@@ -41,50 +51,26 @@ export default function Home() {
           }
           cta={<Button href="/portfolios">Explore the Portfolios</Button>}
         />
-        <Stats
-          items={[
-            { value: portfolios.length, label: "Portfolios this year" },
-            { value: weeks, label: "Weeks of curriculum" },
-            { value: papers.length, label: `Papers published in ${paperYear?.config.year ?? "our last year"}` },
-            { value: partners.length, label: "Industry partners" },
-          ]}
-        />
       </Section>
 
       {paperYear && (
-        <section className="cs-band cs-band--papers on-blue" aria-labelledby="papers-title">
+        <section className="cs-research" aria-labelledby="papers-title">
           <Wrap>
-            <div className="cs-grid cs-split cs-reveal">
-              <h2 id="papers-title" className="cs-h2 cs-h2--on-blue">
-                Research, Written Up.
-              </h2>
+            <div className="cs-research__head cs-reveal">
               <div>
-                <p className="cs-lede">
+                <h2 id="papers-title" className="cs-h2">
+                  Research, Written Up.
+                </h2>
+                <p>
                   Every project team publishes a paper on the strategy it built.
                   {winner && ` The ${paperYear.config.year} winner was ${winner}.`}
                 </p>
-                <Button href="/competition" variant="accent" className="mt-8">
-                  Explore the Papers
-                </Button>
               </div>
+              <Link href="/competition" className="cs-link whitespace-nowrap">
+                Explore the Papers
+              </Link>
             </div>
-            <MediaSlot src={media?.research} alt="" className="cs-band__media">
-              <ul className="cs-papers" aria-label="First pages of the published papers">
-                {papers.map((team) => (
-                  <li key={team}>
-                    {details[team]?.image ? (
-                      <Image
-                        src={details[team].image!}
-                        alt={`First page of “${details[team].title}”`}
-                        width={850}
-                        height={1100}
-                        sizes="(max-width: 900px) 33vw, 20vw"
-                      />
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </MediaSlot>
+            <ResearchList papers={papers} />
           </Wrap>
         </section>
       )}
@@ -128,8 +114,13 @@ export default function Home() {
         />
       </div>
 
-      <section className="cs-band cs-band--texture on-blue" aria-labelledby="partners-title">
-        <PricePaths className="!bottom-[var(--cs-overhang)]" />
+      <Section label="Partners">
+        <h2 className="cs-h2 cs-reveal">Our Partners</h2>
+        <PartnerLogos partners={partners} />
+      </Section>
+
+      <section className="cs-band cs-band--flat cs-band--texture on-blue" aria-labelledby="partners-title">
+        <PricePaths />
         <Wrap>
           <div className="cs-grid cs-split cs-reveal">
             <h2 id="partners-title" className="cs-h2 cs-h2--on-blue">
@@ -145,14 +136,6 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <MediaSlot
-            src={media?.partners}
-            alt="QUANTT members together in a university atrium"
-            className="cs-band__media"
-            sizes="(max-width: 1440px) 100vw, 1328px"
-          >
-            <div className="cs-band__media bg-blue" aria-hidden="true" />
-          </MediaSlot>
         </Wrap>
       </section>
 
