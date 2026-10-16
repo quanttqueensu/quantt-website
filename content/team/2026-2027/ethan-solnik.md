@@ -1,6 +1,6 @@
 ---
 name: "Ethan Solnik"
-role: "CEO"
+role: "Co-Chair"
 tier: "c-suite"
 order: 1
 bio: ""
