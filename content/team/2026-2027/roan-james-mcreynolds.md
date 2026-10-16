@@ -2,7 +2,7 @@
 name: "Roan James McReynolds"
 role: "Portfolio Manager"
 tier: "portfolio-manager"
-department: "Post Earnings"
+department: "Nat Gas"
 order: 5
 bio: ""
 ---

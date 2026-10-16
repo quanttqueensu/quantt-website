@@ -46,7 +46,7 @@ const focusAreas = [
   },
 ];
 
-// Every topic for a week in one list; the curriculum has a single track.
+// Every topic for a module in one list; the curriculum has a single track.
 const topicsOf = (ch: ReturnType<typeof getEducationChapters>[number]) => [
   ...(ch.topics ?? []),
   ...(ch.trading_track ?? []),
@@ -58,7 +58,7 @@ export default function EducationPage() {
   const { media } = getSiteConfig();
 
   const items = chapters.map((ch) => ({
-    title: `Week ${ch.chapter}. ${ch.title}`,
+    title: `Module ${ch.chapter}. ${ch.title}`,
     content: (
       <div className="grid gap-8 md:grid-cols-2">
         {ch.body && <p className="max-w-[65ch] text-base text-body md:col-span-2">{ch.body}</p>}
@@ -77,7 +77,7 @@ export default function EducationPage() {
             infrastructure behind a strategy, from data to automation, taught alongside portfolio work.
           </p>
         }
-        cta={<Button href="#weeks">Explore Every Week</Button>}
+        cta={<Button href="#modules">Explore Every Module</Button>}
       >
         <MediaSlot
           src={media?.education}
@@ -101,15 +101,15 @@ export default function EducationPage() {
         </Wrap>
       </section>
 
-      <section id="weeks" aria-labelledby="weeks-title" className="cs-section scroll-mt-28">
+      <section id="modules" aria-labelledby="modules-title" className="cs-section scroll-mt-28">
         <Wrap>
-          <h2 id="weeks-title" className="cs-h2 cs-reveal mb-12">
-            Weekly Schedule
+          <h2 id="modules-title" className="cs-h2 cs-reveal mb-12">
+            Modules
           </h2>
           {items.length > 0 ? (
             <Accordion items={items} />
           ) : (
-            <p className="cs-lede">The week-by-week plan is published before the curriculum starts.</p>
+            <p className="cs-lede">The module plan is published before the curriculum starts.</p>
           )}
         </Wrap>
       </section>

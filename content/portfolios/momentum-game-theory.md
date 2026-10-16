@@ -1,14 +1,13 @@
 ---
 title: "Momentum Game Theory — Rebalancing Trading Strategy"
 slug: "momentum-game-theory"
-description: "A systematic momentum strategy incorporating game theory to account for crowded trades, tested across asset classes, sectors, and countries."
-tech: ["Momentum", "Game Theory", "Multi-Asset", "Risk Management"]
+manager: "Hugh Hayes"
+description: "A systematic ETF portfolio combining momentum with game theory to limit crowded, overlapping positions."
+tech: ["Momentum", "Game Theory", "ETF Rotation", "Risk Management"]
 status: active
 order: 6
 ---
 
-A systematic trading strategy based on momentum — the concept that assets that have been rising tend to continue rising for a period — incorporating game theory to account for the behavior of other investors chasing the same trends, which can lead to crowded trades and diminished returns.
+This portfolio rotates between broad equity markets and US sectors, using momentum to identify strength and a game-theoretic allocation rule to penalize correlated bets. It rebalances monthly and shifts into Treasuries or cash when equity signals weaken.
 
-The objective is to create a strategy that captures the upside of strong markets while significantly minimizing losses during market crashes compared to the broader market.
-
-The strategy is tested across multiple asset classes, sectors, countries, styles, bonds, and commodities to ensure its effectiveness is a genuine edge rather than in-sample noise.
+Analysts test improvements, refine data pipelines and monitor IBKR paper trading, with particular attention to drawdowns and performance beyond the development sample.

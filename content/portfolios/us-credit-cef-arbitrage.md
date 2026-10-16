@@ -1,12 +1,13 @@
 ---
 title: "US Credit, Closed End Fund Arbitrage"
 slug: "us-credit-cef-arbitrage"
-description: "Trading US Treasury and corporate bond ETFs around predictable forced buying and selling by index funds and insurers."
-tech: ["Fixed Income", "Credit", "ETFs", "Flow Trading"]
+manager: "Simon Jarvis"
+description: "A relative-value credit portfolio targeting unusually large discounts and premiums in closed-end funds."
+tech: ["Fixed Income", "Credit", "Closed-End Funds", "Relative Value"]
 status: active
 order: 8
 ---
 
-The team trades bonds and credit. Its system trades US Treasury and corporate bond ETFs around predictable forced buying and selling by index funds and insurers.
+Closed-end fund prices can diverge from the value of their underlying holdings. This portfolio buys funds trading unusually cheaply relative to their own history and shorts relatively expensive funds, balancing long and short dollar exposure.
 
-Analysts refine how the strategies operate and research the team's proprietary data for new sources of edge.
+Analysts research new signals, improve execution and measure whether potential returns survive trading costs and slippage, supported by automated data collection, backtesting and IBKR paper-trading infrastructure.

@@ -43,6 +43,9 @@ export default function PortfoliosPage() {
               </h2>
               <div>
                 <p className="cs-lede">{portfolio.description}</p>
+                {portfolio.manager && (
+                  <p className="cs-meta mt-4 text-meta">Portfolio manager: {portfolio.manager}</p>
+                )}
                 {portfolio.body && (
                   <div className="mt-6 max-w-[65ch] space-y-4 text-base leading-relaxed text-body">
                     {portfolio.body.split("\n\n").map((para, j) => (

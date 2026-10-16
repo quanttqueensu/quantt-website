@@ -1,16 +1,13 @@
 ---
 title: "Long/Short Gamma"
 slug: "long-short-gamma"
-description: "A regime-switching long/short gamma strategy on SPY options that exploits the volatility risk premium with hourly delta hedging."
-tech: ["SPY Options", "Machine Learning", "Deep Hedging", "IBKR API"]
+manager: "Gabe Soler"
+description: "A systematic SPY options portfolio researching the volatility risk premium and how to capture it efficiently."
+tech: ["SPY Options", "Volatility Risk Premium", "Quantitative Modelling", "Hedging"]
 status: active
 order: 4
 ---
 
-A regime-switching long/short gamma strategy on SPY options that exploits the volatility risk premium — going long gamma via ATM straddles when implied vol is cheap, short gamma via OTM strangles when it's rich, with hourly delta hedging to isolate pure vol exposure.
+This portfolio studies the gap between implied and realized volatility, using options positions and delta hedging to manage directional exposure. Summer testing favoured a simpler hedged short-volatility approach over the original regime-switching model.
 
-Analysts build a machine-learning realized volatility forecast that feeds signal generation, connected to live paper execution through IBKR's API.
-
-The team compares ways of going long and short gamma, such as straddles and strangles.
-
-It also researches, builds, and tests deep hedging as the primary risk management technique.
+Analysts develop and test premium forecasts, position-sizing methods and hedging policies, supported by an options-data pipeline, backtesting framework and IBKR paper-execution tools.

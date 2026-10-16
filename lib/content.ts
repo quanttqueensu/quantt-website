@@ -94,6 +94,7 @@ export interface TeamYear {
 export interface Portfolio {
   title: string;
   slug: string;
+  manager?: string;
   description: string;
   tech: string[];
   status: "active" | "completed";
