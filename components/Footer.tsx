@@ -55,7 +55,7 @@ export default function Footer() {
             <Link href="/partners">Partners</Link>
             <Link href="/blog">Blog</Link>
             <Link href="/contact">Contact</Link>
-            <a href="mailto:quanttgroup@gmail.com">quanttgroup@gmail.com</a>
+            <a href="mailto:quantt@clubs.queensu.ca">quantt@clubs.queensu.ca</a>
           </div>
         </div>
 

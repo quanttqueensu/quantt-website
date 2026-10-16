@@ -2,7 +2,7 @@
 name: "Simon Jarvis"
 role: "Portfolio Manager"
 tier: "portfolio-manager"
-department: "Credit Cycle"
+department: "CEF Arb"
 order: 1
 bio: ""
 ---

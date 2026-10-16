@@ -3,8 +3,8 @@ import { Button, PageIntro } from "@/components/ui";
 export default function NotFound() {
   return (
     <PageIntro
-      title="Page Not Found."
-      lede={<p>This page may have moved. Our research is still here.</p>}
+      title="Page Not Found"
+      lede={<p>The page you requested doesn&apos;t exist or has moved.</p>}
       cta={
         <div className="flex flex-wrap gap-x-4">
           <Button href="/">Go Home</Button>

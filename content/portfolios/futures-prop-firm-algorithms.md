@@ -1,14 +1,13 @@
 ---
 title: "Futures Prop Firm Algorithms"
 slug: "futures-prop-firm-algorithms"
-description: "Finding algorithmic edges that exploit retail prop firm account structures and payout convexity in futures trading."
+manager: "Thomas Dermengea"
+description: "An algorithmic futures portfolio designed around retail prop firm account rules and payout structures."
 tech: ["Futures", "Automation", "Prop Firms", "Strategy Optimization"]
 status: active
 order: 5
 ---
 
-Retail prop firm futures trading has ballooned in popularity recently due to the interesting payout convexity attributes that these online firms offer. Most retail traders choose to use guru strategies that don't have any live market edge nor prop firm edge.
+This portfolio investigates whether systematic trading strategies can generate positive expected returns after evaluation fees and other expenses. Strategies are tailored to each firm’s profit targets, drawdown limits, consistency requirements, and account size.
 
-This portfolio is about finding algorithmic edges that exploit the nature of the prop firm account structure.
-
-This portfolio will aim to fully automate simulated trading and create a mathematically positive EV strategy that is optimized dependent on account rules, prop firm, and account size.
+Analysts build and backtest algorithms, model payout probabilities and risk of ruin, benchmark against random strategies, and develop automated execution and monitoring tools.
