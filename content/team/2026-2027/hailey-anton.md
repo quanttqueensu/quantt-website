@@ -4,5 +4,6 @@ role: "Quantitative Development Analyst"
 tier: "analyst"
 department: "Quantitative Development"
 order: 24
+linkedin: "https://ca.linkedin.com/in/haileyanton"
 bio: ""
 ---
