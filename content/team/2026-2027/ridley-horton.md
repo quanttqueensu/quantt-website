@@ -1,6 +1,6 @@
 ---
 name: "Ridley Horton"
-role: "CEO"
+role: "Co-Chair"
 tier: "c-suite"
 order: 2
 bio: ""
